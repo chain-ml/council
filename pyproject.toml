@@ -13,7 +13,7 @@ dynamic = ["dependencies"]
 [tool.hatch.build]
 exclude = [
     ".github",
-    "dev-requirements.txt",
+    "*-requirements.txt",
     "tests",
     "venv",
 ]
