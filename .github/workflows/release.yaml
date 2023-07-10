@@ -30,6 +30,20 @@ jobs:
         run: pip3 install -r dev-requirements.txt
       - name: Packaging
         run: hatch build
+      - name: Version
+        id: hatch-version
+        run: |
+          echo version=${hatch version} >> $GITHUB_OUTPUT
+      - name: Git Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "dist/*"
+          draft: ${{ COUNCIL_DRAFT }}
+          makeLatest: ${{ COUNCIL_DRAFT == "false" }}
+          tag: v${{ steps.hatch-version.outputs.version }}
+          updateOnlyUnreleased: true
+
       - name: env var
         run: export
         if: always()
