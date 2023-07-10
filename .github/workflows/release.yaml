@@ -12,6 +12,7 @@ on:
 
 env:
   COUNCIL_DRAFT: ${{ github.event.pull_request.merged == false }}
+  COUNCIL_LATEST: ${{ github.event.pull_request.merged == false }}
 
 jobs:
   release:
@@ -40,7 +41,7 @@ jobs:
           allowUpdates: true
           artifacts: "dist/*"
           draft: ${{ env.COUNCIL_DRAFT }}
-          makeLatest: ${{ env.COUNCIL_DRAFT == "false" }}
+          makeLatest: ${{ env.COUNCIL_LATEST }}
           tag: v${{ steps.hatch-version.outputs.version }}
           updateOnlyUnreleased: true
 
