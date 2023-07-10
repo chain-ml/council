@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "council-ai"
 version = "0.0.2"
 description = "to do"
+readme = "README.md"
 requires-python = ">=3.9"
 
 dynamic = ["dependencies"]
