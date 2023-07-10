@@ -11,16 +11,13 @@ on:
   workflow_dispatch:
 
 env:
-  COUNCIL_DRAFT: ${{ github.event_name == 'synchronize' }}
+  COUNCIL_DRAFT: ${{ github.event.pull_request.merged == false }}
 
 jobs:
   release:
+# Pull Request object schema: https://docs.github.com/en/graphql/reference/objects#pullrequest
     if: |
-      ${{ contains(github.event.pull_request.labels.*.name, 'release')}}
-      && (
-        (github.event_name == 'closed' && github_event.pull_request.merged == true)
-        || (github.event_name == 'synchronize')
-      )
+      ${{ contains(github.event.pull_request.labels.*.name, 'release') }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout
