@@ -16,7 +16,7 @@ env:
 jobs:
   release:
     if: |
-      ${{ contains(github.event.pull_request.labels.*.name, 'release'}}
+      ${{ contains(github.event.pull_request.labels.*.name, 'release')}}
       && (
         (github.event_name == 'closed' && github_event.pull_request.merged == true)
         || (github.event_name == 'synchronize')
