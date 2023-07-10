@@ -1,0 +1,8 @@
+## Jetbrains
+.idea
+
+## Macos
+.DS_Store
+
+## Python
+dist

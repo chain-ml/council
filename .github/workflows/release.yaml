@@ -1,0 +1,53 @@
+name: release
+
+# Workflow Triggers
+on:
+  # On a PullRequest against main
+  pull_request:
+    branches: [ "main" ]
+    types: ["closed", "synchronize"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  COUNCIL_DRAFT: ${{ github.event.pull_request.merged == false }}
+  COUNCIL_LATEST: ${{ github.event.pull_request.merged == true }}
+
+jobs:
+  release:
+# Pull Request object schema: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    if: |
+      ${{ contains(github.event.pull_request.labels.*.name, 'release') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Installing dev requirements
+        run: pip3 install -r dev-requirements.txt
+      - name: Packaging
+        run: hatch build
+      - name: Version
+        id: hatch-version
+        run: |
+          echo version=$(hatch version) >> $GITHUB_OUTPUT
+      - name: Git Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "dist/*"
+          draft: ${{ env.COUNCIL_DRAFT }}
+          generateReleaseNotes: true
+          makeLatest: ${{ env.COUNCIL_LATEST }}
+          tag: v${{ steps.hatch-version.outputs.version }}
+          updateOnlyUnreleased: true
+
+      - name: env var
+        run: export
+        if: always()
