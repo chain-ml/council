@@ -10,6 +10,16 @@ requires-python = ">=3.9"
 
 dynamic = ["dependencies"]
 
+[tool.hatch.build]
+exclude = [
+    ".github",
+    "dev-requirements.txt",
+    "tests",
+    "venv",
+]
+
+package = ['council_ai']
+
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 
