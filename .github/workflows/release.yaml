@@ -10,8 +10,15 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  COUNCIL_DRAFT: ${{ github.event_name == 'synchronize' }}
+
 jobs:
   release:
+    if: |
+      ${{ contains(github.event.pull_request.labels.*.name, 'release'}}
+      && ((github.event_name == 'closed' && github_event.pull_request.merged == true)
+      || (github.event_name == 'synchronize')
     runs-on: ubuntu-latest
     steps:
       - name: checkout
