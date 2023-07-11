@@ -3,6 +3,7 @@ requests~=2.31.0
 Jinja2~=3.1.2
 python-dotenv==1.0.0
 more-itertools~=9.1.0
+progressbar==2.5
 
 # Skills
 ## Google
