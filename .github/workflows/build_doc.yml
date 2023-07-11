@@ -19,7 +19,7 @@ jobs:
           python-version: "3.9"
           cache: "pip"
       - name: Install pandoc
-        run: apt update && apt install pandoc --yes
+        run: sudo apt install pandoc --yes
       - name: Install dependencies
         run: pip install -r docs/requirements.txt
       - name: make html
