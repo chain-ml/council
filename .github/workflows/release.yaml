@@ -5,7 +5,7 @@ on:
   # On a PullRequest against main
   pull_request:
     branches: [ "main" ]
-    types: ["closed", "synchronize"]
+    types: ["closed", "labeled", "synchronize"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -18,7 +18,7 @@ jobs:
   release:
 # Pull Request object schema: https://docs.github.com/en/graphql/reference/objects#pullrequest
     if: |
-      ${{ contains(github.event.pull_request.labels.*.name, 'release') }}
+      contains(github.event.pull_request.labels.*.name, 'release')
     runs-on: ubuntu-latest
     permissions:
       contents: write
