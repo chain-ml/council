@@ -1,0 +1,36 @@
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+      - name: Install pandoc
+        run: sudo apt install pandoc --yes
+      - name: Install dependencies
+        run: pip install -r docs/requirements.txt
+      - name: make html
+        run: make html SPHINXOPTS='-W --keep-going'
+        working-directory: docs
+      - name: make doctest
+        run: make doctest
+        working-directory: docs
+      - name: publish artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: council-doc
+          path: docs/build/html/
+
