@@ -1,0 +1,2 @@
+class LLMException(Exception):
+    pass

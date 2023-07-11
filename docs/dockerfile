@@ -1,0 +1,24 @@
+FROM python:3.9 as build
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+RUN apt update && \
+    apt install pandoc --yes
+
+COPY docs/requirements.txt docs/
+RUN pip install -r docs/requirements.txt --no-cache
+
+COPY docs/Makefile docs/
+COPY docs/source docs/source
+
+COPY council council
+COPY pyproject.toml pyproject.toml
+
+WORKDIR docs
+RUN make html SPHINXOPTS='-W --keep-going'
+RUN make doctest
+
+FROM nginx:stable-alpine3.17-slim
+
+COPY --from=build docs/build/html /usr/share/nginx/html

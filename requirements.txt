@@ -1,0 +1,12 @@
+httpx==0.24.1
+requests~=2.31.0
+Jinja2~=3.1.2
+python-dotenv==1.0.0
+more-itertools~=9.1.0
+progressbar==2.5
+
+# Skills
+## Google
+google-api-python-client==2.93.0
+GoogleNews==1.6.8
+google-api-python-client-stubs
