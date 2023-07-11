@@ -4,16 +4,6 @@ Jinja2~=3.1.2
 python-dotenv==1.0.0
 more-itertools~=9.1.0
 
-# Lint
-black == 23.7.0
-mypy == 1.4.1
-ruff==0.0.277
-progressbar==2.5
-pydantic==1.10.8
-
-# Test
-pytest==7.4.0
-
 # Skills
 ## Google
 google-api-python-client==2.93.0
