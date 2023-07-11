@@ -29,6 +29,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          cache: 'pip'
       - name: Installing dev requirements
         run: pip3 install -r dev-requirements.txt
       - name: Packaging
@@ -47,6 +48,18 @@ jobs:
           makeLatest: ${{ env.COUNCIL_LATEST }}
           tag: v${{ steps.hatch-version.outputs.version }}
           updateOnlyUnreleased: true
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ env.COUNCIL_DRAFT == 'true' }}
+        with:
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+      - name: Publish to PyPI
+        if: ${{ env.COUNCIL_DRAFT == 'false' && env.COUNCIL_LATEST == 'true' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
 
       - name: env var
         run: export
