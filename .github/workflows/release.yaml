@@ -55,10 +55,10 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
       - name: Publish to PyPI
-        if: ${{ env.COUNCIL_DRAFT == 'false' }} && ${{ env.COUNCIL_LATEST == 'true' }}
+        if: ${{ env.COUNCIL_DRAFT == 'false' && env.COUNCIL_LATEST == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
+#        with:
+#          password: ${{ secrets.PYPI_TOKEN }}
 
       - name: env var
         run: export
