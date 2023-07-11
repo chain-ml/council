@@ -28,4 +28,9 @@ jobs:
       - name: make doctest
         run: make doctest
         working-directory: docs
+      - name: publish artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: council-doc
+          path: docs/build/html/
 
