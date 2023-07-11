@@ -22,8 +22,8 @@ jobs:
         run: pip install -r docs/requirements.txt
       - name: make html
         run: make html SPHINXOPTS='-W --keep-going'
-        workingDirectory: docs
+        working-directory: docs
       - name: make doctest
         run: make doctest
-        workingDirectory: docs
+        working-directory: docs
 
