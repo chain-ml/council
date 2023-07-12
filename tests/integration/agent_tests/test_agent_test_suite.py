@@ -3,9 +3,10 @@ import unittest
 
 import dotenv
 
+from council.agent import Agent
 from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controller import LLMController
-from council.core import Agent, Chain
+from council.core import Chain
 from council.evaluator import LLMEvaluator
 from council.llm import AzureLLM, AzureConfiguration
 from council.scorer import LLMSimilarityScorer

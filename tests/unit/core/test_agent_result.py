@@ -1,6 +1,6 @@
 import unittest
 
-from council.core import AgentResult
+from council.agent import AgentResult
 from council.core.execution_context import ScoredAgentMessage, AgentMessage
 
 
