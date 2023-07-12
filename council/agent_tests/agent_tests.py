@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import List, Dict, Any, Sequence
+from typing import List, Dict, Any, Sequence, Optional
 import progressbar  # type: ignore
 from council.agents import Agent
 
@@ -183,8 +183,11 @@ class AgentTestSuiteResult:
 class AgentTestSuite:
     _test_cases: List[AgentTestCase]
 
-    def __init__(self, test_cases: List[AgentTestCase] = []):
-        self._test_cases = test_cases
+    def __init__(self, test_cases: Optional[List[AgentTestCase]] = None):
+        if test_cases is not None:
+            self._test_cases = test_cases
+        else:
+            self._test_cases = []
 
     def add_test_case(self, prompt: str, scorers: List[ScorerBase]) -> "AgentTestSuite":
         self._test_cases.append(AgentTestCase(prompt, scorers))

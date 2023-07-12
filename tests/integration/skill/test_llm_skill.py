@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 import dotenv
 
@@ -6,8 +7,13 @@ from council.agents import Agent
 from council.controller import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget
 from council.evaluator import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM
+from council.llm import AzureConfiguration, AzureLLM, LLMMessage
+from council.mocks import MockLLM
 from council.skill.llm_skill import LLMSkill
+
+
+def first_llm_message_content_to_str(messages: List[LLMMessage]) -> str:
+    return messages[0].content
 
 
 class TestLlmSkill(unittest.TestCase):
@@ -30,3 +36,11 @@ class TestLlmSkill(unittest.TestCase):
         run_context = AgentContext(chat_history)
         result = self.agent.execute(run_context, Budget(10))
         print(result.best_message)
+
+    def test_template_prompt(self):
+        llm = MockLLM(action=first_llm_message_content_to_str)
+        llm_skill = LLMSkill(llm=llm, system_prompt="The last user message is: '{{chat_history.last_message}}'")
+        agent = Agent.from_skill(llm_skill)
+        result = agent.execute_from_user_message("User Message")
+
+        self.assertEquals(result.best_message.message, "The last user message is: 'User Message'")

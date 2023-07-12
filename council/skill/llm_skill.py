@@ -1,8 +1,10 @@
+import logging
 from typing import List, Protocol
 
-from council.core import SkillBase, Budget
+from council.core import SkillBase, Budget, ChainContext
 from council.core.execution_context import SkillMessage, SkillSuccessMessage, SkillContext
 from council.llm import LLMBase, LLMMessage
+from council.prompt import PromptBuilder
 
 
 class ReturnMessages(Protocol):
@@ -25,6 +27,21 @@ def get_last_messages(context: SkillContext) -> List[LLMMessage]:
         return get_chat_history(context)
     msg = LLMMessage.user_message(last_message.unwrap().message)
     return [msg]
+
+
+class PromptToMessages:
+    def __init__(self, prompt_builder: PromptBuilder):
+        self._builder = prompt_builder
+
+    def to_system_message(self, context: ChainContext) -> List[LLMMessage]:
+        msg = self._builder.apply(context)
+        logging.debug(msg=f'prompt="{msg}')
+        return [LLMMessage.system_message(msg)]
+
+    def to_user_message(self, context: ChainContext) -> List[LLMMessage]:
+        msg = self._builder.apply(context)
+        logging.debug(msg=f'prompt="{msg}')
+        return [LLMMessage.user_message(msg)]
 
 
 class LLMSkill(SkillBase):
@@ -53,15 +70,14 @@ class LLMSkill(SkillBase):
         super().__init__(name=name)
         self._llm = llm
         self._context_messages = context_messages
-        self._system_prompt = LLMMessage.system_message(system_prompt)
+        self._builder = PromptBuilder(system_prompt)
 
     def execute(self, context: SkillContext, _budget: Budget) -> SkillMessage:
         """Execute `LLMSkill`."""
 
         history_messages = self._context_messages(context)
-
-        # Prepend the system prompt
-        messages = [self._system_prompt, *history_messages]
+        system_prompt = LLMMessage.system_message(self._builder.apply(context))
+        messages = [system_prompt, *history_messages]
         llm_response = self._llm.post_chat_request(messages=messages)
 
         return SkillSuccessMessage(skill_name=self.name, message=llm_response, data=None)
