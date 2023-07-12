@@ -2,7 +2,8 @@ import time
 import random
 from typing import List, Any, Callable, Optional
 
-from council.core import Agent, AgentContext, Budget, ScorerBase, AgentResult, SkillBase
+from council.agents import Agent, AgentResult
+from council.core import AgentContext, Budget, ScorerBase, SkillBase
 from council.core.execution_context import ScoredAgentMessage, AgentMessage, SkillContext, SkillMessage
 from council.llm import LLMBase, LLMMessage
 
