@@ -1,8 +1,8 @@
-Agent
------
+Agents
+------
 
 .. autoclasstree::
-    council.agent
+    council.agents
     :full:
     :namespace: council
 
@@ -10,4 +10,4 @@ Agent
     :maxdepth: 1
     :glob:
 
-    agent/*
+    agents/*

@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.agent import Agent
+from council.agents import Agent
 from council.controller import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget
 from council.evaluator import BasicEvaluator

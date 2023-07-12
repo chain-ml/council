@@ -3,7 +3,7 @@ import unittest
 
 import dotenv
 
-from council.agent import Agent
+from council.agents import Agent
 from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controller import LLMController
 from council.core import Chain
