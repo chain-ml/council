@@ -15,7 +15,7 @@ class Budget:
         duration (float): The number of seconds
     """
 
-    def __init__(self, duration: float):
+    def __init__(self, duration: float = 30):
         """
         Initialize the Budget object
 
