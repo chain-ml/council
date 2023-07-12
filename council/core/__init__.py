@@ -5,7 +5,6 @@ contains the core classes of the engine
 from .cancellation_token import CancellationToken
 from .execution_context import AgentContext, ChainContext, ChatHistory, ChainHistory, ChatMessageKind
 from .budget import Budget
-from .controller_base import ControllerBase
 from .evaluator_base import EvaluatorBase
 from .skill_base import SkillBase
 from .chain import Chain

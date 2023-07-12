@@ -1,7 +1,8 @@
 import logging
 from typing import List, Tuple
 
-from council.core import AgentContext, Budget, ControllerBase
+from .controller_base import ControllerBase
+from council.core import AgentContext, Budget
 from council.core.chain import Chain
 from council.core.execution_context import ScoredAgentMessage
 from council.core.execution_unit import ExecutionUnit

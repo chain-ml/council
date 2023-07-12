@@ -1,6 +1,7 @@
 from typing import List
 
-from council.core import ControllerBase, AgentContext, Chain, Budget
+from .controller_base import ControllerBase
+from council.core import AgentContext, Chain, Budget
 from council.core.execution_context import ScoredAgentMessage
 from council.core.execution_unit import ExecutionUnit
 
