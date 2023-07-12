@@ -75,10 +75,12 @@ class LLMMessage:
     def dict(self) -> dict[str, str]:
         return {"role": self._role, "content": self._content}
 
+    @property
     def content(self) -> str:
         """Retrieve the content of the `LLMMessage`"""
         return self._content
 
+    @property
     def role(self) -> LLMMessageRole:
         """Retrieve the role of the `LLMMessage`"""
         return self._role
