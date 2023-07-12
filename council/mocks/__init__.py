@@ -4,7 +4,13 @@ from typing import List, Any, Callable, Optional
 
 from council.agents import Agent, AgentResult
 from council.core import AgentContext, Budget, ScorerBase, SkillBase
-from council.core.execution_context import ScoredAgentMessage, AgentMessage, SkillContext, SkillMessage
+from council.core.execution_context import (
+    ScoredAgentMessage,
+    AgentMessage,
+    SkillContext,
+    SkillMessage,
+    SkillSuccessMessage,
+)
 from council.llm import LLMBase, LLMMessage
 
 
@@ -18,6 +24,9 @@ class MockSkill(SkillBase):
 
     def empty_message(self, context: SkillContext, budget: Budget):
         return self.build_success_message("")
+
+    def set_action_custom_message(self, message: str) -> None:
+        self._action = lambda context, budget: self.build_success_message(message)
 
 
 class MockLLM(LLMBase):
@@ -52,7 +61,7 @@ class MockAgent(Agent):
         self.sleep = sleep
         self.sleep_interval = sleep_interval
 
-    def execute(self, context: AgentContext, budget: Budget) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
         time.sleep(random.uniform(self.sleep, self.sleep + self.sleep_interval))
         return AgentResult([ScoredAgentMessage(AgentMessage(self.message, self.data), score=self.score)])
 
@@ -62,5 +71,5 @@ class MockErrorAgent(Agent):
     def __init__(self, exception: Exception = Exception()):
         self.exception = exception
 
-    def execute(self, context: AgentContext, budget: Budget) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
         raise self.exception

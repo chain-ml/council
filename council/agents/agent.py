@@ -5,9 +5,12 @@ from council.core.budget import Budget
 from council.core.chain import Chain
 from council.core.controller_base import ControllerBase
 from council.core.evaluator_base import EvaluatorBase
-from council.core.execution_context import AgentContext
+from council.core.execution_context import AgentContext, ChatHistory
 from council.core.runners import new_runner_executor
 from .agent_result import AgentResult
+from ..controller import BasicController
+from ..core import SkillBase
+from ..evaluator import BasicEvaluator
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +42,7 @@ class Agent:
         self.chains = chains
         self.evaluator = evaluator
 
-    def execute(self, context: AgentContext, budget: Budget) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
@@ -83,3 +86,29 @@ class Agent:
         finally:
             logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
+
+    @staticmethod
+    def from_skill(skill: SkillBase) -> "Agent":
+        """
+        Helper function to create a new agent with a  :class:`.BasicController`, a
+            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a `class:.Chain`
+
+        Parameters:
+             skill(SkillBase): a skill
+        Returns:
+            Agent: a new instance
+        """
+        chain = Chain(name="BasicChain", description="basic chain", runners=[skill])
+        return Agent(controller=BasicController(), chains=[chain], evaluator=BasicEvaluator())
+
+    def execute_from_user_message(self, message: str) -> AgentResult:
+        """
+        Helper function that executes an agent with a simple user message.
+
+        Parameters:
+            message(str): the user message
+        Returns:
+             AgentResult:
+        """
+        context = AgentContext(ChatHistory.from_user_message(message))
+        return self.execute(context)
