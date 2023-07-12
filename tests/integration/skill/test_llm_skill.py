@@ -40,13 +40,7 @@ class TestLlmSkill(unittest.TestCase):
     def test_template_prompt(self):
         llm = MockLLM(action=first_llm_message_content_to_str)
         llm_skill = LLMSkill(llm=llm, system_prompt="The last user message is: '{{chat_history.last_message}}'")
-        controller = BasicController()
-        evaluator = BasicEvaluator()
-        chain = Chain("...", "Answer to an user prompt using gpt4", [llm_skill])
-        agent = Agent(controller, [chain], evaluator)
+        agent = Agent.from_skill(llm_skill)
+        result = agent.execute_from_user_message("User Message")
 
-        chat_history = ChatHistory.from_user_message(message="User Message")
-        run_context = AgentContext(chat_history)
-
-        result = agent.execute(run_context, Budget(10))
         self.assertEquals(result.best_message.message, "The last user message is: 'User Message'")
