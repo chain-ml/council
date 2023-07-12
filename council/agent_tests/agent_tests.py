@@ -2,9 +2,9 @@ import time
 from enum import Enum
 from typing import List, Dict, Any, Sequence, Optional
 import progressbar  # type: ignore
+from council.agents import Agent
 
 from council.core import (
-    Agent,
     ScorerBase,
     AgentContext,
     ChatHistory,
