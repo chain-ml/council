@@ -3,7 +3,7 @@ from typing import List
 
 from council.core.budget import Budget
 from council.core.chain import Chain
-from council.core.controller_base import ControllerBase
+from council.controller.controller_base import ControllerBase
 from council.core.evaluator_base import EvaluatorBase
 from council.core.execution_context import AgentContext, ChatHistory
 from council.core.runners import new_runner_executor
