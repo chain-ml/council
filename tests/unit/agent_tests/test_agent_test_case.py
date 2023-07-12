@@ -7,7 +7,7 @@ from council.scorer import LLMSimilarityScorer
 
 class TestAgentTestCase(unittest.TestCase):
     def test_run(self):
-        llm = MockLLM(["score: 10%"])
+        llm = MockLLM.from_response("score: 10%")
         test_case = AgentTestCase("a prompt", [LLMSimilarityScorer(llm, "expected")])
         agent = MockAgent()
 

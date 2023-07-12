@@ -6,3 +6,6 @@
 
 ## Python
 dist
+
+## User file
+.env

@@ -13,15 +13,15 @@ class TestAgentTestSuite(unittest.TestCase):
             .add_test_case(
                 prompt="what is the weather today",
                 scorers=[
-                    LLMSimilarityScorer(MockLLM(["score: 55%"]), "I cannot predict the weather"),
-                    LLMSimilarityScorer(MockLLM(["score: 100%"]), "weather is great"),
+                    self._build_scorer(55, "I cannot predict the weather"),
+                    self._build_scorer(100, "weather is great"),
                 ],
             )
             .add_test_case(
                 prompt="introduce yourself",
                 scorers=[
-                    LLMSimilarityScorer(MockLLM(["score: 95%"]), "I'm an agent specialized in predicting the weather"),
-                    LLMSimilarityScorer(MockLLM(["score: 10%"]), "sorry, I don't understand"),
+                    self._build_scorer(95, "I'm an agent specialized in predicting the weather"),
+                    self._build_scorer(10, "sorry, I don't understand"),
                 ],
             )
         )
@@ -35,3 +35,8 @@ class TestAgentTestSuite(unittest.TestCase):
         print(json.dumps(result_dict, indent=2))
 
         self.assertEqual(2, len(result_dict["results"]), "test cases")
+
+    @staticmethod
+    def _build_scorer(score: int, expected: str) -> LLMSimilarityScorer:
+        mock_llm = MockLLM.from_response(f"score: {score}%")
+        return LLMSimilarityScorer(mock_llm, expected=expected)
