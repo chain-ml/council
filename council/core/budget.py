@@ -45,6 +45,16 @@ class Budget:
     def __repr__(self):
         return f"Budget({self.duration})"
 
+    @staticmethod
+    def default() -> "Budget":
+        """
+        Helper function that create a new Budget with a default value.
+
+        Returns:
+            Budget
+        """
+        return Budget(duration=30)
+
 
 class InfiniteBudget(Budget):
     def __init__(self):
