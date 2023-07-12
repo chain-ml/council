@@ -6,8 +6,9 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.core import EvaluatorBase, AgentContext, Budget
+from council.core import AgentContext, Budget
 from council.core.execution_context import ScoredAgentMessage, AgentMessage, SkillMessage, UserMessage, Option
+from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 
 
