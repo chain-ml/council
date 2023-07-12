@@ -7,7 +7,7 @@ from council.agents import Agent
 from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controllers import LLMController
 from council.core import Chain
-from council.evaluator import LLMEvaluator
+from council.evaluators import LLMEvaluator
 from council.llm import AzureLLM, AzureConfiguration
 from council.scorer import LLMSimilarityScorer
 from council.skill import LLMSkill

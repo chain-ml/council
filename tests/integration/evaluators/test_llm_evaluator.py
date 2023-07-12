@@ -5,7 +5,7 @@ import dotenv
 from council.core import ChatHistory, AgentContext, Budget
 from council.core.execution_context import SkillSuccessMessage
 from council.llm import AzureConfiguration, AzureLLM
-from council.evaluator.llm_evaluator import LLMEvaluator
+from council.evaluators.llm_evaluator import LLMEvaluator
 
 
 class TestLlmEvaluator(unittest.TestCase):
