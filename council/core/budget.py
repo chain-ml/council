@@ -15,7 +15,7 @@ class Budget:
         duration (float): The number of seconds
     """
 
-    def __init__(self, duration: float = 30):
+    def __init__(self, duration: float):
         """
         Initialize the Budget object
 
@@ -44,6 +44,16 @@ class Budget:
 
     def __repr__(self):
         return f"Budget({self.duration})"
+
+    @staticmethod
+    def default() -> "Budget":
+        """
+        Helper function that create a new Budget with a default value.
+
+        Returns:
+            Budget
+        """
+        return Budget(duration=30)
 
 
 class InfiniteBudget(Budget):

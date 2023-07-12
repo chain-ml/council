@@ -42,7 +42,7 @@ class Agent:
         self.chains = chains
         self.evaluator = evaluator
 
-    def execute(self, context: AgentContext, budget: Budget = Budget()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
