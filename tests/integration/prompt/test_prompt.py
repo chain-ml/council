@@ -8,11 +8,9 @@ from council.evaluator import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM
 from council.mocks import MockLLM
 from council.prompt import PromptBuilder
-from council.prompt.prompt_builder import PromptToMessages
-from council.skill import LLMSkill
+from council.skill import LLMSkill, PromptToMessages
 
 template = """
-The question was: {{chat_history.last_message}}
 Provided answers by candidate:
 {% set answers = chain_history.last_message.split('\n') %}
 {%- for answer in answers %}
@@ -26,9 +24,10 @@ class TestPrompt(unittest.TestCase):
         dotenv.load_dotenv()
         config = AzureConfiguration.from_env()
         llm = AzureLLM(config)
-        system_prompt = "You are scoring geographical answers based on fact."
+        system_prompt = """You are scoring geographical answers based on fact.
+        The question asked to the candidate was: {{chat_history.last_message}}"""
         p = PromptToMessages(PromptBuilder(template))
-        self.llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt, context_messages=p.get_messages_from_prompt)
+        self.llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt, context_messages=p.to_system_message)
 
     def test_injection(self):
         llm = MockLLM(["São Paulo", "Lima", "London"])
