@@ -9,7 +9,7 @@ from council.core.execution_context import AgentContext, ChatHistory
 from council.core.runners import new_runner_executor
 from .agent_result import AgentResult
 from ..core import SkillBase
-from ..evaluator import BasicEvaluator
+from ..evaluators import BasicEvaluator
 
 logger = logging.getLogger(__name__)
 

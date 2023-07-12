@@ -6,7 +6,7 @@ import dotenv
 from council.agents import Agent
 from council.controllers import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget
-from council.evaluator import BasicEvaluator
+from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM, LLMMessage
 from council.mocks import MockLLM
 from council.skill.llm_skill import LLMSkill

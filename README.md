@@ -109,9 +109,8 @@ controller = LLMController(llm=openai_llm, response_threshold=5)
 
 Create an Evaluator. Here, we use an LLMEvaluator in which an LLM is tasked to evaluate each response received.
 
-
 ```python
-from council.evaluator import LLMEvaluator
+from council.evaluators import LLMEvaluator
 
 evaluator = LLMEvaluator(llm=openai_llm)
 ```

@@ -8,7 +8,7 @@ from council.agents import Agent
 from council.controllers import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
 from council.core.runners import ParallelFor
-from council.evaluator import BasicEvaluator
+from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM
 from council.skill import LLMSkill
 

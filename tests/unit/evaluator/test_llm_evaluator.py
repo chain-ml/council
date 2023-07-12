@@ -2,7 +2,7 @@ import unittest
 from typing import List
 
 from council.core import Budget
-from council.evaluator import LLMEvaluator
+from council.evaluators import LLMEvaluator
 from council.core.execution_context import (
     AgentContext,
     ChatHistory,
