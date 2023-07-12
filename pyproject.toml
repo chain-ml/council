@@ -9,7 +9,7 @@ description = "Council is an open-source framework for the rapid development and
 readme = "README.md"
 requires-python = ">=3.9"
 authors = []
-license = "Apache 2.0"
+license = "Apache-2.0"
 
 dynamic = ["dependencies"]
 
