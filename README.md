@@ -102,7 +102,7 @@ em_chain = Chain(name="Emoji Agent", description="Responds to every prompt with 
 Create a Controller to route prompts to chains. Here we use the straight-forward LLMController in which an LLM instance is tasked to make a routing decision.
 
 ```python
-from council.controller import LLMController
+from council.controllers import LLMController
 
 controller = LLMController(llm=openai_llm, response_threshold=5)
 ```
@@ -119,7 +119,8 @@ Finalize setup of the Hello World first Agent by combining all components create
 
 
 ```python
-from council.core import Agent, Budget
+from council.agents import Agent
+from council.core import Budget
 
 agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=evaluator)
 ```
