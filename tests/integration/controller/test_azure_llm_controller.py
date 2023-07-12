@@ -7,7 +7,7 @@ from council.core.budget import Budget
 from council.core.chain import Chain
 from council.core.execution_context import ChatHistory, AgentContext
 
-from council.controller import LLMController
+from council.controllers import LLMController
 from council.llm import AzureLLM, AzureConfiguration
 
 

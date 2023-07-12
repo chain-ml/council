@@ -5,7 +5,7 @@ from typing import Any
 import dotenv
 
 from council.agents import Agent
-from council.controller import BasicController
+from council.controllers import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
 from council.core.runners import ParallelFor
 from council.evaluator import BasicEvaluator
