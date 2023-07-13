@@ -64,6 +64,6 @@ exclude_patterns = []
 html_title = f"{project} {release}"
 html_theme = "furo"
 html_show_copyright = False
+html_show_sphinx = False
 html_static_path = ["_static"]
 # html_theme_options = {"dark_logo": "00_chainml_logo.png", "light_logo": "02_chainml_logo_black.png"}
-
