@@ -15,6 +15,7 @@ dynamic = ["dependencies"]
 
 [project.urls]
 Source = "https://github.com/chain-ml/council"
+Documentation = "https://council.dev"
 
 [tool.hatch.build]
 exclude = [
