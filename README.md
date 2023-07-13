@@ -24,7 +24,7 @@ Note: Some of the features listed above are work-in-progress and due in a future
 
 Key components of the framework are shown in below image and further introduced in this section.
 
-<img src="engine_flow.png" width="800px">
+![engine flow](engine_flow.png "engine")
 
 ## Agent
 Agents encapsulate the end-to-end application logic from prompt input to final response across Controller, Evaluation and registered Chains of Skills. Agents itself can be recursively nested within other Agents in the form of AgentChains.
@@ -90,7 +90,7 @@ hw_skill = LLMSkill(llm=openai_llm, system_prompt=prompt)
 hw_chain = Chain(name="Hello World", description="Answers with a poem about titled Hello World", runners=[hw_skill])
 ```
 
-Create a second Skill (that responds with generated Ascii art).
+Create a second Skill (that responds only with Emojis).
 
 ```python
 prompt = "You are responding to every prompt with an emoji that best addresses the question asked or statement made"
@@ -120,7 +120,6 @@ Finalize setup of the Hello World first Agent by combining all components create
 
 ```python
 from council.agents import Agent
-from council.core import Budget
 
 agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=evaluator)
 ```
@@ -128,6 +127,7 @@ agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=eval
 Now, we are ready to invoke the agent. The ChatHistory object is used to track message history between User and Agents.
 
 ```python
+from council.core import Budget
 from council.core.execution_context import AgentContext, ChatHistory
 
 chat_history = ChatHistory()
