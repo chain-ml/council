@@ -147,7 +147,7 @@ Use `black .` to automatically reformat files.
 
 # Documentation
 
-A detailed documentation of Council can be found at <a href="council.dev">council.dev</a>.
+A detailed documentation of Council can be found at <a href="https://council.dev">council.dev</a>.
 
 # Roadmap
 
