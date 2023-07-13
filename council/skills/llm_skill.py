@@ -1,10 +1,11 @@
 import logging
 from typing import List, Protocol
 
-from council.core import SkillBase, Budget, ChainContext
+from council.core import Budget, ChainContext
 from council.core.execution_context import SkillMessage, SkillSuccessMessage, SkillContext
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
+from council.skills import SkillBase
 
 
 class ReturnMessages(Protocol):

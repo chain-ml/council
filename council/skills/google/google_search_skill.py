@@ -1,8 +1,9 @@
-from council.core import Budget, SkillBase
+import json
+
+from council.core import Budget
 from council.core.execution_context import ChainContext, SkillMessage
 from .google_context import GoogleSearchEngine
-
-import json
+from .. import SkillBase
 
 
 class GoogleSearchSkill(SkillBase):

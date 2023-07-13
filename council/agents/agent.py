@@ -8,8 +8,8 @@ from council.evaluators.evaluator_base import EvaluatorBase
 from council.core.execution_context import AgentContext, ChatHistory
 from council.core.runners import new_runner_executor
 from .agent_result import AgentResult
-from ..core import SkillBase
 from ..evaluators import BasicEvaluator
+from ..skills import SkillBase
 
 logger = logging.getLogger(__name__)
 
