@@ -1,14 +1,14 @@
 import json
 
-from council.core import SkillBase, Budget
-from council.core import ChainContext
+from council.core import Budget, ChainContext
 from council.core.execution_context import SkillMessage
 from .google_context import GoogleNewsSearchEngine
+from .. import SkillBase
 
 
 class GoogleNewsSkill(SkillBase):
     """
-    A skill that performs a Google news search.
+    A skill that performs a Google News search.
 
     """
 

@@ -69,11 +69,11 @@ Import Council.
 
 ```python
 from council.core import Chain
-from council.skill import LLMSkill
+from council.skills import LLMSkill
 from council.llm import OpenAILLM, OpenAIConfiguration
 ```
 
-Setup API keys in .env file (example in repository) and use it to setup the LLM (here: AzureLLM).
+Setup API keys in .env file (example in repository) and use it to setup the LLM (here: OpenAILLM).
 
 ```python
 import dotenv

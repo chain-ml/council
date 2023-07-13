@@ -53,8 +53,8 @@ class GoogleSearchEngine(ContextProvider, ABC):
     @classmethod
     def from_env(cls) -> Optional["GoogleSearchEngine"]:
         try:
-            api_key = read_env("GOOGLE_API_KEY")
-            engine_id = read_env("GOOGLE_SEARCH_ENGINE_ID")
+            api_key: str = read_env("GOOGLE_API_KEY")
+            engine_id: str = read_env("GOOGLE_SEARCH_ENGINE_ID")
         except OptionException:
             return None
         return GoogleSearchEngine(api_key=api_key, engine_id=engine_id)

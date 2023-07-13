@@ -10,7 +10,7 @@ from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
 from council.core.runners import ParallelFor
 from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM
-from council.skill import LLMSkill
+from council.skills import LLMSkill
 
 
 def book_title_generator(context: ChainContext, _b: Budget) -> Any:

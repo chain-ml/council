@@ -3,8 +3,8 @@ import unittest
 import dotenv
 
 from council.core import ChainContext, Budget
-from council.skill.google import GoogleNewsSkill, GoogleSearchSkill
-from council.skill.google.google_context import GoogleNewsSearchEngine, GoogleSearchEngine
+from council.skills.google import GoogleNewsSkill, GoogleSearchSkill
+from council.skills.google.google_context import GoogleNewsSearchEngine, GoogleSearchEngine
 from council.utils.option import OptionException
 
 

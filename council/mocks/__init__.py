@@ -3,15 +3,15 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.core import AgentContext, Budget, ScorerBase, SkillBase
+from council.core import AgentContext, Budget, ScorerBase
 from council.core.execution_context import (
     ScoredAgentMessage,
     AgentMessage,
     SkillContext,
     SkillMessage,
-    SkillSuccessMessage,
 )
 from council.llm import LLMBase, LLMMessage
+from council.skills import SkillBase
 
 
 class LLMMessagesToStr(Protocol):
