@@ -1,11 +1,5 @@
-Welcome to Conversational AI Engine
-===================================
-
-**Council** is a Python library for developers that facilitates the creation of of advanced Chat Bot.
-
-
-.. warning::
-    This project is under active development
+.. include:: introduction/welcome.md
+    :parser: myst_parser.sphinx_
 
 .. toctree::
     :caption: Introduction
