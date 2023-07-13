@@ -10,7 +10,7 @@ from council.core import Chain
 from council.evaluators import LLMEvaluator
 from council.llm import AzureLLM, AzureConfiguration
 from council.scorer import LLMSimilarityScorer
-from council.skill import LLMSkill
+from council.skills import LLMSkill
 
 
 class TestTestSuite(unittest.TestCase):

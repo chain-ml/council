@@ -9,7 +9,7 @@ from council.core import Chain, ChatHistory, AgentContext, Budget
 from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM, LLMMessage
 from council.mocks import MockLLM
-from council.skill.llm_skill import LLMSkill
+from council.skills.llm_skill import LLMSkill
 
 
 def first_llm_message_content_to_str(messages: List[LLMMessage]) -> str:

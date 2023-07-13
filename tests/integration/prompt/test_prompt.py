@@ -9,7 +9,7 @@ from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM
 from council.mocks import MockLLM
 from council.prompt import PromptBuilder
-from council.skill import LLMSkill, PromptToMessages
+from council.skills import LLMSkill, PromptToMessages
 
 template = """
 Provided answers by candidate:

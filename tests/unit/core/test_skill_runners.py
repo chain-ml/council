@@ -13,7 +13,7 @@ from council.core.execution_context import (
     SkillContext,
 )
 
-from council.core.skill_base import SkillBase
+from council.skills.skill_base import SkillBase
 from council.core.runners import (
     Sequential,
     RunnerBase,
