@@ -21,7 +21,8 @@ Welcome to Conversational AI Engine
     :maxdepth: 2
     :hidden:
 
-    getting_started/usage
+    getting_started/installation
+    getting_started/first_example
 
 .. toctree::
     :maxdepth: 2
