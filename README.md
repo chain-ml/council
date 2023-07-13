@@ -90,7 +90,7 @@ hw_skill = LLMSkill(llm=openai_llm, system_prompt=prompt)
 hw_chain = Chain(name="Hello World", description="Answers with a poem about titled Hello World", runners=[hw_skill])
 ```
 
-Create a second Skill (that responds with generated Ascii art).
+Create a second Skill (that responds only with Emojis).
 
 ```python
 prompt = "You are responding to every prompt with an emoji that best addresses the question asked or statement made"
