@@ -7,12 +7,14 @@ Welcome to Conversational AI Engine
 .. warning::
     This project is under active development
 
-
 .. toctree::
+    :caption: Introduction
     :maxdepth: 2
     :hidden:
 
-    introduction/introduction.rst
+    introduction/welcome
+    introduction/key_features
+    introduction/key_concepts
 
 .. toctree::
     :caption: Getting Started
@@ -20,13 +22,6 @@ Welcome to Conversational AI Engine
     :hidden:
 
     getting_started/usage
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Concepts
-    :hidden:
-
-    concepts/key_concepts
 
 .. toctree::
     :maxdepth: 2
