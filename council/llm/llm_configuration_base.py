@@ -23,8 +23,8 @@ class LLMConfigurationBase(abc.ABC):
     max_tokens: Option[int] = Option.none()
     top_p: Option[float] = Option.none()
     n: Option[int] = Option.none()
-    presence_penalty: Option[float]
-    frequency_penalty: Option[float]
+    presence_penalty: Option[float] = Option.none()
+    frequency_penalty: Option[float] = Option.none()
 
     def __init__(self, env_var_prefix: str):
         self._prefix = env_var_prefix
