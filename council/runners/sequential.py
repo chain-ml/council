@@ -6,6 +6,9 @@ from .runner_executor import RunnerExecutor
 
 
 class Sequential(RunnerBase):
+    """
+    Runner that executes a list of runners in sequence
+    """
     def __init__(self, *runners: RunnerBase):
         self.runners = runners
 

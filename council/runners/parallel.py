@@ -7,6 +7,9 @@ from .runner_executor import RunnerExecutor
 
 
 class Parallel(RunnerBase):
+    """
+    Runner that execution multiple :class:`.RunnerBase` in parallel
+    """
     def __init__(self, *runners: RunnerBase):
         self.runners = runners
 

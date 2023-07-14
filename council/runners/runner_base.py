@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class RunnerBase(abc.ABC):
+    """
+    Base runner class that handles common execution logic, including error management and timeout
+    """
     def run(
         self,
         context: ChainContext,

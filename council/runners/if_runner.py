@@ -8,6 +8,9 @@ from .types import RunnerPredicate
 
 
 class If(RunnerBase):
+    """
+    Runner that executes only if the predicate returns `True`
+    """
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
         self.predicate = predicate
         self.runner = runner
