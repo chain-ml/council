@@ -88,7 +88,7 @@ class Agent:
     def from_skill(skill: SkillBase) -> "Agent":
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
-            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a `class:.Chain`
+            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
 
         Parameters:
              skill(SkillBase): a skill
