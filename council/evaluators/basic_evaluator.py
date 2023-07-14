@@ -1,12 +1,13 @@
 from typing import List
 
-from council.core import AgentContext, Budget
+from council.core import AgentContext
 from council.evaluators.evaluator_base import EvaluatorBase
 from council.core.execution_context import (
     ScoredAgentMessage,
     SkillSuccessMessage,
     AgentMessage,
 )
+from council.runners.budget import Budget
 
 
 class BasicEvaluator(EvaluatorBase):

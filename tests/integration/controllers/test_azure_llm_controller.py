@@ -4,11 +4,11 @@ from unittest import TestCase
 import dotenv
 
 from council.chains import Chain
-from council.core.budget import Budget
 from council.core.execution_context import ChatHistory, AgentContext
 
 from council.controllers import LLMController
 from council.llm import AzureLLM, AzureConfiguration
+from council.runners import Budget
 
 
 class TestAzureLlmController(TestCase):

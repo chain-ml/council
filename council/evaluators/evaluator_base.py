@@ -5,7 +5,7 @@ from council.core.execution_context import (
     AgentContext,
     ScoredAgentMessage,
 )
-from council.core.budget import Budget
+from council.runners import Budget
 
 
 class EvaluatorBase(ABC):

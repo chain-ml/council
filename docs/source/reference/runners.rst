@@ -2,24 +2,24 @@ Runners
 =======
 
 .. autoclasstree::
-    council.core.runners.ParallelFor
-    council.core.runners.Parallel
-    council.core.runners.Sequential
-    council.core.runners.If
-    council.core.runners.SkillRunnerBase
+    council.runners.ParallelFor
+    council.runners.Parallel
+    council.runners.Sequential
+    council.runners.If
+    council.runners.SkillRunnerBase
     :full:
-    :namespace: council.core.runners
+    :namespace: council.runners
 
 RunnerErrors
 ------------
 
 .. autoclasstree::
-    council.core.runners.RunnerGeneratorError
-    council.core.runners.RunnerPredicateError
-    council.core.runners.RunnerSkillError
-    council.core.runners.RunnerTimeoutError
+    council.runners.RunnerGeneratorError
+    council.runners.RunnerPredicateError
+    council.runners.RunnerSkillError
+    council.runners.RunnerTimeoutError
     :full:
-    :namespace: council.core.runners
+    :namespace: council.runners
 
 .. toctree::
     :maxdepth: 1
