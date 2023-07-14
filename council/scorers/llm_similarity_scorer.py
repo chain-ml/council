@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from council.core import ScorerBase
+from .scorer_base import ScorerBase
 from council.core.execution_context import AgentMessage
 from council.llm import LLMBase, LLMMessage
 
