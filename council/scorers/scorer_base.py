@@ -7,14 +7,6 @@ from council.core.execution_context import AgentMessage
 logger = logging.getLogger(__name__)
 
 
-class ScorerException(Exception):
-    """
-    Exception raised by :class:`ScorerBase`
-    """
-
-    pass
-
-
 class ScorerBase(abc.ABC):
     """
     Base class for implementing a Scorer
