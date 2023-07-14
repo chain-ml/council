@@ -35,7 +35,7 @@ class ChatMessageBase(ABC):
 
     Attributes:
         message: a text message
-        kind:the kind of message
+        kind: the kind of message
     """
 
     message: str
