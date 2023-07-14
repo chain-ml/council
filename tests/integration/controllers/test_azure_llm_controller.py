@@ -6,7 +6,7 @@ import dotenv
 from council.chains import Chain
 from council.contexts import ChatHistory, AgentContext
 from council.controllers import LLMController
-from council.llm import AzureLLM, AzureConfiguration
+from council.llm import AzureLLM
 from council.runners import Budget
 
 
@@ -56,7 +56,7 @@ class TestAzureLlmController(TestCase):
     def _test_prompt(self, prompt: str, expected: List[Chain]):
         print("*******")
         print(prompt)
-        controller = LLMController(AzureLLM(AzureConfiguration.from_env()))
+        controller = LLMController(AzureLLM.from_env())
         chat_history = ChatHistory()
         chat_history.add_user_message(prompt)
         execution_context = AgentContext(chat_history)
