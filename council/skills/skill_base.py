@@ -4,12 +4,7 @@ import logging
 from typing import Any
 from abc import abstractmethod
 
-from council.core.execution_context import (
-    SkillMessage,
-    SkillErrorMessage,
-    SkillSuccessMessage,
-    SkillContext,
-)
+from council.contexts import SkillMessage, SkillErrorMessage, SkillSuccessMessage, SkillContext
 from council.runners import RunnerSkillError, SkillRunnerBase, Budget
 
 logger = logging.getLogger(__name__)

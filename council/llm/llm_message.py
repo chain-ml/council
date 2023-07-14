@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 
-from council.core.execution_context import ChatMessageBase, ChatMessageKind
+from council.contexts import ChatMessageBase, ChatMessageKind
 
 
 class LLMMessageRole(str, Enum):

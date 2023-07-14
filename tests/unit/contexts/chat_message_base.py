@@ -1,5 +1,5 @@
 import unittest
-from council.core.execution_context import ChatMessageBase, ChatMessageKind
+from council.contexts import ChatMessageBase, ChatMessageKind
 
 
 class MyChatMessage(ChatMessageBase):

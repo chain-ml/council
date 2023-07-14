@@ -4,11 +4,7 @@ from typing import Iterable
 
 from more_itertools import batched
 
-from council.core.execution_context import (
-    ChainContext,
-    SkillContext,
-    IterationContext,
-)
+from council.contexts import ChainContext, SkillContext, IterationContext
 from council.utils import Option
 
 from .budget import Budget

@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.core.execution_context import AgentMessage
+from council.contexts import AgentMessage
 from council.llm import AzureLLM, AzureConfiguration
 from council.scorers import LLMSimilarityScorer
 

@@ -3,7 +3,7 @@ from collections.abc import Set
 from concurrent import futures
 import logging
 
-from council.core import ChainContext
+from council.contexts import ChainContext
 from .budget import Budget
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor

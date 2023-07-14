@@ -2,10 +2,9 @@ import unittest
 
 import dotenv
 
-from council.core import ChatHistory, AgentContext
-from council.core.execution_context import SkillSuccessMessage
+from council.contexts import ChatHistory, AgentContext, SkillSuccessMessage
 from council.llm import AzureConfiguration, AzureLLM
-from council.evaluators.llm_evaluator import LLMEvaluator
+from council.evaluators import LLMEvaluator
 from council.runners import Budget
 
 

@@ -1,6 +1,6 @@
 from typing import Callable, Iterable, Any
 
-from council.core import ChainContext
+from council.contexts import ChainContext
 from .budget import Budget
 
 RunnerPredicate = Callable[[ChainContext, Budget], bool]

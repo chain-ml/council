@@ -1,9 +1,8 @@
 import logging
 from typing import List, Tuple
 
-from council.core import AgentContext
+from council.contexts import AgentContext, ScoredAgentMessage
 from council.chains import Chain
-from council.core.execution_context import ScoredAgentMessage
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
 from council.runners import Budget

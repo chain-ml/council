@@ -1,4 +1,4 @@
-from council.core import ChainContext
+from council.contexts import ChainContext
 
 from .budget import Budget
 from .runner_base import RunnerBase

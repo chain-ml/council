@@ -4,7 +4,7 @@ from typing import List
 from council.chains import Chain
 from council.controllers import ControllerBase, BasicController
 from council.evaluators import BasicEvaluator, EvaluatorBase
-from council.core.execution_context import AgentContext, ChatHistory
+from council.contexts.execution_context import AgentContext, ChatHistory
 from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult

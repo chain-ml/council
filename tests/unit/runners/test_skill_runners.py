@@ -2,7 +2,7 @@ import time
 import unittest
 from typing import List, Any
 
-from council.core.execution_context import (
+from council.contexts import (
     ChatHistory,
     ChainContext,
     SkillMessage,

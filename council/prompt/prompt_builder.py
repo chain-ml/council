@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 from jinja2 import Template
 
-from council.core import ChainContext, ChatMessageKind
+from council.contexts import ChainContext, ChatMessageKind
 
 logger = logging.getLogger(__name__)
 
