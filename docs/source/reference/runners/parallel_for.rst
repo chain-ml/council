@@ -2,7 +2,7 @@ ParallelFor
 ===========
 
 .. autoclass::
-    council.core.runners.ParallelFor
+    council.runners.ParallelFor
 
 Example 1
 ---------
@@ -12,8 +12,8 @@ The example below demonstrate how to use the parallel for in a chain.
 .. testcode::
 
     from council.chains import Chain
-    from council.core import Budget, ChainContext
-    from council.core.runners import ParallelFor
+    from council.core import ChainContext
+    from council.runners import Budget, ParallelFor
     from council.mocks import MockSkill
 
     def generator(context: ChainContext, budget: Budget):
@@ -30,9 +30,9 @@ This example builds on the previous one and shows how to consume the iteration i
 .. testcode::
 
     from council.chains import Chain
-    from council.core import Budget, ChainContext
+    from council.core import ChainContext
     from council.core.execution_context import SkillMessage, SkillContext
-    from council.core.runners import ParallelFor
+    from council.runners import Budget, ParallelFor
     from council.skills import SkillBase
 
     def generator(context: ChainContext, budget: Budget):
