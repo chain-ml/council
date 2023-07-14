@@ -92,8 +92,8 @@ def read_env_bool(name: str, required: bool = True, default: Optional[bool] = No
             return Option.some(default)
         return Option.none()
 
-    if result.lower() in ["true", "1", "t"]:
+    if result.lower() in ['true', '1', 't']:
         return Option.some(True)
-    if result.lower() in ["false", "0", "f"]:
+    if result.lower() in ['false', '0', 'f']:
         return Option.some(False)
     raise InvalidTypeEnvVariableException(name, result, bool)
