@@ -3,16 +3,10 @@ import logging
 from typing import Any, Dict
 
 from council.core.execution_context import AgentMessage
+from .scorer_exception import ScorerException
+
 
 logger = logging.getLogger(__name__)
-
-
-class ScorerException(Exception):
-    """
-    Exception raised by :class:`ScorerBase`
-    """
-
-    pass
 
 
 class ScorerBase(abc.ABC):

@@ -3,7 +3,7 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.core import AgentContext, Budget, ScorerBase
+from council.core import AgentContext, Budget
 from council.core.execution_context import (
     ScoredAgentMessage,
     AgentMessage,
@@ -11,6 +11,7 @@ from council.core.execution_context import (
     SkillMessage,
 )
 from council.llm import LLMBase, LLMMessage
+from council.scorers import ScorerBase
 from council.skills import SkillBase
 
 

@@ -4,7 +4,7 @@ import dotenv
 
 from council.core.execution_context import AgentMessage
 from council.llm import AzureLLM, AzureConfiguration
-from council.scorer import LLMSimilarityScorer
+from council.scorers import LLMSimilarityScorer
 
 
 class TestLLMSimilarityScorer(unittest.TestCase):

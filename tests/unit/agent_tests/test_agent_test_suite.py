@@ -2,7 +2,7 @@ import json
 import unittest
 
 from council.agent_tests import AgentTestSuite
-from council.scorer import LLMSimilarityScorer
+from council.scorers import LLMSimilarityScorer
 from council.mocks import MockLLM, MockAgent
 
 

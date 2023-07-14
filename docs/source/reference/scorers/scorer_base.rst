@@ -1,5 +1,5 @@
 ScorerBase
 ----------
 
-.. autoclass:: council.core.ScorerBase
+.. autoclass:: council.scorers.ScorerBase
     :private-members:

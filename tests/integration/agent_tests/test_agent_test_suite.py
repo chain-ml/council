@@ -9,7 +9,7 @@ from council.controllers import LLMController
 from council.core import Chain
 from council.evaluators import LLMEvaluator
 from council.llm import AzureLLM, AzureConfiguration
-from council.scorer import LLMSimilarityScorer
+from council.scorers import LLMSimilarityScorer
 from council.skills import LLMSkill
 
 
