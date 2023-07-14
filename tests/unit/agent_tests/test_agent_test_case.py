@@ -2,7 +2,7 @@ import unittest
 
 from council.agent_tests import AgentTestCase, AgentTestCaseOutcome
 from council.mocks import MockLLM, MockAgent, MockErrorAgent, MockErrorSimilarityScorer
-from council.scorer import LLMSimilarityScorer
+from council.scorers import LLMSimilarityScorer
 
 
 class TestAgentTestCase(unittest.TestCase):

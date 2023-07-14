@@ -3,12 +3,14 @@ import unittest
 import dotenv
 
 from council.agents import Agent
+from council.chains import Chain
 from council.controllers import BasicController
-from council.core import Chain, ChatHistory, AgentContext, Budget
+from council.contexts import ChatHistory, AgentContext
 from council.evaluators import BasicEvaluator
-from council.llm import AzureLLMConfiguration, AzureLLM
+from council.llm import AzureConfiguration, AzureLLM
 from council.mocks import MockLLM
 from council.prompt import PromptBuilder
+from council.runners import Budget
 from council.skills import LLMSkill, PromptToMessages
 
 template = """
@@ -23,7 +25,7 @@ Provided answers by candidate:
 class TestPrompt(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureLLMConfiguration.from_env()
+        config = AzureConfiguration.from_env()
         llm = AzureLLM(config)
         system_prompt = """You are scoring geographical answers based on fact.
         The question asked to the candidate was: {{chat_history.last_message}}"""

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import List, Optional
 
-from council.core.execution_context import ScoredAgentMessage, AgentMessage
+from council.contexts import ScoredAgentMessage, AgentMessage
 from council.utils import Option
 
 
