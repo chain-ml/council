@@ -9,6 +9,7 @@ class Sequential(RunnerBase):
     """
     Runner that executes a list of :class:`.RunnerBase` in sequence
     """
+
     def __init__(self, *runners: RunnerBase):
         self.runners = runners
 

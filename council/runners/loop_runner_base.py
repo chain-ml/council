@@ -7,4 +7,5 @@ class LoopRunnerBase(RunnerBase, abc.ABC):
     """
     Base class for runners that run loops
     """
+
     pass

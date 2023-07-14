@@ -10,6 +10,7 @@ class SkillRunnerBase(RunnerBase):
     """
     Runner that executes a :class:`.SkillBase`
     """
+
     def __init__(self, name):
         self._name = name
 
