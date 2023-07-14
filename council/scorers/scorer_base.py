@@ -2,7 +2,7 @@ import abc
 import logging
 from typing import Any, Dict
 
-from council.core.execution_context import AgentMessage
+from council.contexts import AgentMessage
 from .scorer_exception import ScorerException
 
 

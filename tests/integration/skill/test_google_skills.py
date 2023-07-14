@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.core import ChainContext
+from council.contexts import ChainContext
 from council.runners import Budget
 from council.skills.google import GoogleNewsSkill, GoogleSearchSkill
 from council.skills.google.google_context import GoogleNewsSearchEngine, GoogleSearchEngine

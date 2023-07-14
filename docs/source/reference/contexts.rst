@@ -1,9 +1,9 @@
-Context
-=======
+Contexts
+--------
 
 
 .. autoclasstree::
-    council.core.execution_context
+    council.contexts
     :full:
     :namespace: council
 
@@ -11,4 +11,4 @@ Context
     :maxdepth: 1
     :glob:
 
-    context/*
+    contexts/*

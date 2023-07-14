@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from council.core.execution_context import (
-    AgentContext,
-    ScoredAgentMessage,
-)
+from council.contexts import AgentContext, ScoredAgentMessage
 from council.runners import Budget
 
 

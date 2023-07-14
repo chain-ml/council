@@ -6,7 +6,7 @@ import progressbar  # type: ignore
 from council.agents import Agent
 from council.runners import Budget
 from council.scorers import ScorerBase, ScorerException
-from council.core import (
+from council.contexts import (
     AgentContext,
     ChatHistory,
 )

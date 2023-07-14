@@ -1,8 +1,7 @@
 import logging
 from typing import List, Protocol
 
-from council.core import ChainContext
-from council.core.execution_context import SkillMessage, SkillSuccessMessage, SkillContext
+from council.contexts import ChainContext, SkillMessage, SkillSuccessMessage, SkillContext
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.runners import Budget

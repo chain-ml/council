@@ -1,6 +1,6 @@
 import unittest
 
-from council.core import ChainContext
+from council.contexts import ChainContext
 from council.prompt import PromptBuilder
 
 template = """

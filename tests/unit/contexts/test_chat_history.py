@@ -1,6 +1,6 @@
 import unittest
 
-from council.core.execution_context import ChatHistory
+from council.contexts import ChatHistory
 
 
 class TestChatHistory(unittest.TestCase):

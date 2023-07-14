@@ -1,6 +1,6 @@
 import unittest
 
-from council.core.execution_context import AgentMessage
+from council.contexts import AgentMessage
 from council.scorers import LLMSimilarityScorer, ScorerException
 from council.mocks import MockLLM
 

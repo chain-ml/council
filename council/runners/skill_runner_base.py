@@ -1,5 +1,5 @@
 import abc
-from council.core import ChainContext, SkillContext, IterationContext
+from council.contexts import ChainContext, SkillContext, IterationContext
 
 from .budget import Budget
 from .runner_base import RunnerBase

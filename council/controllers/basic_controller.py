@@ -1,8 +1,7 @@
 from typing import List
 
 from council.chains import Chain
-from council.core import AgentContext
-from council.core.execution_context import ScoredAgentMessage
+from council.contexts import AgentContext, ScoredAgentMessage
 from council.runners import Budget
 
 from .controller_base import ControllerBase

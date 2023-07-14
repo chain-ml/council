@@ -3,7 +3,7 @@ from typing import List, Any
 
 from council.chains import Chain
 from council.controllers import LLMController
-from council.core.execution_context import AgentContext, ChatHistory
+from council.contexts import AgentContext, ChatHistory
 from council.llm import LLMMessage, LLMBase
 from council.runners import Budget
 

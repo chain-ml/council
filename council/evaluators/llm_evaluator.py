@@ -6,11 +6,11 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.core import AgentContext
-from council.core.execution_context import ScoredAgentMessage, AgentMessage, SkillMessage, UserMessage, Option
+from council.contexts import AgentContext, ScoredAgentMessage, AgentMessage, SkillMessage, UserMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.runners import Budget
+from council.utils import Option
 
 
 class LLMEvaluator(EvaluatorBase):

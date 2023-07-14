@@ -1,8 +1,6 @@
 from typing import List, Any, Optional
 
-from council.core.execution_context import (
-    ChainContext,
-)
+from council.contexts import ChainContext
 from council.runners import Budget, RunnerBase, Sequential, RunnerExecutor
 
 

@@ -1,7 +1,7 @@
 import unittest
 
 from council.agents import AgentResult
-from council.core.execution_context import ScoredAgentMessage, AgentMessage
+from council.contexts import ScoredAgentMessage, AgentMessage
 
 
 class TestAgentResult(unittest.TestCase):
