@@ -58,7 +58,7 @@ class Chain:
         Args:
             context (ChainContext): The context for executing the chain.
             budget (Budget): The budget for chain execution.
-            executor (Optional[SkillExecutor]): The skill executor to use for executing the chain.
+            executor (Optional[RunnerExecutor]): The skill executor to use for executing the chain.
 
         Returns:
             Any: The result of executing the chain.

@@ -7,7 +7,7 @@ from council.utils import Option
 
 class ChatHistory:
     """
-    represents the history of messages exchanged between the user and the :class:`~.Agent`
+    represents the history of messages exchanged between the user and the :class:`.Agent`
 
     Attributes:
         messages(list[ChatMessageBase]): list of messages
@@ -37,7 +37,7 @@ class ChatHistory:
         get the most recent user message in the history, if any.
 
         Returns:
-            Option[UserMessage]: an :class:`council.utils.Option` with a user message, if any
+            Option[UserMessage]: an :class:`.Option` with a user message, if any
         """
         for message in reversed(self.messages):
             if isinstance(message, UserMessage):
@@ -60,7 +60,7 @@ class ChatHistory:
         get the most recent agent message in the history, if any.
 
         Returns:
-            Option[AgentMessage]: an :class:`council.utils.Option` with an agent message, if any
+            Option[AgentMessage]: an :class:`.Option` with an agent message, if any
         """
 
         for message in reversed(self.messages):
@@ -73,7 +73,7 @@ class ChatHistory:
         get the most recent message in the history, if any.
 
         Returns:
-            Option[ChatMessageBase]: an :class:`council.utils.Option` with an agent message, if any
+            Option[ChatMessageBase]: an :class:`.Option` with an agent message, if any
         """
 
         return Option.none() if len(self.messages) == 0 else Option.some(self.messages[-1])
@@ -104,7 +104,7 @@ class ChainHistory:
         Get the last (most recent) message, if any, added by a :class:`.SkillBase`
 
         Returns:
-            Option[SkillMessage]: an :class:`council.utils.Option` wrapping a :class:`.SkillMessage` if any.
+            Option[SkillMessage]: an :class:`~.Option` wrapping a :class:`.SkillMessage` if any.
         """
         if len(self.messages) > 0:
             return Option(self.messages[-1])
@@ -117,7 +117,7 @@ class ChainHistory:
         Parameters:
             skill (str): the name of the skill
         Returns:
-            Option[SkillMessage]: an :class:`council.utils.Option` wrapping a :class:`.SkillMessage` if any.
+            Option[SkillMessage]: an :class:`~.Option` wrapping a :class:`.SkillMessage` if any.
         """
         for message in self.messages[::-1]:
             if message.is_from_skill(skill):

@@ -77,21 +77,21 @@ class LLMMessage:
 
     @property
     def content(self) -> str:
-        """Retrieve the content of the `LLMMessage`"""
+        """Retrieve the content of this instance"""
         return self._content
 
     @property
     def role(self) -> LLMMessageRole:
-        """Retrieve the role of the `LLMMessage`"""
+        """Retrieve the role of this instance"""
         return self._role
 
     def is_of_role(self, role: LLMMessageRole) -> bool:
-        """Check the role of the `LLMMessage`"""
+        """Check the role of this instance"""
         return self._role == role
 
     @staticmethod
     def from_chat_message(chat_message: ChatMessageBase) -> Optional["LLMMessage"]:
-        """Convert :class:`~council.core.execution_context.ChatMessageBase` into :class:`LLMMessage`"""
+        """Convert :class:`~.ChatMessageBase` into :class:`.LLMMessage`"""
         if chat_message.kind == ChatMessageKind.User:
             return LLMMessage.user_message(chat_message.message)
         elif chat_message.kind == ChatMessageKind.Agent:

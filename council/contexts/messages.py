@@ -68,7 +68,7 @@ class UserMessage(ChatMessageBase):
 
 class AgentMessage(ChatMessageBase):
     """
-    a message generated from an :class:`~council.core.Agent`.
+    a message generated from an :class:`~.Agent`.
 
     Attributes:
         message: a text message
