@@ -9,7 +9,7 @@ from council.controllers import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
 from council.core.runners import ParallelFor
 from council.evaluators import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM
+from council.llm import AzureLLMConfiguration, AzureLLM
 from council.skills import LLMSkill
 
 
@@ -27,7 +27,7 @@ class MyTestCase(unittest.TestCase):
         logging.getLogger("council").setLevel(logging.DEBUG)
 
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
+        config = AzureLLMConfiguration.from_env()
         self.llm = AzureLLM(config)
 
     def test_llm_sequence(self):

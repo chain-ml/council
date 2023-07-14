@@ -4,14 +4,14 @@ import dotenv
 
 from council.core import ChatHistory, AgentContext, Budget
 from council.core.execution_context import SkillSuccessMessage
-from council.llm import AzureConfiguration, AzureLLM
+from council.llm import AzureLLMConfiguration, AzureLLM
 from council.evaluators.llm_evaluator import LLMEvaluator
 
 
 class TestLlmEvaluator(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
+        config = AzureLLMConfiguration.from_env()
         llm = AzureLLM(config)
         self.llm = llm
 

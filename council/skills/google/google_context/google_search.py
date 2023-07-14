@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Optional, Any
 
-from council.utils import OptionException, read_env
+from council.utils import OptionException, read_env_str, MissingEnvVariableException
 
 from .context_provider import ContextProvider
 from .schemas import ResponseReference
@@ -53,8 +53,8 @@ class GoogleSearchEngine(ContextProvider, ABC):
     @classmethod
     def from_env(cls) -> Optional["GoogleSearchEngine"]:
         try:
-            api_key: str = read_env("GOOGLE_API_KEY")
-            engine_id: str = read_env("GOOGLE_SEARCH_ENGINE_ID")
-        except OptionException:
+            api_key: str = read_env_str("GOOGLE_API_KEY").unwrap()
+            engine_id: str = read_env_str("GOOGLE_SEARCH_ENGINE_ID").unwrap()
+        except (OptionException, MissingEnvVariableException):
             return None
         return GoogleSearchEngine(api_key=api_key, engine_id=engine_id)

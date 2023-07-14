@@ -70,7 +70,7 @@ Import Council.
 ```python
 from council.core import Chain
 from council.skills import LLMSkill
-from council.llm import OpenAILLM, OpenAIConfiguration
+from council.llm import OpenAILLM, OpenAILLMConfiguration
 ```
 
 Setup API keys in .env file (example in repository) and use it to setup the LLM (here: OpenAILLM).

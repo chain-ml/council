@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.llm import OpenAILLM, OpenAIConfiguration, LLMMessage
+from council.llm import OpenAILLM, LLMMessage
 
 
 class TestLlmOpenAI(unittest.TestCase):
@@ -10,8 +10,7 @@ class TestLlmOpenAI(unittest.TestCase):
 
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = OpenAIConfiguration.from_env()
-        self.llm = OpenAILLM(config)
+        self.llm = OpenAILLM.from_env()
 
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("what are the largest cities in South America")]

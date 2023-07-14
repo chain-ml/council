@@ -7,7 +7,7 @@ from council.agents import Agent
 from council.controllers import BasicController
 from council.core import Chain, ChatHistory, AgentContext, Budget
 from council.evaluators import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM, LLMMessage
+from council.llm import AzureLLMConfiguration, AzureLLM, LLMMessage
 from council.mocks import MockLLM
 from council.skills.llm_skill import LLMSkill
 
@@ -21,7 +21,7 @@ class TestLlmSkill(unittest.TestCase):
 
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
+        config = AzureLLMConfiguration.from_env()
         llm = AzureLLM(config)
         system_prompt = "You are an agent developed with Council framework and you are a Finance expert."
         llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt)
