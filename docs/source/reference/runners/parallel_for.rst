@@ -11,7 +11,8 @@ The example below demonstrate how to use the parallel for in a chain.
 
 .. testcode::
 
-    from council.core import Budget, Chain, ChainContext
+    from council.chains import Chain
+    from council.core import Budget, ChainContext
     from council.core.runners import ParallelFor
     from council.mocks import MockSkill
 
@@ -28,7 +29,8 @@ This example builds on the previous one and shows how to consume the iteration i
 
 .. testcode::
 
-    from council.core import Budget, Chain, ChainContext
+    from council.chains import Chain
+    from council.core import Budget, ChainContext
     from council.core.execution_context import SkillMessage, SkillContext
     from council.core.runners import ParallelFor
     from council.skills import SkillBase
