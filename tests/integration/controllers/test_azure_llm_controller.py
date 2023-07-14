@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import dotenv
 
+from council.chains import Chain
 from council.core.budget import Budget
-from council.core.chain import Chain
 from council.core.execution_context import ChatHistory, AgentContext
 
 from council.controllers import LLMController

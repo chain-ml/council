@@ -1,8 +1,8 @@
 import logging
 from typing import List
 
+from council.chains import Chain
 from council.core.budget import Budget
-from council.core.chain import Chain
 from council.controllers import ControllerBase, BasicController
 from council.evaluators.evaluator_base import EvaluatorBase
 from council.core.execution_context import AgentContext, ChatHistory

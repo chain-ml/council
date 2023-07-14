@@ -1,8 +1,9 @@
 import unittest
 from typing import List, Any
 
+from council.chains import Chain
 from council.controllers import LLMController
-from council.core import Chain, Budget
+from council.core import Budget
 from council.core.execution_context import AgentContext, ChatHistory
 from council.llm import LLMMessage, LLMBase
 

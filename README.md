@@ -68,7 +68,7 @@ Set up your required API keys in a `.env`  (e.g. OpenAI). Refer to `.env.example
 Import Council.
 
 ```python
-from council.core import Chain
+from council.chains import Chain
 from council.skills import LLMSkill
 from council.llm import OpenAILLM, OpenAIConfiguration
 ```
