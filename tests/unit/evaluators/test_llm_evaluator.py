@@ -1,7 +1,6 @@
 import unittest
 from typing import List
 
-from council.core import Budget
 from council.evaluators import LLMEvaluator
 from council.core.execution_context import (
     AgentContext,
@@ -11,6 +10,7 @@ from council.core.execution_context import (
     AgentMessage,
 )
 from council.mocks import MockLLM
+from council.runners import Budget
 
 
 class TestLLMEvaluator(unittest.TestCase):
