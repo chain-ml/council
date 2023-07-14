@@ -44,7 +44,7 @@ jobs:
           allowUpdates: true
           artifacts: "dist/*"
           draft: ${{ env.COUNCIL_DRAFT }}
-          generateReleaseNotes: true
+          generateReleaseNotes: ${{ env.COUNCIL_DRAFT }}
           makeLatest: ${{ env.COUNCIL_LATEST }}
           tag: v${{ steps.hatch-version.outputs.version }}
           updateOnlyUnreleased: true
