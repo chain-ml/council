@@ -3,7 +3,7 @@ import unittest
 import dotenv
 
 from council.contexts import ChatHistory, AgentContext, SkillSuccessMessage
-from council.llm import AzureConfiguration, AzureLLM
+from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
 from council.runners import Budget
 
@@ -11,8 +11,7 @@ from council.runners import Budget
 class TestLlmEvaluator(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        llm = AzureLLM(config)
+        llm = AzureLLM.from_env()
         self.llm = llm
 
     def test_basic_prompt(self):

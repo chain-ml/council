@@ -9,7 +9,7 @@ from council.chains import Chain
 from council.controllers import BasicController
 from council.contexts import ChatHistory, AgentContext, ChainContext
 from council.evaluators import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM
+from council.llm import AzureLLM
 from council.runners import Budget, ParallelFor
 from council.skills import LLMSkill
 
@@ -28,8 +28,7 @@ class MyTestCase(unittest.TestCase):
         logging.getLogger("council").setLevel(logging.DEBUG)
 
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        self.llm = AzureLLM(config)
+        self.llm = AzureLLM.from_env()
 
     def test_llm_sequence(self):
         system_prompt = "You are a Finance expert answering question about finance topic."

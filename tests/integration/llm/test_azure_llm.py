@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.llm import AzureLLM, AzureConfiguration, LLMMessage, LLMException
+from council.llm import AzureLLM, LLMMessage, LLMException
 
 
 class TestLlmAzure(unittest.TestCase):
@@ -10,8 +10,7 @@ class TestLlmAzure(unittest.TestCase):
 
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        self.llm = AzureLLM(config)
+        self.llm = AzureLLM.from_env()
 
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("Give me an example of a currency")]

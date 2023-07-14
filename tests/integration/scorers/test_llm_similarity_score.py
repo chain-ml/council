@@ -3,14 +3,14 @@ import unittest
 import dotenv
 
 from council.contexts import AgentMessage
-from council.llm import AzureLLM, AzureConfiguration
+from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 
 
 class TestLLMSimilarityScorer(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        self.llm = AzureLLM(AzureConfiguration.from_env())
+        self.llm = AzureLLM.from_env()
 
     def test_similarity_hello(self):
         expected = """
