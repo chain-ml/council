@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from council.core.budget import Budget
-from council.core.chain import Chain
+from council.chains import Chain
 from council.core.execution_context import AgentContext, ScoredAgentMessage
-from council.core.execution_unit import ExecutionUnit
+from .execution_unit import ExecutionUnit
 
 
 class ControllerBase(ABC):

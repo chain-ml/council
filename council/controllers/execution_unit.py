@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from council.core.budget import Budget
-from council.core.chain import Chain
+from council.chains.chain import Chain
 
 
 class ExecutionUnit:

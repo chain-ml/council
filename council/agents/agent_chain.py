@@ -1,7 +1,8 @@
 from typing import Optional, Any
 
 from .agent import Agent
-from council.core import Chain, AgentContext, ChainContext, Budget
+from council.chains import Chain
+from council.core import AgentContext, ChainContext, Budget
 from council.core.execution_context import SkillSuccessMessage
 from council.core.runners import RunnerExecutor
 

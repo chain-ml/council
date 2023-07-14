@@ -5,8 +5,9 @@ from typing import Any
 import dotenv
 
 from council.agents import Agent
+from council.chains import Chain
 from council.controllers import BasicController
-from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
+from council.core import ChatHistory, AgentContext, Budget, ChainContext
 from council.core.runners import ParallelFor
 from council.evaluators import BasicEvaluator
 from council.llm import AzureConfiguration, AzureLLM

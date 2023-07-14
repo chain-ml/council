@@ -6,7 +6,7 @@ import dotenv
 from council.agents import Agent
 from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controllers import LLMController
-from council.core import Chain
+from council.chains import Chain
 from council.evaluators import LLMEvaluator
 from council.llm import AzureLLM, AzureConfiguration
 from council.scorers import LLMSimilarityScorer
