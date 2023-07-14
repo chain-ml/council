@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from enum import Enum
 from typing import Any
 
@@ -32,18 +32,38 @@ class ChatMessageKind(str, Enum):
 class ChatMessageBase(ABC):
     """
     base class for chat messages.
-
-    Attributes:
-        message: a text message
-        kind: the kind of message
     """
 
-    message: str
-    kind: ChatMessageKind
+    _message: str
+    _kind: ChatMessageKind
+    _data: Any
+    _is_error: bool
 
-    def __init__(self, message: str, kind: ChatMessageKind):
-        self.message = message
-        self.kind = kind
+    def __init__(self, message: str, kind: ChatMessageKind, data: Any = None, is_error: bool = False):
+        self._message = message
+        self._kind = kind
+        self._data = data
+        self._is_error = is_error
+
+    @property
+    def message(self) -> str:
+        return self._message
+
+    @property
+    def kind(self) -> ChatMessageKind:
+        return self._kind
+
+    @property
+    def data(self) -> Any:
+        return self._data
+
+    @property
+    def is_ok(self) -> bool:
+        return not self._is_error
+
+    @property
+    def is_error(self) -> bool:
+        return self._is_error
 
     def is_of_kind(self, kind: ChatMessageKind) -> bool:
         return self.kind == kind
@@ -74,11 +94,8 @@ class AgentMessage(ChatMessageBase):
         message: a text message
     """
 
-    data: Any
-
-    def __init__(self, message: str, data: Any):
-        super().__init__(message, ChatMessageKind.Agent)
-        self.data = data
+    def __init__(self, message: str, data: Any = None):
+        super().__init__(message, ChatMessageKind.Agent, data)
 
 
 class ScoredAgentMessage:
@@ -104,9 +121,8 @@ class SkillMessage(ChatMessageBase):
     """
 
     _skill_name: str
-    _data: Any
 
-    def __init__(self, skill_name: str, message: str, data: Any = None):
+    def __init__(self, skill_name: str, message: str, data: Any = None, is_error: bool = False):
         """
         Initialise a new instance.
 
@@ -116,39 +132,8 @@ class SkillMessage(ChatMessageBase):
             data (Any): optional data to enrich the message
         """
 
-        super().__init__(message, ChatMessageKind.Skill)
+        super().__init__(message, ChatMessageKind.Skill, data, is_error)
         self._skill_name = skill_name
-        self._data = data
-
-    @abstractmethod
-    def is_error(self) -> bool:
-        """
-        `True` if this is a :class:`~SkillErrorMessage`, otherwise `False`
-
-        Returns:
-            bool
-        """
-        pass
-
-    @abstractmethod
-    def is_ok(self) -> bool:
-        """
-        `True` if this is a :class:`SkillSuccessMessage`, otherwise `False`
-
-        Returns:
-            bool
-        """
-        pass
-
-    @property
-    def data(self) -> Any:
-        """
-        data related to the message
-
-        Returns:
-            Any
-        """
-        return self._data
 
     @property
     def from_skill(self) -> str:
@@ -187,13 +172,7 @@ class SkillSuccessMessage(SkillMessage):
             message (str): a text message.
             data (Any): optional data related to the message
         """
-        super().__init__(skill_name=skill_name, message=message, data=data)
-
-    def is_error(self) -> bool:
-        return False
-
-    def is_ok(self) -> bool:
-        return True
+        super().__init__(skill_name=skill_name, message=message, data=data, is_error=False)
 
 
 class SkillErrorMessage(SkillMessage):
@@ -210,10 +189,4 @@ class SkillErrorMessage(SkillMessage):
             message (str): a text message.
             data (Any): optional data related to the message
         """
-        super().__init__(skill_name=skill_name, message=message, data=data)
-
-    def is_ok(self) -> bool:
-        return False
-
-    def is_error(self) -> bool:
-        return True
+        super().__init__(skill_name=skill_name, message=message, data=data, is_error=True)

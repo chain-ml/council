@@ -31,7 +31,7 @@ class TestBase(unittest.TestCase):
 
         skill = GoogleNewsSkill(suffix="Finance")
         result = skill.execute(context=context, budget=Budget(duration=10))
-        self.assertTrue(result.is_ok())
+        self.assertTrue(result.is_ok)
         self.assertIn("EUR", result.message)
 
     def test_gsearch_skill(self):
@@ -39,7 +39,7 @@ class TestBase(unittest.TestCase):
 
         skill = GoogleSearchSkill()
         result = skill.execute(context=context, budget=Budget(duration=10))
-        self.assertTrue(result.is_ok())
+        self.assertTrue(result.is_ok)
         self.assertIn("USD", result.message)
 
     def test_skill_no_message(self):
