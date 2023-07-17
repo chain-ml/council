@@ -1,7 +1,34 @@
 import abc
 from typing import Any
 
-from council.utils import Option, read_env_float, read_env_int
+from council.utils.parameter import Parameter
+
+
+def _tv(x: float):
+    """
+    Temperature Validator
+    Sampling temperature to use, between 0. and 2.
+    """
+    if x < 0.0 or x > 2.0:
+        raise Exception("must be in the range [0.0..2.0]")
+
+
+def _pv(x: float):
+    """
+    Penalty Validator
+    Penalty must be between -2.0 and 2.0
+    """
+    if x < -2.0 or x > 2.0:
+        raise Exception("must be in the range [-2.0..2.0]")
+
+
+def _mtv(x: int):
+    """
+    Max Token Validator
+    Must be positive
+    """
+    if x <= 0:
+        raise Exception("must be positive")
 
 
 class LLMConfigurationBase(abc.ABC):
@@ -19,36 +46,36 @@ class LLMConfigurationBase(abc.ABC):
             frequency in the text.
     """
 
-    temperature: Option[float]
-    max_tokens: Option[int] = Option.none()
-    top_p: Option[float] = Option.none()
-    n: Option[int] = Option.none()
-    presence_penalty: Option[float]
-    frequency_penalty: Option[float]
+    temperature: Parameter[float] = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
+    max_tokens: Parameter[int] = Parameter.int(name="max_tokens", required=False, validator=_mtv)
+    top_p: Parameter[float] = Parameter.float(name="top_p", required=False)
+    n: Parameter[int] = Parameter.int(name="n", required=False, default=1)
+    presence_penalty: Parameter[float] = Parameter.float(name="presence_penalty", required=False, validator=_pv)
+    frequency_penalty: Parameter[float] = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
 
     def __init__(self, env_var_prefix: str):
         self._prefix = env_var_prefix
 
     def read_env(self):
-        self.temperature = read_env_float(self._prefix + "LLM_TEMPERATURE", required=False, default=0.0)
-        self.max_tokens = read_env_int(self._prefix + "LLM_MAX_TOKENS", required=False)
-        self.top_p = read_env_float(self._prefix + "LLM_TOP_P", required=False)
-        self.n = read_env_int(self._prefix + "LLM_N", required=False)
-        self.presence_penalty = read_env_float(self._prefix + "LLM_PRESENCE_PENALTY", required=False)
-        self.frequency_penalty = read_env_float(self._prefix + "LLM_FREQUENCY_PENALTY", required=False)
+        self.temperature.from_env(self._prefix + "LLM_TEMPERATURE")
+        self.max_tokens.from_env(self._prefix + "LLM_MAX_TOKENS")
+        self.top_p.from_env(self._prefix + "LLM_TOP_P")
+        self.n.from_env(self._prefix + "LLM_N")
+        self.presence_penalty.from_env(self._prefix + "LLM_PRESENCE_PENALTY")
+        self.frequency_penalty.from_env(self._prefix + "LLM_FREQUENCY_PENALTY")
 
     def build_default_payload(self) -> dict[str, Any]:
         payload: dict[str, Any] = {}
         if self.temperature.is_some():
-            payload.setdefault("temperature", self.temperature.unwrap())
+            payload.setdefault(self.temperature.name, self.temperature.unwrap())
         if self.max_tokens.is_some():
-            payload.setdefault("max_tokens", self.max_tokens.unwrap())
+            payload.setdefault(self.max_tokens.name, self.max_tokens.unwrap())
         if self.top_p.is_some():
-            payload.setdefault("top_p", self.top_p.unwrap())
+            payload.setdefault(self.top_p.name, self.top_p.unwrap())
         if self.n.is_some():
-            payload.setdefault("n", self.n.unwrap())
+            payload.setdefault(self.n.name, self.n.unwrap())
         if self.presence_penalty.is_some():
-            payload.setdefault("presence_penalty", self.presence_penalty.unwrap())
+            payload.setdefault(self.presence_penalty.name, self.presence_penalty.unwrap())
         if self.frequency_penalty.is_some():
-            payload.setdefault("frequency_penalty", self.frequency_penalty.unwrap())
+            payload.setdefault(self.frequency_penalty.name, self.frequency_penalty.unwrap())
         return payload

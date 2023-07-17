@@ -1,8 +1,10 @@
+import os
 import unittest
 
 import dotenv
 
 from council.llm import AzureLLM, LLMMessage, LLMException
+from council.utils import ParameterValueException
 
 
 class TestLlmAzure(unittest.TestCase):
@@ -32,3 +34,35 @@ class TestLlmAzure(unittest.TestCase):
         with self.assertRaises(LLMException) as e:
             self.llm.post_chat_request(messages)
             self.assertIn("censored", str(e))
+
+    def test_max_token(self):
+        os.environ["AZURE_LLM_MAX_TOKENS"] = "5"
+
+        try:
+            llm = AzureLLM.from_env()
+            messages = [LLMMessage.user_message("Give me an example of a currency")]
+            result = llm.post_chat_request(messages)
+            self.assertTrue(len(result.replace(" ", "")) < 5 * 5)
+        finally:
+            del os.environ["AZURE_LLM_MAX_TOKEN"]
+
+    def test_choices(self):
+        os.environ["AZURE_LLM_N"] = "3"
+        os.environ["AZURE_LLM_TEMPERATURE"] = "1.0"
+
+        try:
+            llm = AzureLLM.from_env()
+            messages = [LLMMessage.user_message("Give me an example of a currency")]
+            result = llm.post_chat_request(messages)
+            [print("\n- Choice:" + choice) for choice in result.split("--- choices ---")]
+        finally:
+            del os.environ["AZURE_LLM_N"]
+            del os.environ["AZURE_LLM_TEMPERATURE"]
+
+    def test_invalid_temperature(self):
+        os.environ["AZURE_LLM_TEMPERATURE"] = "3.5"
+
+        with self.assertRaises(ParameterValueException) as cm:
+            _ = AzureLLM.from_env()
+        print(cm.exception)
+        del os.environ["AZURE_LLM_TEMPERATURE"]
