@@ -23,9 +23,10 @@ class MissingEnvVariableException(Exception):
         super().__init__(f"Missing required environment variable: {name}")
 
 
-class EnvVariableValueErrorException(Exception):
+class EnvVariableValueException(Exception):
     """
-    Custom exception raised when an environment variable type is incorrect.
+    Custom exception raised if an environment variable is assigned a value
+    that is inconsistent with its declared data type.
     """
 
     def __init__(self, name: str, value: str, expected_type: Type):
@@ -51,7 +52,7 @@ def read_env_int(name: str, required: bool = True, default: Optional[int] = None
         try:
             return int(x)
         except ValueError as e:
-            raise EnvVariableValueErrorException(name, x, int) from e
+            raise EnvVariableValueException(name, x, int) from e
 
     return _read_env(name, required, default, converter)
 
@@ -61,7 +62,7 @@ def read_env_float(name: str, required: bool = True, default: Optional[float] = 
         try:
             return float(x)
         except ValueError as e:
-            raise EnvVariableValueErrorException(name, x, float) from e
+            raise EnvVariableValueException(name, x, float) from e
 
     return _read_env(name, required, default, converter)
 
@@ -73,7 +74,7 @@ def read_env_bool(name: str, required: bool = True, default: Optional[bool] = No
             return True
         if result in ["false", "0", "f"]:
             return False
-        raise EnvVariableValueErrorException(name, x, bool)
+        raise EnvVariableValueException(name, x, bool)
 
     return _read_env(name, required, default, converter)
 

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from council.utils import MissingEnvVariableException, EnvVariableValueErrorException
+from council.utils import MissingEnvVariableException, EnvVariableValueException
 from council.utils.parameter import ParameterValueException, Parameter
 
 
@@ -45,7 +45,7 @@ class TestParameter(unittest.TestCase):
         os.environ["TEST_LLM_TEMPERATURE"] = "4Gb"
 
         temperature: Parameter[float] = Parameter.float(name="temperature", required=False, default=0.0, validator=tv)
-        with self.assertRaises(EnvVariableValueErrorException) as cm:
+        with self.assertRaises(EnvVariableValueException) as cm:
             temperature.from_env("TEST_LLM_TEMPERATURE")
         self.assertIsInstance(cm.exception.__cause__, ValueError)
 

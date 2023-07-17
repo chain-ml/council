@@ -43,7 +43,7 @@ class OpenAIChatCompletionsModel(LLMBase):
             raise LLMException(f"Wrong status code: {response.status_code}. Reason: {response.text}")
         choices = response.json()["choices"]
 
-        n = self.config.n.unwrap() if self.config.n.is_some() else 1
+        n = self.config.n.unwrap()
         if n <= 1:
             return choices[0]["message"]["content"]
 

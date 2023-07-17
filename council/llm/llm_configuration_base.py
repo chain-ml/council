@@ -4,7 +4,7 @@ from typing import Any
 from council.utils.parameter import Parameter
 
 
-def tv(x: float):
+def _tv(x: float):
     """
     Temperature Validator
     Sampling temperature to use, between 0. and 2.
@@ -13,7 +13,7 @@ def tv(x: float):
         raise Exception("must be in the range [0.0..2.0]")
 
 
-def pv(x: float):
+def _pv(x: float):
     """
     Penalty Validator
     Penalty must be between -2.0 and 2.0
@@ -22,7 +22,7 @@ def pv(x: float):
         raise Exception("must be in the range [-2.0..2.0]")
 
 
-def mtv(x: int):
+def _mtv(x: int):
     """
     Max Token Validator
     Must be positive
@@ -46,12 +46,12 @@ class LLMConfigurationBase(abc.ABC):
             frequency in the text.
     """
 
-    temperature: Parameter[float] = Parameter.float(name="temperature", required=False, default=0.0, validator=tv)
-    max_tokens: Parameter[int] = Parameter.int(name="max_tokens", required=False, validator=mtv)
+    temperature: Parameter[float] = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
+    max_tokens: Parameter[int] = Parameter.int(name="max_tokens", required=False, validator=_mtv)
     top_p: Parameter[float] = Parameter.float(name="top_p", required=False)
-    n: Parameter[int] = Parameter.int(name="n", required=False)
-    presence_penalty: Parameter[float] = Parameter.float(name="presence_penalty", required=False, validator=pv)
-    frequency_penalty: Parameter[float] = Parameter.float(name="frequency_penalty", required=False, validator=pv)
+    n: Parameter[int] = Parameter.int(name="n", required=False, default=1)
+    presence_penalty: Parameter[float] = Parameter.float(name="presence_penalty", required=False, validator=_pv)
+    frequency_penalty: Parameter[float] = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
 
     def __init__(self, env_var_prefix: str):
         self._prefix = env_var_prefix
