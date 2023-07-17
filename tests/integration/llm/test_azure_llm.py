@@ -4,6 +4,7 @@ import unittest
 import dotenv
 
 from council.llm import AzureLLM, LLMMessage, LLMException
+from council.utils.parameter import ParameterValueException
 
 
 class TestLlmAzure(unittest.TestCase):
@@ -57,3 +58,10 @@ class TestLlmAzure(unittest.TestCase):
         finally:
             del os.environ["AZURE_LLM_N"]
             del os.environ["AZURE_LLM_TEMPERATURE"]
+
+    def test_invalid_temperature(self):
+        os.environ["AZURE_LLM_TEMPERATURE"] = "3.5"
+
+        with self.assertRaises(ParameterValueException):
+            _ = AzureLLM.from_env()
+        del os.environ["AZURE_LLM_TEMPERATURE"]
