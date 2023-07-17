@@ -6,7 +6,7 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredAgentMessage, ChatMessageBase
+from council.contexts import AgentContext, ScoredChatMessage, ChatMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.runners import Budget
@@ -26,7 +26,7 @@ class LLMEvaluator(EvaluatorBase):
         super().__init__()
         self.llm = llm
 
-    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredAgentMessage]:
+    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()
         chain_results = [
             chain_history[-1].try_last_message.unwrap()
@@ -36,9 +36,7 @@ class LLMEvaluator(EvaluatorBase):
         scored_messages = self.__score_responses(query=query, skill_messages=chain_results)
         return list(scored_messages)
 
-    def __score_responses(
-        self, query: ChatMessageBase, skill_messages: list[ChatMessageBase]
-    ) -> List[ScoredAgentMessage]:
+    def __score_responses(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[ScoredChatMessage]:
         """
         Score agent response.
 
@@ -59,8 +57,8 @@ class LLMEvaluator(EvaluatorBase):
 
         agent_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(skill_messages, scores)):
-            agent_message = ScoredAgentMessage(
-                ChatMessageBase.agent(message=skill_message.message, data=skill_message.data), score.unwrap()
+            agent_message = ScoredChatMessage(
+                ChatMessage.agent(message=skill_message.message, data=skill_message.data), score.unwrap()
             )
             agent_messages.append(agent_message)
 

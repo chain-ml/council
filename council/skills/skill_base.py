@@ -4,7 +4,7 @@ import logging
 from typing import Any
 from abc import abstractmethod
 
-from council.contexts import SkillContext, ChatMessageBase
+from council.contexts import SkillContext, ChatMessage
 from council.runners import RunnerSkillError, SkillRunnerBase, Budget
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class SkillBase(SkillRunnerBase):
         return self._name
 
     @abstractmethod
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessageBase:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
         """
         Executes the skill on the provided chain context and budget.
 
@@ -52,14 +52,14 @@ class SkillBase(SkillRunnerBase):
             budget (Budget): The budget for skill execution.
 
         Returns:
-            ChatMessageBase: The result of skill execution.
+            ChatMessage: The result of skill execution.
 
         Raises:
             None
         """
         pass
 
-    def build_success_message(self, message: str, data: Any = None) -> ChatMessageBase:
+    def build_success_message(self, message: str, data: Any = None) -> ChatMessage:
         """
         Builds a success message for the skill with the provided message and optional data.
 
@@ -68,17 +68,17 @@ class SkillBase(SkillRunnerBase):
             data (Any, optional): Additional data to include in the message. Defaults to None.
 
         Returns:
-            ChatMessageBase: The success message.
+            ChatMessage: The success message.
 
         Raises:
             None
         """
-        return ChatMessageBase.skill(message, data, source=self._name, is_error=False)
+        return ChatMessage.skill(message, data, source=self._name, is_error=False)
 
-    def build_error_message(self, message: str, data: Any = None) -> ChatMessageBase:
-        return ChatMessageBase.skill(message, data, source=self._name, is_error=True)
+    def build_error_message(self, message: str, data: Any = None) -> ChatMessage:
+        return ChatMessage.skill(message, data, source=self._name, is_error=True)
 
-    def from_exception(self, exception: Exception) -> ChatMessageBase:
+    def from_exception(self, exception: Exception) -> ChatMessage:
         return self.build_error_message(f"skill '{self._name}' raised exception: {exception}")
 
     def execute_skill(self, context: SkillContext, budget: Budget) -> None:

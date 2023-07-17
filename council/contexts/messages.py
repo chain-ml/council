@@ -1,4 +1,3 @@
-from abc import ABC
 from enum import Enum
 from typing import Any
 
@@ -24,9 +23,9 @@ class ChatMessageKind(str, Enum):
     """
 
 
-class ChatMessageBase(ABC):
+class ChatMessage:
     """
-    base class for chat messages.
+    Represents chat messages.
     """
 
     _message: str
@@ -43,16 +42,16 @@ class ChatMessageBase(ABC):
         self._is_error = is_error
 
     @staticmethod
-    def agent(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessageBase":
-        return ChatMessageBase(message, ChatMessageKind.Agent, data, source, is_error)
+    def agent(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+        return ChatMessage(message, ChatMessageKind.Agent, data, source, is_error)
 
     @staticmethod
-    def user(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessageBase":
-        return ChatMessageBase(message, ChatMessageKind.User, data, source, is_error)
+    def user(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+        return ChatMessage(message, ChatMessageKind.User, data, source, is_error)
 
     @staticmethod
-    def skill(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessageBase":
-        return ChatMessageBase(message, ChatMessageKind.Skill, data, source, is_error)
+    def skill(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+        return ChatMessage(message, ChatMessageKind.Skill, data, source, is_error)
 
     @property
     def message(self) -> str:
@@ -102,19 +101,18 @@ class ChatMessageBase(ABC):
         return f"Message of kind {self.kind}: {message}"
 
 
-## todo rename into ScoredMessage
-class ScoredAgentMessage:
+class ScoredChatMessage:
     """
-    an :class:`AgentMessage` with a scored, as returned by an :class:`~.EvaluatorBase`
+    an :class:`ChatMessage` with a scored, as returned by an :class:`~.EvaluatorBase`
 
     Attributes:
-        message (ChatMessageBase): an agent message
+        message (ChatMessage): an agent message
         score: a score reflecting the quality of the message
     """
 
-    message: ChatMessageBase
+    message: ChatMessage
     score: float
 
-    def __init__(self, message: ChatMessageBase, score: float):
+    def __init__(self, message: ChatMessage, score: float):
         self.message = message
         self.score = score

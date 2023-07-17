@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import ChatHistory, AgentContext, ChatMessageBase
+from council.contexts import ChatHistory, AgentContext, ChatMessage
 from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
 from council.runners import Budget
@@ -31,7 +31,7 @@ class TestLlmEvaluator(unittest.TestCase):
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
             chain_context = context.new_chain_context(chain_name)
-            chain_context.current.append(ChatMessageBase.skill("a skill", message))
+            chain_context.current.append(ChatMessage.skill("a skill", message))
 
         result = evaluator.execute(context, Budget(10))
 

@@ -1,7 +1,7 @@
 from typing import List
 
 from council.chains import Chain
-from council.contexts import AgentContext, ScoredAgentMessage
+from council.contexts import AgentContext, ScoredChatMessage
 from council.runners import Budget
 
 from .controller_base import ControllerBase
@@ -14,5 +14,5 @@ class BasicController(ControllerBase):
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
         return [ExecutionUnit(chain, budget) for chain in chains]
 
-    def select_responses(self, context: AgentContext) -> List[ScoredAgentMessage]:
+    def select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
         return context.evaluationHistory[-1]

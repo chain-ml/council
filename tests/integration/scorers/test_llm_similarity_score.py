@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import ChatMessageBase
+from council.contexts import ChatMessage
 from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 
@@ -19,7 +19,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             """
         instance = LLMSimilarityScorer(self.llm, expected)
 
-        score = instance.score(ChatMessageBase.agent(expected))
+        score = instance.score(ChatMessage.agent(expected))
         self.assertAlmostEqual(1.0, score, delta=0.1)
 
     def test_similarity_wrong_assistant(self):
@@ -32,7 +32,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             I am an assistant export in writing Python code.
             How can I help you today?
         """
-        score = instance.score(ChatMessageBase.agent(actual))
+        score = instance.score(ChatMessage.agent(actual))
         self.assertAlmostEqual(0.5, score, delta=0.1)
 
     def test_similarity_support_agent(self):
@@ -45,7 +45,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             Hi, I'm here to assist you in your support case.
             How can I help you today?
             """
-        score = instance.score(ChatMessageBase.agent(actual))
+        score = instance.score(ChatMessage.agent(actual))
         self.assertAlmostEqual(0.33, score, delta=0.1)
 
     def test_similarity_unrelated(self):
@@ -55,5 +55,5 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             """
         instance = LLMSimilarityScorer(self.llm, expected)
 
-        score = instance.score(ChatMessageBase.agent("the capital of France is Paris"))
+        score = instance.score(ChatMessage.agent("the capital of France is Paris"))
         self.assertAlmostEqual(0.0, score, delta=0.1)

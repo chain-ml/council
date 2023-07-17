@@ -11,4 +11,4 @@ from .execution_context import (
     SkillContext,
     IterationContext,
 )
-from .messages import ChatMessageKind, ChatMessageBase, ScoredAgentMessage
+from .messages import ChatMessageKind, ChatMessage, ScoredChatMessage

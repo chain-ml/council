@@ -7,7 +7,7 @@ from council.contexts import (
     ChainContext,
     ChainHistory,
     SkillContext,
-    ChatMessageBase,
+    ChatMessage,
 )
 
 from council.skills.skill_base import SkillBase
@@ -35,7 +35,7 @@ class SkillTest(SkillBase):
         super().__init__(name)
         self.wait = wait
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessageBase:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
         time.sleep(abs(self.wait))
         if self.wait < 0:
             raise MySkillException("invalid wait")

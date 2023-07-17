@@ -1,7 +1,7 @@
 import logging
 from typing import List, Tuple
 
-from council.contexts import AgentContext, ScoredAgentMessage
+from council.contexts import AgentContext, ScoredChatMessage
 from council.chains import Chain
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
@@ -33,7 +33,7 @@ class LLMController(ControllerBase):
         self._response_threshold = response_threshold
         self._top_k = top_k_execution_plan
 
-    def select_responses(self, context: AgentContext) -> List[ScoredAgentMessage]:
+    def select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
         return context.evaluationHistory[-1]
 
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:

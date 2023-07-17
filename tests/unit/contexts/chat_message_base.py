@@ -1,8 +1,8 @@
 import unittest
-from council.contexts import ChatMessageBase, ChatMessageKind
+from council.contexts import ChatMessage, ChatMessageKind
 
 
-class MyChatMessage(ChatMessageBase):
+class MyChatMessage(ChatMessage):
     pass
 
 

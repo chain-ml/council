@@ -2,7 +2,7 @@ import abc
 import logging
 from typing import Any, Dict
 
-from council.contexts import ChatMessageBase
+from council.contexts import ChatMessage
 from .scorer_exception import ScorerException
 
 
@@ -14,12 +14,12 @@ class ScorerBase(abc.ABC):
     Base class for implementing a Scorer
     """
 
-    def score(self, message: ChatMessageBase) -> float:
+    def score(self, message: ChatMessage) -> float:
         """
         Score the given message
 
         Parameters:
-            message (ChatMessageBase): the message to be scored
+            message (ChatMessage): the message to be scored
 
         Returns:
             similarity score. The greater the value to higher the similarity
@@ -34,7 +34,7 @@ class ScorerBase(abc.ABC):
             raise ScorerException
 
     @abc.abstractmethod
-    def _score(self, message: ChatMessageBase) -> float:
+    def _score(self, message: ChatMessage) -> float:
         """
         To be implemented with in derived classes with actual scoring logic
         """

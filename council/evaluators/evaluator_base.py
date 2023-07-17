@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from council.contexts import AgentContext, ScoredAgentMessage
+from council.contexts import AgentContext, ScoredChatMessage
 from council.runners import Budget
 
 
@@ -12,7 +12,7 @@ class EvaluatorBase(ABC):
     """
 
     @abstractmethod
-    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredAgentMessage]:
+    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """
         Executes the evaluator on the agent's context within the given budget.
 
@@ -21,7 +21,7 @@ class EvaluatorBase(ABC):
             budget (Budget): The budget for evaluator execution.
 
         Returns:
-            List[ScoredAgentMessage]: A list of scored agent messages resulting from the evaluation.
+            List[ScoredChatMessage]: A list of scored agent messages resulting from the evaluation.
 
         Raises:
             None

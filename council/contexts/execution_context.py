@@ -4,7 +4,7 @@ from typing_extensions import TypeGuard
 
 from more_itertools import first
 
-from .messages import ChatMessageBase, ScoredAgentMessage, ChatMessageKind
+from .messages import ChatMessage, ScoredChatMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
 from council.utils import Option
 
@@ -12,52 +12,52 @@ from council.utils import Option
 class MessageCollection(abc.ABC):
     @property
     @abc.abstractmethod
-    def messages(self) -> Iterable[ChatMessageBase]:
+    def messages(self) -> Iterable[ChatMessage]:
         pass
 
     @property
     @abc.abstractmethod
-    def reversed(self) -> Iterable[ChatMessageBase]:
+    def reversed(self) -> Iterable[ChatMessage]:
         pass
 
     @property
-    def last_message(self) -> Optional[ChatMessageBase]:
+    def last_message(self) -> Optional[ChatMessage]:
         return first(self.reversed, None)
 
     @property
-    def try_last_message(self) -> Option[ChatMessageBase]:
+    def try_last_message(self) -> Option[ChatMessage]:
         return Option(self.last_message)
 
     @property
-    def last_user_message(self) -> Optional[ChatMessageBase]:
+    def last_user_message(self) -> Optional[ChatMessage]:
         return self._last_message_filter(self.message_kind_predicate(ChatMessageKind.User))
 
     @property
-    def try_last_user_message(self) -> Option[ChatMessageBase]:
+    def try_last_user_message(self) -> Option[ChatMessage]:
         return Option(self.last_user_message)
 
     @property
-    def last_agent_message(self) -> Optional[ChatMessageBase]:
+    def last_agent_message(self) -> Optional[ChatMessage]:
         return self._last_message_filter(self.message_kind_predicate(ChatMessageKind.Agent))
 
     @property
-    def try_last_agent_message(self) -> Option[ChatMessageBase]:
+    def try_last_agent_message(self) -> Option[ChatMessage]:
         return Option(self.last_agent_message)
 
-    def last_message_from_skill(self, skill_name: str) -> Optional[ChatMessageBase]:
-        def predicate(message: ChatMessageBase):
+    def last_message_from_skill(self, skill_name: str) -> Optional[ChatMessage]:
+        def predicate(message: ChatMessage):
             return message.is_of_kind(ChatMessageKind.Skill) and message.is_from_source(skill_name)
 
         return self._last_message_filter(predicate)
 
-    def _last_message_filter(self, predicate: Callable[[ChatMessageBase], bool]) -> Optional[ChatMessageBase]:
-        def typeguard_predicate(message: ChatMessageBase) -> TypeGuard[Optional[ChatMessageBase]]:
-            return isinstance(message, ChatMessageBase) and predicate(message)
+    def _last_message_filter(self, predicate: Callable[[ChatMessage], bool]) -> Optional[ChatMessage]:
+        def typeguard_predicate(message: ChatMessage) -> TypeGuard[Optional[ChatMessage]]:
+            return isinstance(message, ChatMessage) and predicate(message)
 
         return first(filter(typeguard_predicate, self.reversed), None)
 
     @staticmethod
-    def message_kind_predicate(kind: ChatMessageKind) -> Callable[[ChatMessageBase], bool]:
+    def message_kind_predicate(kind: ChatMessageKind) -> Callable[[ChatMessage], bool]:
         return lambda m: m.is_of_kind(kind)
 
 
@@ -66,7 +66,7 @@ class ChatHistory(MessageCollection):
     represents the history of messages exchanged between the user and the :class:`.Agent`
     """
 
-    _messages: List[ChatMessageBase] = []
+    _messages: List[ChatMessage] = []
 
     def __init__(self):
         """
@@ -76,11 +76,11 @@ class ChatHistory(MessageCollection):
         self._messages = []
 
     @property
-    def messages(self) -> Iterable[ChatMessageBase]:
+    def messages(self) -> Iterable[ChatMessage]:
         return self._messages
 
     @property
-    def reversed(self) -> Iterable[ChatMessageBase]:
+    def reversed(self) -> Iterable[ChatMessage]:
         return reversed(self._messages)
 
     def add_user_message(self, message: str):
@@ -91,7 +91,7 @@ class ChatHistory(MessageCollection):
             message (str): a text message
         """
 
-        self._messages.append(ChatMessageBase(message, ChatMessageKind.User))
+        self._messages.append(ChatMessage(message, ChatMessageKind.User))
 
     def add_agent_message(self, message: str, data: Any = None):
         """
@@ -102,7 +102,7 @@ class ChatHistory(MessageCollection):
             data (Any): some data, if any
         """
 
-        self._messages.append(ChatMessageBase(message, ChatMessageKind.Agent, data))
+        self._messages.append(ChatMessage(message, ChatMessageKind.Agent, data))
 
     @staticmethod
     def from_user_message(message: str) -> "ChatHistory":
@@ -116,21 +116,21 @@ class ChainHistory(MessageCollection):
     Manages all the :class:`ChatMessageBase` generated during one execution of a :class:`.Chain`
     """
 
-    _messages: List[ChatMessageBase]
+    _messages: List[ChatMessage]
 
     def __init__(self):
         """Initialize a new instance"""
         self._messages = []
 
     @property
-    def messages(self) -> Sequence[ChatMessageBase]:
+    def messages(self) -> Sequence[ChatMessage]:
         return self._messages
 
     @property
-    def reversed(self) -> Iterable[ChatMessageBase]:
+    def reversed(self) -> Iterable[ChatMessage]:
         return reversed(self._messages)
 
-    def append(self, message: ChatMessageBase):
+    def append(self, message: ChatMessage):
         self._messages.append(message)
 
 
@@ -166,13 +166,13 @@ class ChainContext(MessageCollection):
         return self._cancellation_token
 
     @property
-    def messages(self) -> Iterable[ChatMessageBase]:
+    def messages(self) -> Iterable[ChatMessage]:
         for inner_list in [self._chat_history, *self._chain_histories]:
             for item in inner_list.messages:
                 yield item
 
     @property
-    def reversed(self) -> Iterable[ChatMessageBase]:
+    def reversed(self) -> Iterable[ChatMessage]:
         for inner_list in reversed([self._chat_history, *self._chain_histories]):
             for item in inner_list.reversed:
                 yield item
@@ -279,12 +279,12 @@ class AgentContext:
     Attributes:
         chatHistory (ChatHistory): The chat history.
         chainHistory (Dict[str, List[ChainHistory]]): The chain history for each :class:`.Chain`.
-        evaluationHistory (List[List[ScoredAgentMessage]]): The iteration history of evaluated agent messages.
+        evaluationHistory (List[List[ScoredChatMessage]]): The iteration history of evaluated agent messages.
     """
 
     chatHistory: ChatHistory
     chainHistory: Dict[str, List[ChainHistory]]
-    evaluationHistory: List[List[ScoredAgentMessage]]
+    evaluationHistory: List[List[ScoredChatMessage]]
 
     def __init__(self, chat_history: ChatHistory):
         """
@@ -314,12 +314,12 @@ class AgentContext:
         history.append(ChainHistory())
         return ChainContext(self.chatHistory, history)
 
-    def last_evaluator_iteration(self) -> Optional[List[ScoredAgentMessage]]:
+    def last_evaluator_iteration(self) -> Optional[List[ScoredChatMessage]]:
         """
         Retrieves the last iteration of the evaluator's history.
 
         Returns:
-            Optional[List[ScoredAgentMessage]]: The last iteration of the evaluator's history,
+            Optional[List[ScoredChatMessage]]: The last iteration of the evaluator's history,
                 or None if the history is empty.
         """
         if len(self.evaluationHistory) == 0:

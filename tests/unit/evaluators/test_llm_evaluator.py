@@ -5,8 +5,8 @@ from council.evaluators import LLMEvaluator
 from council.contexts import (
     AgentContext,
     ChatHistory,
-    ScoredAgentMessage,
-    ChatMessageBase,
+    ScoredChatMessage,
+    ChatMessage,
 )
 from council.mocks import MockLLM
 from council.runners import Budget
@@ -20,18 +20,18 @@ class TestLLMEvaluator(unittest.TestCase):
     def add_one_iteration_result(self):
         self.first_context = self.context.new_chain_context("a chain")
         self.second_context = self.context.new_chain_context("another chain")
-        self.first_context.current.append(ChatMessageBase.skill("result of a chain", source="first skill"))
-        self.second_context.current.append(ChatMessageBase.skill("result of another chain", source="another skill"))
+        self.first_context.current.append(ChatMessage.skill("result of a chain", source="first skill"))
+        self.second_context.current.append(ChatMessage.skill("result of another chain", source="another skill"))
 
     @staticmethod
-    def to_tuple_message_score(items: List[ScoredAgentMessage]):
+    def to_tuple_message_score(items: List[ScoredChatMessage]):
         return [(item.message.message, item.score) for item in items]
 
     def test_evaluate(self):
         responses = ["result of a chain:2", "result of another chain:10"]
         expected = [
-            ScoredAgentMessage(ChatMessageBase.agent("result of a chain"), 2),
-            ScoredAgentMessage(ChatMessageBase.agent("result of another chain"), 10),
+            ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
+            ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
         ]
 
         self.add_one_iteration_result()
@@ -42,8 +42,8 @@ class TestLLMEvaluator(unittest.TestCase):
     def test_evaluate_chain_with_no_message(self):
         responses = ["result of a chain:2", "result of another chain:10"]
         expected = [
-            ScoredAgentMessage(ChatMessageBase.agent("result of a chain"), 2),
-            ScoredAgentMessage(ChatMessageBase.agent("result of another chain"), 10),
+            ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
+            ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
         ]
 
         self.add_one_iteration_result()
@@ -62,8 +62,8 @@ class TestLLMEvaluator(unittest.TestCase):
     def test_evaluate_with_execution_history(self):
         responses = ["result of a chain:2", "result of another chain:10"]
         expected = [
-            ScoredAgentMessage(ChatMessageBase.agent("result of a chain"), 2),
-            ScoredAgentMessage(ChatMessageBase.agent("result of another chain"), 10),
+            ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
+            ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
         ]
 
         self.add_one_iteration_result()

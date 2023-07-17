@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List, Iterable
 
-from council.contexts import ChatMessageBase, ChatMessageKind
+from council.contexts import ChatMessage, ChatMessageKind
 
 
 class LLMMessageRole(str, Enum):
@@ -90,7 +90,7 @@ class LLMMessage:
         return self._role == role
 
     @staticmethod
-    def from_chat_message(chat_message: ChatMessageBase) -> Optional["LLMMessage"]:
+    def from_chat_message(chat_message: ChatMessage) -> Optional["LLMMessage"]:
         """Convert :class:`~.ChatMessageBase` into :class:`.LLMMessage`"""
         if chat_message.kind == ChatMessageKind.User:
             return LLMMessage.user_message(chat_message.message)
@@ -99,6 +99,6 @@ class LLMMessage:
         return None
 
     @staticmethod
-    def from_chat_messages(messages: Iterable[ChatMessageBase]) -> List["LLMMessage"]:
+    def from_chat_messages(messages: Iterable[ChatMessage]) -> List["LLMMessage"]:
         m = map(LLMMessage.from_chat_message, messages)
         return [msg for msg in m if msg is not None]
