@@ -91,7 +91,7 @@ class LLMMessage:
 
     @staticmethod
     def from_chat_message(chat_message: ChatMessage) -> Optional["LLMMessage"]:
-        """Convert :class:`~.ChatMessageBase` into :class:`.LLMMessage`"""
+        """Convert :class:`~.ChatMessage` into :class:`.LLMMessage`"""
         if chat_message.kind == ChatMessageKind.User:
             return LLMMessage.user_message(chat_message.message)
         elif chat_message.kind == ChatMessageKind.Agent:

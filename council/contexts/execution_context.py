@@ -85,24 +85,24 @@ class ChatHistory(MessageCollection):
 
     def add_user_message(self, message: str):
         """
-        adds a :class:`UserMessage` into the history
+        adds a user :class:`ChatMessage` into the history
 
         Arguments:
             message (str): a text message
         """
 
-        self._messages.append(ChatMessage(message, ChatMessageKind.User))
+        self._messages.append(ChatMessage.user(message))
 
     def add_agent_message(self, message: str, data: Any = None):
         """
-        adds a :class:`AgentMessage` into the history
+        adds an agent class:`ChatMessage` into the history
 
         Arguments:
             message (str): a text message
             data (Any): some data, if any
         """
 
-        self._messages.append(ChatMessage(message, ChatMessageKind.Agent, data))
+        self._messages.append(ChatMessage.agent(message, data))
 
     @staticmethod
     def from_user_message(message: str) -> "ChatHistory":
@@ -113,7 +113,7 @@ class ChatHistory(MessageCollection):
 
 class ChainHistory(MessageCollection):
     """
-    Manages all the :class:`ChatMessageBase` generated during one execution of a :class:`.Chain`
+    Manages all the :class:`ChatMessage` generated during one execution of a :class:`.Chain`
     """
 
     _messages: List[ChatMessage]
