@@ -15,7 +15,7 @@ class ReturnMessages(Protocol):
 
 def get_chat_history(context: SkillContext) -> List[LLMMessage]:
     # Convert chat's history and give it to the inner llm
-    return LLMMessage.from_chat_messages(context.chatHistory.messages)
+    return LLMMessage.from_chat_messages(context.chat_history.messages)
 
 
 def get_last_messages(context: SkillContext) -> List[LLMMessage]:

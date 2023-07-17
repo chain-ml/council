@@ -27,7 +27,7 @@ class TestBase(unittest.TestCase):
 
     def test_gnews_skill(self):
         context = ChainContext.from_user_message("USD")
-        context.chatHistory.add_user_message("EUR")
+        context.chat_history.add_user_message("EUR")
 
         skill = GoogleNewsSkill(suffix="Finance")
         result = skill.execute(context=context, budget=Budget(duration=10))

@@ -105,7 +105,7 @@ class TestSkillRunners(unittest.TestCase):
         sequence = Sequential(SkillTest("first", 0.1), SkillTest("fourth", 0.2))
         parallel = Parallel(sequence, SkillTest("second", 0.15), SkillTest("third", 0.2))
         self._execute(parallel, Budget(1))
-        self.assertFalse(self.context.cancellationToken.cancelled)
+        self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
     def test_parallel_with_exception(self):
@@ -114,7 +114,7 @@ class TestSkillRunners(unittest.TestCase):
             self._execute(instance, Budget(10))
 
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
-        self.assertTrue(self.context.cancellationToken.cancelled)
+        self.assertTrue(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["third"])
         self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
 

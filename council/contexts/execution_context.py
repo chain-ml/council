@@ -158,10 +158,6 @@ class ChainContext(MessageCollection):
         self._chain_histories.append(ChainHistory())
 
     @property
-    def cancellationToken(self) -> CancellationToken:
-        return self._cancellation_token
-
-    @property
     def cancellation_token(self) -> CancellationToken:
         return self._cancellation_token
 
@@ -182,10 +178,6 @@ class ChainContext(MessageCollection):
         return self._chain_histories
 
     @property
-    def chain_history(self) -> Sequence[ChainHistory]:
-        return self.chain_histories
-
-    @property
     def current(self) -> ChainHistory:
         """
         Returns the :class:`ChainHistory` to be used for the current execution of a :class:`.Chain`
@@ -198,10 +190,6 @@ class ChainContext(MessageCollection):
     @property
     def chat_history(self) -> ChatHistory:
         return self._chat_history
-
-    @property
-    def chatHistory(self) -> ChatHistory:
-        return self.chat_history
 
     @staticmethod
     def empty() -> "ChainContext":
@@ -258,7 +246,7 @@ class SkillContext(ChainContext):
     """
 
     def __init__(self, chain_context: ChainContext, iteration: Option[IterationContext]):
-        super().__init__(chain_context.chatHistory, chain_context._chain_histories)
+        super().__init__(chain_context.chat_history, chain_context._chain_histories)
         self._iteration = iteration
 
     @property

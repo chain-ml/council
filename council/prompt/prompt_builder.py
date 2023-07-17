@@ -65,24 +65,24 @@ class PromptBuilder:
 
     @staticmethod
     def __build_chat_history(context: ChainContext) -> dict[str, Any]:
-        last_message = context.chatHistory.try_last_message
-        last_user_message = context.chatHistory.try_last_user_message
-        last_agent_message = context.chatHistory.try_last_agent_message
+        last_message = context.chat_history.try_last_message
+        last_user_message = context.chat_history.try_last_user_message
+        last_agent_message = context.chat_history.try_last_agent_message
 
         return {
             "agent": {
                 "messages": [
-                    msg.message for msg in context.chatHistory.messages if msg.is_of_kind(ChatMessageKind.Agent)
+                    msg.message for msg in context.chat_history.messages if msg.is_of_kind(ChatMessageKind.Agent)
                 ],
                 "last_message": last_agent_message.map_or(lambda m: m.message, ""),
             },
             "user": {
                 "messages": [
-                    msg.message for msg in context.chatHistory.messages if msg.is_of_kind(ChatMessageKind.User)
+                    msg.message for msg in context.chat_history.messages if msg.is_of_kind(ChatMessageKind.User)
                 ],
                 "last_message": last_user_message.map_or(lambda m: m.message, ""),
             },
-            "messages": [msg.message for msg in context.chatHistory.messages],
+            "messages": [msg.message for msg in context.chat_history.messages],
             "last_message": last_message.map_or(lambda m: m.message, ""),
         }
 

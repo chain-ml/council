@@ -17,7 +17,7 @@ class AgentChain(Chain):
         budget: Budget,
         executor: Optional[RunnerExecutor] = None,
     ) -> Any:
-        agent_context = AgentContext(context.chatHistory)
+        agent_context = AgentContext(context.chat_history)
         result = self.agent.execute(agent_context, budget)
         maybe_message = result.try_best_message
         if maybe_message.is_some():
