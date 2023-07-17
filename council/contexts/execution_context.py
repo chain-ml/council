@@ -1,5 +1,6 @@
 import abc
 from typing import Any, Dict, List, Optional, Sequence, Callable, Iterable
+from typing_extensions import TypeGuard
 
 from more_itertools import first
 
@@ -54,7 +55,10 @@ class MessageCollection(abc.ABC):
         return self._last_message_filter(predicate)
 
     def _last_message_filter(self, predicate: Callable[[ChatMessageBase], bool]) -> Optional[ChatMessageBase]:
-        return first(filter(predicate, self.reversed), None)
+        def typeguard_predicate(message: ChatMessageBase) -> TypeGuard[Optional[ChatMessageBase]]:
+            return isinstance(message, ChatMessageBase) and predicate(message)
+
+        return first(filter(typeguard_predicate, self.reversed), None)
 
     @staticmethod
     def message_kind_predicate(kind: ChatMessageKind) -> Callable[[ChatMessageBase], bool]:
