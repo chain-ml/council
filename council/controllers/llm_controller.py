@@ -51,7 +51,7 @@ class LLMController(ControllerBase):
         messages = [
             LLMMessage.system_message("\n".join(task_description)),
             LLMMessage.user_message(
-                f"what are most relevant categories for: {context.chatHistory.last_user_message().unwrap().message}"
+                f"what are most relevant categories for: {context.chatHistory.try_last_user_message.unwrap().message}"
             ),
         ]
 

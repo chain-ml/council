@@ -17,7 +17,7 @@ class GoogleNewsSkill(SkillBase):
         self.gn = GoogleNewsSearchEngine(period="90d", suffix=suffix)
 
     def execute(self, context: ChainContext, budget: Budget) -> SkillMessage:
-        prompt = context.chatHistory.last_user_message().unwrap("no user message")
+        prompt = context.chatHistory.try_last_user_message.unwrap("no user message")
 
         resp = self.gn.execute(query=prompt.message, nb_results=5)
         response_count = len(resp)

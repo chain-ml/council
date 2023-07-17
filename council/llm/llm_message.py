@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Iterable
 
 from council.contexts import ChatMessageBase, ChatMessageKind
 
@@ -99,6 +99,6 @@ class LLMMessage:
         return None
 
     @staticmethod
-    def from_chat_messages(messages: List[ChatMessageBase]) -> List["LLMMessage"]:
+    def from_chat_messages(messages: Iterable[ChatMessageBase]) -> List["LLMMessage"]:
         m = map(LLMMessage.from_chat_message, messages)
         return [msg for msg in m if msg is not None]

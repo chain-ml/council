@@ -22,4 +22,4 @@ class AgentChain(Chain):
         maybe_message = result.try_best_message
         if maybe_message.is_some():
             message = maybe_message.unwrap()
-            context.current.messages.append(SkillSuccessMessage(self.name, message.message, message.data))
+            context.current.append(SkillSuccessMessage(self.name, message.message, message.data))

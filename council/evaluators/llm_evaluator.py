@@ -6,7 +6,7 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredAgentMessage, AgentMessage, SkillMessage, UserMessage
+from council.contexts import AgentContext, ScoredAgentMessage, AgentMessage, ChatMessageBase
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.runners import Budget
@@ -27,16 +27,18 @@ class LLMEvaluator(EvaluatorBase):
         self.llm = llm
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredAgentMessage]:
-        query = context.chatHistory.last_user_message().unwrap()
+        query = context.chatHistory.try_last_user_message.unwrap()
         chain_results = [
-            chain_history[-1].last_message().unwrap()
+            chain_history[-1].try_last_message.unwrap()
             for chain_history in context.chainHistory.values()
-            if chain_history[-1].last_message().is_some()
+            if chain_history[-1].try_last_message.is_some()
         ]
         scored_messages = self.__score_responses(query=query, skill_messages=chain_results)
         return list(scored_messages)
 
-    def __score_responses(self, query: UserMessage, skill_messages: list[SkillMessage]) -> List[ScoredAgentMessage]:
+    def __score_responses(
+        self, query: ChatMessageBase, skill_messages: list[ChatMessageBase]
+    ) -> List[ScoredAgentMessage]:
         """
         Score agent response.
 

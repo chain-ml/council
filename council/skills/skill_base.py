@@ -99,7 +99,7 @@ class SkillBase(SkillRunnerBase):
             raise RunnerSkillError(f"an unexpected error occurred in skill {self.name}") from e
         finally:
             if not self.should_stop(context, budget):
-                context.current.messages.append(skill_message)
+                context.current.append(skill_message)
 
     def __repr__(self):
         return f"SkillBase({self.name})"

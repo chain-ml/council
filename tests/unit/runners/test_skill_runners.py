@@ -96,7 +96,7 @@ class TestSkillRunners(unittest.TestCase):
         time.sleep(1)
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertSuccessMessages(["first"])
-        self.assertIsInstance(self.context.current.last_message().unwrap(), SkillErrorMessage)
+        self.assertIsInstance(self.context.current.try_last_message.unwrap(), SkillErrorMessage)
 
     def test_parallel(self):
         instance = Parallel(SkillTest("first", 0.2), SkillTest("second", 0.1))
@@ -118,7 +118,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertTrue(self.context.cancellationToken.cancelled)
         self.assertSuccessMessages(["third"])
-        self.assertIsInstance(self.context.current.last_message().unwrap(), SkillErrorMessage)
+        self.assertIsInstance(self.context.current.try_last_message.unwrap(), SkillErrorMessage)
 
         time.sleep(0.5)
         self.assertSuccessMessages(["third"])

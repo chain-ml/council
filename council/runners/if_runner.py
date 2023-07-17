@@ -25,7 +25,7 @@ class If(RunnerBase):
         try:
             result = self.predicate(context, budget)
         except Exception as e:
-            context.current.messages.append(SkillErrorMessage("IfRunner", f"predicate raised exception: {e}"))
+            context.current.append(SkillErrorMessage("IfRunner", f"predicate raised exception: {e}"))
             raise RunnerPredicateError from e
         if result:
             self.runner.run(context, budget, executor)

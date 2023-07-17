@@ -23,7 +23,7 @@ def get_last_messages(context: SkillContext) -> List[LLMMessage]:
         it_ctxt = context.iteration.unwrap()
         msg = LLMMessage.user_message(it_ctxt.value)
         return [msg]
-    last_message = context.current.last_message()
+    last_message = context.current.try_last_message
     if last_message.is_none():
         return get_chat_history(context)
     msg = LLMMessage.user_message(last_message.unwrap().message)
