@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, List, Optional, Sequence, Callable, Iterable
 
-import more_itertools
+from more_itertools import first
 
 from .messages import ChatMessageBase, UserMessage, AgentMessage, SkillMessage, ScoredAgentMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
@@ -21,7 +21,7 @@ class MessageCollection(abc.ABC):
 
     @property
     def last_message(self) -> Optional[ChatMessageBase]:
-        return next(iter(self.reversed), None)
+        return first(self.reversed, None)
 
     @property
     def try_last_message(self) -> Option[ChatMessageBase]:
@@ -54,7 +54,7 @@ class MessageCollection(abc.ABC):
         return self._last_message_filter(predicate)
 
     def _last_message_filter(self, predicate: Callable[[ChatMessageBase], bool]) -> Optional[ChatMessageBase]:
-        return more_itertools.first(filter(predicate, self.reversed))
+        return first(filter(predicate, self.reversed), None)
 
     @staticmethod
     def message_kind_predicate(kind: ChatMessageKind) -> Callable[[ChatMessageBase], bool]:
