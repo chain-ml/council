@@ -6,7 +6,7 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredAgentMessage, AgentMessage, ChatMessageBase
+from council.contexts import AgentContext, ScoredAgentMessage, ChatMessageBase
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.runners import Budget
@@ -60,7 +60,7 @@ class LLMEvaluator(EvaluatorBase):
         agent_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(skill_messages, scores)):
             agent_message = ScoredAgentMessage(
-                AgentMessage(message=skill_message.message, data=skill_message.data), score.unwrap()
+                ChatMessageBase.agent(message=skill_message.message, data=skill_message.data), score.unwrap()
             )
             agent_messages.append(agent_message)
 

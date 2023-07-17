@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from .scorer_base import ScorerBase
-from council.contexts import AgentMessage
+from council.contexts import ChatMessageBase
 from council.llm import LLMBase, LLMMessage
 
 
@@ -26,12 +26,12 @@ class LLMSimilarityScorer(ScorerBase):
         result["expected"] = self._expected
         return result
 
-    def _score(self, message: AgentMessage) -> float:
+    def _score(self, message: ChatMessageBase) -> float:
         messages = self._build_messages(message)
         llm_response = self._llm.post_chat_request(messages)
         return self._parse_response(llm_response)
 
-    def _build_messages(self, message: AgentMessage) -> List[LLMMessage]:
+    def _build_messages(self, message: ChatMessageBase) -> List[LLMMessage]:
         prompt = [
             "You are an assistant specialized in evaluating the similarity between two messages.",
             "# Instructions",

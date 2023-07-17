@@ -1,6 +1,6 @@
 import unittest
 
-from council.contexts import AgentMessage
+from council.contexts import ChatMessageBase
 from council.scorers import LLMSimilarityScorer, ScorerException
 from council.mocks import MockLLM
 
@@ -22,4 +22,4 @@ class TestLLMSimilarityScorer(unittest.TestCase):
     def _test_parse(message: str) -> float:
         llm = MockLLM.from_response(message)
         instance = LLMSimilarityScorer(llm, "whatever")
-        return instance.score(AgentMessage("does not matter", None))
+        return instance.score(ChatMessageBase.agent("does not matter"))

@@ -1,6 +1,6 @@
 import json
 
-from council.contexts import ChainContext, SkillMessage
+from council.contexts import ChainContext, ChatMessageBase
 from council.runners import Budget
 from .google_context import GoogleNewsSearchEngine
 from .. import SkillBase
@@ -16,7 +16,7 @@ class GoogleNewsSkill(SkillBase):
         super().__init__("gnews")
         self.gn = GoogleNewsSearchEngine(period="90d", suffix=suffix)
 
-    def execute(self, context: ChainContext, budget: Budget) -> SkillMessage:
+    def execute(self, context: ChainContext, budget: Budget) -> ChatMessageBase:
         prompt = context.chatHistory.try_last_user_message.unwrap("no user message")
 
         resp = self.gn.execute(query=prompt.message, nb_results=5)

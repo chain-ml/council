@@ -4,7 +4,7 @@ from typing_extensions import TypeGuard
 
 from more_itertools import first
 
-from .messages import ChatMessageBase, UserMessage, AgentMessage, SkillMessage, ScoredAgentMessage, ChatMessageKind
+from .messages import ChatMessageBase, ScoredAgentMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
 from council.utils import Option
 
@@ -46,11 +46,7 @@ class MessageCollection(abc.ABC):
 
     def last_message_from_skill(self, skill_name: str) -> Optional[ChatMessageBase]:
         def predicate(message: ChatMessageBase):
-            return (
-                message.is_of_kind(ChatMessageKind.Skill)
-                and isinstance(message, SkillMessage)
-                and message.is_from_skill(skill_name)
-            )
+            return message.is_of_kind(ChatMessageKind.Skill) and message.is_from_source(skill_name)
 
         return self._last_message_filter(predicate)
 
@@ -95,7 +91,7 @@ class ChatHistory(MessageCollection):
             message (str): a text message
         """
 
-        self._messages.append(UserMessage(message))
+        self._messages.append(ChatMessageBase(message, ChatMessageKind.User))
 
     def add_agent_message(self, message: str, data: Any = None):
         """
@@ -106,7 +102,7 @@ class ChatHistory(MessageCollection):
             data (Any): some data, if any
         """
 
-        self._messages.append(AgentMessage(message, data))
+        self._messages.append(ChatMessageBase(message, ChatMessageKind.Agent, data))
 
     @staticmethod
     def from_user_message(message: str) -> "ChatHistory":
@@ -117,24 +113,24 @@ class ChatHistory(MessageCollection):
 
 class ChainHistory(MessageCollection):
     """
-    Manages all the :class:`SkillMessage` generated during one execution of a :class:`.Chain`
+    Manages all the :class:`ChatMessageBase` generated during one execution of a :class:`.Chain`
     """
 
-    _messages: List[SkillMessage]
+    _messages: List[ChatMessageBase]
 
     def __init__(self):
         """Initialize a new instance"""
         self._messages = []
 
     @property
-    def messages(self) -> Sequence[SkillMessage]:
+    def messages(self) -> Sequence[ChatMessageBase]:
         return self._messages
 
     @property
     def reversed(self) -> Iterable[ChatMessageBase]:
         return reversed(self._messages)
 
-    def append(self, message: SkillMessage):
+    def append(self, message: ChatMessageBase):
         self._messages.append(message)
 
 

@@ -2,7 +2,7 @@ from typing import Optional, Any
 
 from .agent import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChainContext, SkillSuccessMessage
+from council.contexts import AgentContext, ChainContext, ChatMessageBase
 from council.runners import Budget, RunnerExecutor
 
 
@@ -22,4 +22,6 @@ class AgentChain(Chain):
         maybe_message = result.try_best_message
         if maybe_message.is_some():
             message = maybe_message.unwrap()
-            context.current.append(SkillSuccessMessage(self.name, message.message, message.data))
+            context.current.append(
+                ChatMessageBase.skill(message.message, message.data, message.source, message.is_error)
+            )

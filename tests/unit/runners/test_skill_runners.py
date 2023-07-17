@@ -5,11 +5,9 @@ from typing import List, Any
 from council.contexts import (
     ChatHistory,
     ChainContext,
-    SkillMessage,
-    SkillSuccessMessage,
-    SkillErrorMessage,
     ChainHistory,
     SkillContext,
+    ChatMessageBase,
 )
 
 from council.skills.skill_base import SkillBase
@@ -37,7 +35,7 @@ class SkillTest(SkillBase):
         super().__init__(name)
         self.wait = wait
 
-    def execute(self, context: SkillContext, budget: Budget) -> SkillMessage:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessageBase:
         time.sleep(abs(self.wait))
         if self.wait < 0:
             raise MySkillException("invalid wait")
@@ -58,7 +56,7 @@ class TestSkillRunners(unittest.TestCase):
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
             expected,
-            [m.message for m in self.context.current.messages if isinstance(m, SkillSuccessMessage)],
+            [m.message for m in self.context.current.messages if m.is_kind_skill and m.is_ok],
         )
 
     def test_one_skill(self):
@@ -96,7 +94,7 @@ class TestSkillRunners(unittest.TestCase):
         time.sleep(1)
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertSuccessMessages(["first"])
-        self.assertIsInstance(self.context.current.try_last_message.unwrap(), SkillErrorMessage)
+        self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
 
     def test_parallel(self):
         instance = Parallel(SkillTest("first", 0.2), SkillTest("second", 0.1))
@@ -118,7 +116,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertTrue(self.context.cancellationToken.cancelled)
         self.assertSuccessMessages(["third"])
-        self.assertIsInstance(self.context.current.try_last_message.unwrap(), SkillErrorMessage)
+        self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
 
         time.sleep(0.5)
         self.assertSuccessMessages(["third"])
@@ -168,7 +166,7 @@ class TestSkillRunners(unittest.TestCase):
         instance = ParallelFor(generator, SkillTest("for each", 0.01))
         self._execute(instance, Budget(2))
         self.assertSuccessMessages(["for each" for i in range(count)])
-        data = [m.data for m in self.context.current.messages if isinstance(m, SkillSuccessMessage)]
+        data = [m.data for m in self.context.current.messages if m.is_ok]
         data.sort()
         self.assertEqual([i for i in range(count)], data)
 

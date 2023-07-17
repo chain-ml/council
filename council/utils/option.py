@@ -111,4 +111,3 @@ class Option(Generic[T]):
               Option[T]: a new instance
         """
         return Option(None)
-

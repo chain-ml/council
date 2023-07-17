@@ -3,7 +3,7 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.contexts import AgentContext, ScoredAgentMessage, AgentMessage, SkillContext, SkillMessage
+from council.contexts import AgentContext, ScoredAgentMessage, SkillContext, ChatMessageBase
 from council.llm import LLMBase, LLMMessage
 from council.runners import Budget
 from council.scorers import ScorerBase
@@ -20,11 +20,11 @@ def llm_message_content_to_str(messages: List[LLMMessage]) -> str:
 
 
 class MockSkill(SkillBase):
-    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], SkillMessage]] = None):
+    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], ChatMessageBase]] = None):
         super().__init__(name)
         self._action = action if action is not None else self.empty_message
 
-    def execute(self, context: SkillContext, budget: Budget) -> SkillMessage:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessageBase:
         return self._action(context, budget)
 
     def empty_message(self, context: SkillContext, budget: Budget):
@@ -57,7 +57,7 @@ class MockErrorSimilarityScorer(ScorerBase):
     def __init__(self, exception: Exception = Exception()):
         self.exception = exception
 
-    def _score(self, message: AgentMessage) -> float:
+    def _score(self, message: ChatMessageBase) -> float:
         raise self.exception
 
 
@@ -79,7 +79,7 @@ class MockAgent(Agent):
 
     def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
         time.sleep(random.uniform(self.sleep, self.sleep + self.sleep_interval))
-        return AgentResult([ScoredAgentMessage(AgentMessage(self.message, self.data), score=self.score)])
+        return AgentResult([ScoredAgentMessage(ChatMessageBase.agent(self.message, self.data), score=self.score)])
 
 
 class MockErrorAgent(Agent):

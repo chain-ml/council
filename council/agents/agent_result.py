@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import List, Optional
 
-from council.contexts import ScoredAgentMessage, AgentMessage
+from council.contexts import ScoredAgentMessage, ChatMessageBase
 from council.utils import Option
 
 
@@ -32,12 +32,12 @@ class AgentResult:
         return self._messages
 
     @property
-    def best_message(self) -> AgentMessage:
+    def best_message(self) -> ChatMessageBase:
         """
         The message with the highest score. If multiple messages have the highest score, the first one is returned.
 
         Returns:
-            AgentMessage:
+            ChatMessageBase:
 
         Raises:
             ValueError: there is no messages
@@ -45,12 +45,12 @@ class AgentResult:
         return max(self._messages, key=lambda item: item.score).message
 
     @property
-    def try_best_message(self) -> Option[AgentMessage]:
+    def try_best_message(self) -> Option[ChatMessageBase]:
         """
         The message with the highest score, if any. See :meth:`best_message` for more details
 
         Returns:
-            Option[AgentMessage]: the message with the highest score, wrapped into :meth:`.Option.some`, if some,
+            Option[ChatMessageBase]: the message with the highest score, wrapped into :meth:`.Option.some`, if some,
                 :meth:`.Option.none` otherwise
         """
         if len(self._messages) == 0:
