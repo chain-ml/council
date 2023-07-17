@@ -7,7 +7,7 @@ from council.utils import (
     read_env_float,
     read_env_bool,
     MissingEnvVariableException,
-    InvalidTypeEnvVariableException,
+    EnvVariableValueErrorException,
 )
 
 
@@ -46,9 +46,9 @@ class TestPrompt(unittest.TestCase):
 
     def test_invalid_env(self):
         os.environ["INVALID_FLOAT"] = "2Gb"
-        with self.assertRaises(InvalidTypeEnvVariableException):
+        with self.assertRaises(EnvVariableValueErrorException):
             _ = read_env_int("INVALID_FLOAT").unwrap()
 
         os.environ["INVALID_BOOL"] = "Tue"
-        with self.assertRaises(InvalidTypeEnvVariableException):
+        with self.assertRaises(EnvVariableValueErrorException):
             _ = read_env_int("INVALID_BOOL").unwrap()

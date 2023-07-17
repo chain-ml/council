@@ -73,7 +73,7 @@ class LLMMessage:
         return LLMMessage(role=LLMMessageRole.Assistant, content=content)
 
     def dict(self) -> dict[str, str]:
-        return {"role": self._role, "content": self._content}
+        return {"role": self._role.value, "content": self._content}
 
     @property
     def content(self) -> str:

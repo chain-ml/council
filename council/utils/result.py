@@ -1,8 +1,8 @@
-from typing import Union
+from typing import Union, Optional, Any
 
 
 class Ok:
-    def __init__(self, value):
+    def __init__(self, value: Optional[Any] = None):
         self.value = value
 
     def __repr__(self):
