@@ -26,7 +26,7 @@ class MessageCollection(abc.ABC):
 
     @property
     def try_last_message(self) -> Option[ChatMessageBase]:
-        return Option.from_optional(self.last_message)
+        return Option(self.last_message)
 
     @property
     def last_user_message(self) -> Optional[ChatMessageBase]:
@@ -34,7 +34,7 @@ class MessageCollection(abc.ABC):
 
     @property
     def try_last_user_message(self) -> Option[ChatMessageBase]:
-        return Option.from_optional(self.last_user_message)
+        return Option(self.last_user_message)
 
     @property
     def last_agent_message(self) -> Optional[ChatMessageBase]:
@@ -42,7 +42,7 @@ class MessageCollection(abc.ABC):
 
     @property
     def try_last_agent_message(self) -> Option[ChatMessageBase]:
-        return Option.from_optional(self.last_agent_message)
+        return Option(self.last_agent_message)
 
     def last_message_from_skill(self, skill_name: str) -> Optional[ChatMessageBase]:
         def predicate(message: ChatMessageBase):

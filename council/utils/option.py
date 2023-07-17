@@ -112,8 +112,3 @@ class Option(Generic[T]):
         """
         return Option(None)
 
-    @staticmethod
-    def from_optional(value: Optional[T]) -> "Option[T]":
-        if value is None:
-            return Option.none()
-        return Option.some(value)
