@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from council.chains import Chain
 from council.contexts import AgentContext, ChatHistory
@@ -39,13 +39,13 @@ class Agent:
         self.chains = chains
         self.evaluator = evaluator
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
         Args:
             context (AgentContext): The context for executing the chains.
-            budget (Budget): The budget for agent execution.
+            budget (Optional[Budget]): The budget for agent execution. Defaults to :meth:`Budget.default` if `None`
 
         Returns:
             AgentResult:
@@ -54,6 +54,7 @@ class Agent:
             None
         """
         executor = new_runner_executor("agent")
+        budget = budget or Budget.default()
         try:
             logger.info('message="agent execution started"')
             while not budget.is_expired():
