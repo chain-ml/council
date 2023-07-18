@@ -8,6 +8,7 @@ from .execution_context import (
     ChainContext,
     ChatHistory,
     ChainHistory,
+    MessageCollection,
     SkillContext,
     IterationContext,
 )
