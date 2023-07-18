@@ -70,7 +70,7 @@ Import Council.
 ```python
 from council.chains import Chain
 from council.skills import LLMSkill
-from council.llm import OpenAILLM, OpenAIConfiguration
+from council.llm import OpenAILLM, OpenAILLMConfiguration
 ```
 
 Setup API keys in .env file (example in repository) and use it to setup the LLM (here: OpenAILLM).
@@ -79,7 +79,7 @@ Setup API keys in .env file (example in repository) and use it to setup the LLM 
 import dotenv
 
 dotenv.load_dotenv()
-openai_llm = OpenAILLM(config=OpenAIConfiguration.from_env())
+openai_llm = OpenAILLM(config=OpenAILLMConfiguration.from_env())
 ```
 
 Create your first Hello World Skill and Wrap it in a Chain.

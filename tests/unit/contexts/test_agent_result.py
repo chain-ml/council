@@ -1,15 +1,15 @@
 import unittest
 
 from council.agents import AgentResult
-from council.contexts import ScoredAgentMessage, AgentMessage
+from council.contexts import ScoredChatMessage, ChatMessage
 
 
 class TestAgentResult(unittest.TestCase):
     def setUp(self) -> None:
         self.instance = AgentResult(
             messages=[
-                ScoredAgentMessage(AgentMessage("second", data=None), 0.8),
-                ScoredAgentMessage(AgentMessage("best", data=None), 1.0),
+                ScoredChatMessage(ChatMessage.agent("second"), 0.8),
+                ScoredChatMessage(ChatMessage.agent("best"), 1.0),
             ]
         )
 

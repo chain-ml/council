@@ -30,14 +30,14 @@ class RunnerBase(abc.ABC):
             return self._run(context, budget, executor)
         except futures.TimeoutError as e:
             logger.debug("timeout running %s", self.__class__.__name__)
-            context.cancellationToken.cancel()
+            context.cancellation_token.cancel()
             raise RunnerTimeoutError(self.__class__.__name__) from e
         except RunnerError:
-            context.cancellationToken.cancel()
+            context.cancellation_token.cancel()
             raise
         except Exception as e:
             logger.exception("an unexpected error occurred running %s", self.__class__.__name__)
-            context.cancellationToken.cancel()
+            context.cancellation_token.cancel()
             raise RunnerError(f"an unexpected error occurred in {self.__class__.__name__}") from e
         finally:
             logger.debug("done running %s", self.__class__.__name__)
@@ -50,9 +50,9 @@ class RunnerBase(abc.ABC):
     def should_stop(context: ChainContext, budget: Budget) -> bool:
         if budget.is_expired():
             logger.debug('message="stopping" reason="budget expired"')
-        if context.cancellationToken.cancelled:
+        if context.cancellation_token.cancelled:
             logger.debug('message="stopping" reason="cancellation token is set"')
-        return budget.is_expired() or context.cancellationToken.cancelled
+        return budget.is_expired() or context.cancellation_token.cancelled
 
     @abc.abstractmethod
     def _run(

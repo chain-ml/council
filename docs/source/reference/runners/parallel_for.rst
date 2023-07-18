@@ -30,7 +30,7 @@ This example builds on the previous one and shows how to consume the iteration i
 .. testcode::
 
     from council.chains import Chain
-    from council.contexts import ChainContext, SkillMessage, SkillContext
+    from council.contexts import ChatMessage, ChainContext, SkillContext
     from council.runners import Budget, ParallelFor
     from council.skills import SkillBase
 
@@ -42,7 +42,7 @@ This example builds on the previous one and shows how to consume the iteration i
         def __init__(self):
             super().__init__("mySkill")
 
-        def execute(self, context: SkillContext, budget: Budget) -> SkillMessage:
+        def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
             it = context.iteration.unwrap()
             message = f"index {it.index}, {it.value}"
             print(message)

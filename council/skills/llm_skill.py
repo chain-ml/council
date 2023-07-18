@@ -1,7 +1,7 @@
 import logging
 from typing import List, Protocol
 
-from council.contexts import ChainContext, SkillMessage, SkillSuccessMessage, SkillContext
+from council.contexts import ChainContext, SkillContext, ChatMessage
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.runners import Budget
@@ -15,7 +15,7 @@ class ReturnMessages(Protocol):
 
 def get_chat_history(context: SkillContext) -> List[LLMMessage]:
     # Convert chat's history and give it to the inner llm
-    return LLMMessage.from_chat_messages(context.chatHistory.messages)
+    return LLMMessage.from_chat_messages(context.chat_history.messages)
 
 
 def get_last_messages(context: SkillContext) -> List[LLMMessage]:
@@ -23,7 +23,7 @@ def get_last_messages(context: SkillContext) -> List[LLMMessage]:
         it_ctxt = context.iteration.unwrap()
         msg = LLMMessage.user_message(it_ctxt.value)
         return [msg]
-    last_message = context.current.last_message()
+    last_message = context.current.try_last_message
     if last_message.is_none():
         return get_chat_history(context)
     msg = LLMMessage.user_message(last_message.unwrap().message)
@@ -73,7 +73,7 @@ class LLMSkill(SkillBase):
         self._context_messages = context_messages
         self._builder = PromptBuilder(system_prompt)
 
-    def execute(self, context: SkillContext, _budget: Budget) -> SkillMessage:
+    def execute(self, context: SkillContext, _budget: Budget) -> ChatMessage:
         """Execute `LLMSkill`."""
 
         history_messages = self._context_messages(context)
@@ -81,4 +81,4 @@ class LLMSkill(SkillBase):
         messages = [system_prompt, *history_messages]
         llm_response = self._llm.post_chat_request(messages=messages)
 
-        return SkillSuccessMessage(skill_name=self.name, message=llm_response, data=None)
+        return self.build_success_message(message=llm_response, data=None)
