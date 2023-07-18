@@ -8,10 +8,13 @@ from council.runners import Budget
 
 
 class ExecutionUnit:
-    def __init__(self, chain: Chain, budget: Budget, initial_state: Optional[ChatMessage] = None):
+    def __init__(
+        self, chain: Chain, budget: Budget, initial_state: Optional[ChatMessage] = None, name: Optional[str] = None
+    ):
         self._chain = chain
         self._budget = budget
         self._initial_state = initial_state
+        self._name = name or chain.name
 
     @property
     def chain(self) -> Chain:
@@ -24,3 +27,7 @@ class ExecutionUnit:
     @property
     def initial_state(self) -> Optional[ChatMessage]:
         return self._initial_state
+
+    @property
+    def name(self) -> str:
+        return self._name
