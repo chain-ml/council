@@ -13,6 +13,7 @@ class MessageCollection(abc.ABC):
     """
     Base class to manage collection of :class:`ChatMessage`
     """
+
     @property
     @abc.abstractmethod
     def messages(self) -> Iterable[ChatMessage]:
