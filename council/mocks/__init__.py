@@ -77,7 +77,7 @@ class MockAgent(Agent):
         self.sleep = sleep
         self.sleep_interval = sleep_interval
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         time.sleep(random.uniform(self.sleep, self.sleep + self.sleep_interval))
         return AgentResult([ScoredChatMessage(ChatMessage.agent(self.message, self.data), score=self.score)])
 
@@ -87,5 +87,5 @@ class MockErrorAgent(Agent):
     def __init__(self, exception: Exception = Exception()):
         self.exception = exception
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         raise self.exception

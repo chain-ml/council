@@ -33,7 +33,7 @@ class TestAgent(TestCase):
 
         agent = Agent.from_skill(MockSkill(action=action))
         first = agent.execute_from_user_message("first")
-        time.sleep(.01)
+        time.sleep(0.01)
         second = agent.execute_from_user_message("second")
 
         self.assertNotEquals(first.best_message.message, second.best_message.message)
