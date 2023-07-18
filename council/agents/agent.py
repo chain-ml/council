@@ -68,6 +68,8 @@ class Agent:
                     budget = unit.budget
                     logger.info(f'message="chain execution started" chain="{chain.name}"')
                     chain_context = context.new_chain_context(chain.name)
+                    if unit.initial_state is not None:
+                        chain_context.current.append(unit.initial_state)
                     chain.execute(chain_context, budget)
                     logger.info(f'message="chain execution ended" chain="{chain.name}"')
 
