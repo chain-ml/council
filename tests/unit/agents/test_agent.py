@@ -1,3 +1,4 @@
+import time
 from typing import List
 from unittest import TestCase
 
@@ -27,6 +28,17 @@ class TestAgent(TestCase):
         self.assertIsInstance(agent.controller, BasicController)
         self.assertIsInstance(agent.evaluator, BasicEvaluator)
         self.assertIsInstance(agent.chains[0].runner, MockSkill)
+
+    def test_default_budget(self):
+        def action(_: SkillContext, budget: Budget) -> ChatMessage:
+            return ChatMessage.skill(f"budget.deadline={budget.deadline}")
+
+        agent = Agent.from_skill(MockSkill(action=action))
+        first = agent.execute_from_user_message("first")
+        time.sleep(0.01)
+        second = agent.execute_from_user_message("second")
+
+        self.assertNotEquals(first.best_message.message, second.best_message.message)
 
     def test_initial_state(self):
         class TestController(BasicController):

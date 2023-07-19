@@ -124,16 +124,10 @@ from council.agents import Agent
 agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=evaluator)
 ```
 
-Now, we are ready to invoke the agent. The ChatHistory object is used to track message history between User and Agents.
+Now, we are ready to invoke the agent.
 
 ```python
-from council.contexts import AgentContext, ChatHistory
-from council.runners import Budget
-
-chat_history = ChatHistory()
-chat_history.add_user_message(message="hello world?!")
-context = AgentContext(chat_history=chat_history)
-result = agent.execute(context=context, budget=Budget(20))
+result = agent.execute_from_user_message("hello world?!")
 print(result.best_message.message)
 ```
 
