@@ -61,7 +61,7 @@ class LLMSkill(SkillBase):
         Parameters:
             llm (LLMBase): The instance of the LLM (Language Model) to interact with.
             system_prompt (str): Optional system prompt to provide to the language model.
-            context_messages (Callable[[ChainContext], List[LLMMessage]]): Optional callable to retrieve
+            context_messages (Callable[[SkillContext], List[LLMMessage]]): Optional callable to retrieve
                 context messages.
 
         Returns:
