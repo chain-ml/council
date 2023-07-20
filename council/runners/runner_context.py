@@ -44,7 +44,8 @@ class RunnerContext:
         return self._previous_messages
 
     def append(self, message: ChatMessage):
-        self._current_messages.append(message)
+        if not self.should_stop():
+            self._current_messages.append(message)
 
     @property
     def messages(self) -> Iterable[ChatMessage]:

@@ -6,6 +6,7 @@ from more_itertools import batched
 
 from council.contexts import ChainContext, SkillContext, IterationContext
 from council.utils import Option
+from . import RunnerContext
 
 from .budget import Budget
 from .errrors import RunnerGeneratorError
@@ -46,24 +47,26 @@ class ParallelFor(LoopRunnerBase):
         self._skill = skill
         self._parallelism = parallelism
 
-    def _run(self, context: ChainContext, budget: Budget, executor: RunnerExecutor) -> None:
-        for batch in batched(self._generate(context, budget), self._parallelism):
-            fs = [executor.submit(self._run_skill, context, item, budget) for item in batch]
+    def _run(self, context: RunnerContext, executor: RunnerExecutor) -> None:
+        for batch in batched(self._generate(context), self._parallelism):
+            fs = [executor.submit(self._run_skill, context, item) for item in batch]
             try:
-                dones, not_dones = futures.wait(fs, budget.remaining().duration, futures.FIRST_EXCEPTION)
+                dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
                 self.rethrow_if_exception(dones)
             finally:
                 [f.cancel() for f in fs]
 
-    def _run_skill(self, context: ChainContext, iteration: IterationContext, budget: Budget):
+    def _run_skill(self, context: RunnerContext, iteration: IterationContext):
         index = iteration.index
         logger.debug(f'message="start iteration" index="{index}"')
-        self._skill.execute_skill(SkillContext(context, Option.some(iteration)), budget)
-        logger.debug(f'message="end iteration" index="{index}"')
-
-    def _generate(self, chain_context: ChainContext, budget: Budget) -> Iterable[IterationContext]:
         try:
-            for index, item in enumerate(self._generator(chain_context, budget)):
+            self._skill.run_in_current_thread(context, Option.some(iteration))
+        finally:
+            logger.debug(f'message="end iteration" index="{index}"')
+
+    def _generate(self, context: RunnerContext) -> Iterable[IterationContext]:
+        try:
+            for index, item in enumerate(self._generator(context.make_chain_context(), context.budget.remaining())):
                 yield IterationContext(index, item)
         except Exception as e:
             raise RunnerGeneratorError from e
