@@ -20,12 +20,11 @@ class RunnerContext:
         self,
         chain_context: ChainContext,
         budget: Budget,
-        cancellation_token: Optional[CancellationToken] = None,
         messages: Optional[List[ChatMessage]] = None,
     ):
         self._chain_context = chain_context
         self._budget = budget
-        self._cancellation_token = cancellation_token or CancellationToken()
+        self._cancellation_token = chain_context.cancellation_token
         self._current_messages = []
         self._previous_messages = messages or []
 
@@ -77,7 +76,6 @@ class RunnerContext:
         return RunnerContext(
             self._chain_context,
             self._budget.remaining(),
-            self._cancellation_token,
             self._previous_messages + self._current_messages,
         )
 

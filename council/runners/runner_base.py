@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class RunnerBase(abc.ABC):
     def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
-        context = RunnerContext(chain_context, budget, chain_context.cancellation_token)
+        context = RunnerContext(chain_context, budget)
         try:
             self.run(context, executor)
         finally:
