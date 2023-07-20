@@ -2,7 +2,7 @@ import abc
 from collections.abc import Set
 from concurrent import futures
 import logging
-from typing import List, Optional, Iterable
+from typing import Optional, Iterable
 
 from council.contexts import ChainContext, ChatMessage
 from . import RunnerResult, RunnerContext
