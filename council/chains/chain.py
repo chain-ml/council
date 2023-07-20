@@ -69,7 +69,7 @@ class Chain:
         executor = (
             RunnerExecutor(max_workers=10, thread_name_prefix=f"chain_{self.name}") if executor is None else executor
         )
-        self.runner.run(context, budget, executor)
+        self.runner.run_from_chain_context(context, budget, executor)
 
     def __repr__(self):
         return f"Chain({self.name}, {self.description})"
