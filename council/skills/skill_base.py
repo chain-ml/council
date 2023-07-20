@@ -5,7 +5,7 @@ from typing import Any
 from abc import abstractmethod
 
 from council.contexts import SkillContext, ChatMessage
-from council.runners import RunnerSkillError, SkillRunnerBase, Budget
+from council.runners import SkillRunnerBase, Budget
 
 logger = logging.getLogger(__name__)
 
