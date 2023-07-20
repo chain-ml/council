@@ -82,9 +82,7 @@ class SkillBase(SkillRunnerBase):
         logger.info(f'message="skill execution started" skill="{self.name}"')
         skill_message = self.execute(context, budget)
         if skill_message.is_ok:
-            logger.info(
-                f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
-            )
+            logger.info(f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"')
         else:
             logger.warning(
                 f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'

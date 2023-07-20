@@ -22,7 +22,8 @@ from council.runners import (
     RunnerPredicateError,
     RunnerGeneratorError,
     RunnerSkillError,
-    Budget, RunnerContext,
+    Budget,
+    RunnerContext,
 )
 
 
@@ -109,7 +110,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
     def test_parallel_with_exception(self):
-        instance = Parallel(SkillTest("first", .3), SkillTest("second", -.2), SkillTest("third", .1))
+        instance = Parallel(SkillTest("first", 0.3), SkillTest("second", -0.2), SkillTest("third", 0.1))
         with self.assertRaises(RunnerSkillError) as cm:
             self._execute(instance, Budget(1))
 
@@ -118,7 +119,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["third"])
         self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
 
-        time.sleep(.2)
+        time.sleep(0.2)
         self.assertSuccessMessages(["third"])
 
     def test_if_runner_true(self):

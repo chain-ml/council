@@ -16,7 +16,13 @@ class RunnerContext:
     _current_messages: list[ChatMessage]
     _previous_messages: list[ChatMessage]
 
-    def __init__(self, chain_context: ChainContext, budget: Budget, cancellation_token: Optional[CancellationToken] = None, messages: Optional[List[ChatMessage]] = None):
+    def __init__(
+        self,
+        chain_context: ChainContext,
+        budget: Budget,
+        cancellation_token: Optional[CancellationToken] = None,
+        messages: Optional[List[ChatMessage]] = None,
+    ):
         self._chain_context = chain_context
         self._budget = budget
         self._cancellation_token = cancellation_token or CancellationToken()
@@ -68,7 +74,12 @@ class RunnerContext:
         return ChainContext(self._chain_context.chat_history, histories)
 
     def fork(self) -> "RunnerContext":
-        return RunnerContext(self._chain_context, self._budget.remaining(), self._cancellation_token, self._previous_messages + self._current_messages)
+        return RunnerContext(
+            self._chain_context,
+            self._budget.remaining(),
+            self._cancellation_token,
+            self._previous_messages + self._current_messages,
+        )
 
     def merge(self, contexts: List["RunnerContext"]):
         for context in contexts:

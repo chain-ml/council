@@ -53,7 +53,6 @@ class SkillRunnerBase(RunnerBase):
             context.append(self.from_exception(e))
             raise RunnerSkillError(f"an unexpected error occurred in skill {self._name}") from e
 
-
     @abc.abstractmethod
     def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
         """
@@ -64,4 +63,3 @@ class SkillRunnerBase(RunnerBase):
     def from_exception(self, exception: Exception) -> ChatMessage:
         message = f"skill '{self._name}' raised exception: {exception}"
         return ChatMessage.skill(message, data=None, source=self._name, is_error=True)
-
