@@ -1,5 +1,9 @@
 import abc
-from council.contexts import ChainContext, SkillContext, IterationContext
+import concurrent.futures
+
+from council.contexts import ChainContext, SkillContext, IterationContext, ChatMessage
+from . import RunnerTimeoutError, RunnerContext
+from .runner_result import RunnerResult
 
 from .budget import Budget
 from .runner_base import RunnerBase
@@ -16,24 +20,25 @@ class SkillRunnerBase(RunnerBase):
 
     def _run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
-        self.run_skill(SkillContext(context, IterationContext.empty()), budget, executor)
+        self.run_skill(context, executor)
 
-    def run_skill(self, context: SkillContext, budget: Budget, executor: RunnerExecutor) -> None:
+    def run_skill(self, context: RunnerContext, executor: RunnerExecutor) -> None:
         """
         Run the skill in a different thread, and await for completion
         """
-        future = executor.submit(self.execute_skill, context, budget)
+        skill_context = SkillContext(context.make_chain_context(), IterationContext.empty())
+        future = executor.submit(self.execute_skill, skill_context, context.budget)
         try:
-            future.result(timeout=budget.duration)
+            result = future.result(timeout=context.budget.duration)
+            context.append(result)
         finally:
             future.cancel()
 
     @abc.abstractmethod
-    def execute_skill(self, context: SkillContext, budget: Budget) -> None:
+    def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
         """
         Run the skill in the current thread
         """

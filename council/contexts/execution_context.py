@@ -180,9 +180,9 @@ class ChainHistory(MessageCollection):
 
     _messages: List[ChatMessage]
 
-    def __init__(self):
+    def __init__(self, messages: Optional[List[ChatMessage]] = None):
         """Initialize a new instance"""
-        self._messages = []
+        self._messages = messages or []
 
     @property
     def messages(self) -> Sequence[ChatMessage]:
@@ -194,6 +194,12 @@ class ChainHistory(MessageCollection):
 
     def append(self, message: ChatMessage):
         self._messages.append(message)
+
+    def extend(self, messages: Iterable[ChatMessage]):
+        self._messages.extend(messages)
+
+    def copy(self) -> "ChainHistory":
+        return ChainHistory(self._messages.copy())
 
 
 class ChainContext(MessageCollection):

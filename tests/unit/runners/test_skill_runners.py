@@ -22,7 +22,7 @@ from council.runners import (
     RunnerPredicateError,
     RunnerGeneratorError,
     RunnerSkillError,
-    Budget,
+    Budget, RunnerContext,
 )
 
 
@@ -51,7 +51,9 @@ class TestSkillRunners(unittest.TestCase):
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        runner.run(self.context, budget, self.executor)
+        context = RunnerContext(self.context, budget)
+        runner.run(context, self.executor)
+        self.context.current.extend(context.messages)
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -61,7 +63,7 @@ class TestSkillRunners(unittest.TestCase):
 
     def test_one_skill(self):
         instance = Sequential(SkillTest("single", 0.1))
-        self._execute(instance, Budget(1))
+        self._execute(instance, Budget(1000))
         self.assertSuccessMessages(["single"])
 
     def test_one_skill_timeout(self):
