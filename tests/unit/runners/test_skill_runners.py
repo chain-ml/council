@@ -51,11 +51,7 @@ class TestSkillRunners(unittest.TestCase):
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        context = RunnerContext(self.context, budget, self.context.cancellation_token)
-        try:
-            runner.run(context, self.executor)
-        finally:
-            self.context.current.extend(context.messages)
+        runner.run_from_chain_context(self.context, budget, self.executor)
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -106,8 +102,8 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["second", "first"])
 
     def test_parallel_sequence(self):
-        sequence = Sequential(SkillTest("first", 0.1), SkillTest("fourth", 0.2))
-        parallel = Parallel(sequence, SkillTest("second", 0.15), SkillTest("third", 0.2))
+        sequence = Sequential(SkillTest("second", 0.1), SkillTest("third", 0.2))
+        parallel = Parallel(sequence, SkillTest("first", 0.15), SkillTest("fourth", 0.4))
         self._execute(parallel, Budget(1))
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])

@@ -37,7 +37,8 @@ class SkillRunnerBase(RunnerBase):
         future = executor.submit(self.execute_skill, skill_context, context.budget)
         try:
             result = future.result(timeout=context.budget.remaining().duration)
-            context.append(result)
+            if not context.should_stop():
+                context.append(result)
         except concurrent.futures.TimeoutError:
 
             raise

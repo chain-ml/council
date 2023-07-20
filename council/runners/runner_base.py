@@ -14,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class RunnerBase(abc.ABC):
+    def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
+        context = RunnerContext(chain_context, budget, chain_context.cancellation_token)
+        try:
+            self.run(context, executor)
+        finally:
+            chain_context.current.extend(context.messages)
+
     """
     Base runner class that handles common execution logic, including error management and timeout
     """
