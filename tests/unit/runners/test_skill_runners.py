@@ -51,7 +51,7 @@ class TestSkillRunners(unittest.TestCase):
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        context = RunnerContext(self.context, budget)
+        context = RunnerContext(self.context, budget, self.context.cancellation_token)
         try:
             runner.run(context, self.executor)
         finally:
@@ -113,16 +113,16 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
     def test_parallel_with_exception(self):
-        instance = Parallel(SkillTest("first", 3), SkillTest("second", -2), SkillTest("third", 1))
+        instance = Parallel(SkillTest("first", .3), SkillTest("second", -.2), SkillTest("third", .1))
         with self.assertRaises(RunnerSkillError) as cm:
-            self._execute(instance, Budget(1000))
+            self._execute(instance, Budget(1))
 
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertTrue(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["third"])
         self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
 
-        time.sleep(0.5)
+        time.sleep(.2)
         self.assertSuccessMessages(["third"])
 
     def test_if_runner_true(self):

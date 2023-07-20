@@ -34,6 +34,7 @@ class RunnerBase(abc.ABC):
             context.cancellation_token.cancel()
             raise RunnerTimeoutError(self.__class__.__name__) from e
         except RunnerError:
+            logger.debug("runner error running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise
         except Exception as e:
