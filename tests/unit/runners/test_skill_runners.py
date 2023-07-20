@@ -52,8 +52,10 @@ class TestSkillRunners(unittest.TestCase):
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
         context = RunnerContext(self.context, budget)
-        runner.run(context, self.executor)
-        self.context.current.extend(context.messages)
+        try:
+            runner.run(context, self.executor)
+        finally:
+            self.context.current.extend(context.messages)
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -63,7 +65,7 @@ class TestSkillRunners(unittest.TestCase):
 
     def test_one_skill(self):
         instance = Sequential(SkillTest("single", 0.1))
-        self._execute(instance, Budget(1000))
+        self._execute(instance, Budget(1))
         self.assertSuccessMessages(["single"])
 
     def test_one_skill_timeout(self):
@@ -91,7 +93,7 @@ class TestSkillRunners(unittest.TestCase):
     def test_sequence_with_exception(self):
         instance = Sequential(SkillTest("first", 0.3), SkillTest("second", -0.2), SkillTest("third", 0.1))
         with self.assertRaises(RunnerSkillError) as cm:
-            self._execute(instance, Budget(1))
+            self._execute(instance, Budget(1000))
 
         time.sleep(1)
         self.assertIsInstance(cm.exception.__cause__, MySkillException)

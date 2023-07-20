@@ -78,25 +78,18 @@ class SkillBase(SkillRunnerBase):
     def build_error_message(self, message: str, data: Any = None) -> ChatMessage:
         return ChatMessage.skill(message, data, source=self._name, is_error=True)
 
-    def from_exception(self, exception: Exception) -> ChatMessage:
-        return self.build_error_message(f"skill '{self._name}' raised exception: {exception}")
-
     def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        try:
-            logger.info(f'message="skill execution started" skill="{self.name}"')
-            skill_message = self.execute(context, budget)
-            if skill_message.is_ok:
-                logger.info(
-                    f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
-                )
-            else:
-                logger.warning(
-                    f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
-                )
-            return skill_message
-        except Exception as e:
-            logger.exception("unexpected error during execution of skill %s", self.name)
-            raise RunnerSkillError(f"an unexpected error occurred in skill {self.name}") from e
+        logger.info(f'message="skill execution started" skill="{self.name}"')
+        skill_message = self.execute(context, budget)
+        if skill_message.is_ok:
+            logger.info(
+                f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
+            )
+        else:
+            logger.warning(
+                f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
+            )
+        return skill_message
 
     def __repr__(self):
         return f"SkillBase({self.name})"
