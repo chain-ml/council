@@ -2,10 +2,9 @@ import abc
 from collections.abc import Set
 from concurrent import futures
 import logging
-from typing import Optional, Iterable
 
-from council.contexts import ChainContext, ChatMessage
-from . import RunnerResult, RunnerContext
+from council.contexts import ChainContext
+from .runner_context import RunnerContext
 from .budget import Budget
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor
@@ -54,24 +53,6 @@ class RunnerBase(abc.ABC):
     @staticmethod
     def rethrow_if_exception(fs: Set[futures.Future]):
         [f.result(timeout=0) for f in fs]
-
-    @staticmethod
-    def should_stop(context: ChainContext, budget: Budget, result: Optional[RunnerResult]) -> bool:
-        if result and result.is_error:
-            logger.debug('message="stopping" reason="skill error"')
-            return True
-        if budget.is_expired():
-            logger.debug('message="stopping" reason="budget expired"')
-        if context.cancellation_token.cancelled:
-            logger.debug('message="stopping" reason="cancellation token is set"')
-        return budget.is_expired() or context.cancellation_token.cancelled
-
-    @staticmethod
-    def make_new_context(context: ChainContext, messages: Iterable[ChatMessage]) -> "ChainContext":
-        current = context.current.copy()
-        current.extend(messages)
-        histories = [*context.chain_histories[:-1], current]
-        return ChainContext(context.chat_history, histories)
 
     @abc.abstractmethod
     def _run(

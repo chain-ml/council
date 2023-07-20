@@ -1,6 +1,6 @@
 from concurrent import futures
-from . import RunnerContext
 
+from .runner_context import RunnerContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
