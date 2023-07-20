@@ -39,6 +39,7 @@ class SkillRunnerBase(RunnerBase):
             result = future.result(timeout=context.budget.remaining().duration)
             context.append(result)
         except concurrent.futures.TimeoutError:
+
             raise
         except Exception as e:
             logger.exception("unexpected error during execution of skill %s", self._name)

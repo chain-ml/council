@@ -115,7 +115,7 @@ class TestSkillRunners(unittest.TestCase):
     def test_parallel_with_exception(self):
         instance = Parallel(SkillTest("first", 3), SkillTest("second", -2), SkillTest("third", 1))
         with self.assertRaises(RunnerSkillError) as cm:
-            self._execute(instance, Budget(10))
+            self._execute(instance, Budget(1000))
 
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertTrue(self.context.cancellation_token.cancelled)

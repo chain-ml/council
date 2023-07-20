@@ -1,5 +1,6 @@
 from concurrent import futures
 from council.contexts import ChainContext
+from . import RunnerContext
 
 from .budget import Budget
 from .runner_base import RunnerBase
@@ -16,13 +17,19 @@ class Parallel(RunnerBase):
 
     def _run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
-        fs = [executor.submit(lambda: runner.run(context, budget, executor)) for runner in self.runners]
+        fs = [executor.submit(lambda: self._run_one(runner, context, executor)) for runner in self.runners]
         try:
-            dones, not_dones = futures.wait(fs, budget.remaining().duration, futures.FIRST_EXCEPTION)
+            dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
             self.rethrow_if_exception(dones)
         finally:
             [f.cancel() for f in fs]
+
+    def _run_one(self, runner: RunnerBase, context: RunnerContext, executor: RunnerExecutor):
+        inner = context.fork()
+        try:
+            runner.run(inner, executor)
+        finally:
+            context.merge([inner])
