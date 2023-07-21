@@ -88,17 +88,18 @@ class Agent:
             executor.shutdown(wait=False, cancel_futures=True)
 
     @staticmethod
-    def from_skill(skill: SkillBase) -> "Agent":
+    def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
             :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
 
         Parameters:
              skill(SkillBase): a skill
+             chain_description(str): Optional, chain description
         Returns:
             Agent: a new instance
         """
-        chain = Chain(name="BasicChain", description="basic chain", runners=[skill])
+        chain = Chain(name="BasicChain", description=chain_description or "basic chain", runners=[skill])
         return Agent(controller=BasicController(), chains=[chain], evaluator=BasicEvaluator())
 
     def execute_from_user_message(self, message: str) -> AgentResult:
