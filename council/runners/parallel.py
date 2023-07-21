@@ -18,16 +18,11 @@ class Parallel(RunnerBase):
         context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
-        fs = [executor.submit(lambda: self._run_one(runner, context, executor)) for runner in self.runners]
+        contexts = [(runner, context.fork()) for runner in self.runners]
+        fs = [executor.submit(runner.run, inner, executor) for (runner, inner) in contexts]
         try:
             dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
             self.rethrow_if_exception(dones)
         finally:
+            context.merge([context for (_, context) in contexts])
             [f.cancel() for f in fs]
-
-    def _run_one(self, runner: RunnerBase, context: RunnerContext, executor: RunnerExecutor):
-        inner = context.fork()
-        try:
-            runner.run(inner, executor)
-        finally:
-            context.merge([inner])

@@ -9,18 +9,15 @@ class RunnerContextTests(unittest.TestCase):
     def setUp(self) -> None:
         chat_history = ChatHistory.from_user_message("Hello")
         self.chain_context = ChainContext(chat_history, [])
-        self.messages = [
-            ChatMessage.skill("first"),
-            ChatMessage.skill("second")
-        ]
+        self.messages = [ChatMessage.skill("first"), ChatMessage.skill("second")]
 
     def test_should_stop_on_budget_expired(self):
-        context = RunnerContext(self.chain_context, Budget(.1))
+        context = RunnerContext(self.chain_context, Budget(0.1))
         self.assertFalse(context.budget.is_expired())
         self.assertFalse(context.cancellation_token.cancelled)
         self.assertFalse(context.should_stop())
 
-        time.sleep(.2)
+        time.sleep(0.2)
         self.assertTrue(context.budget.is_expired())
         self.assertFalse(context.cancellation_token.cancelled)
         self.assertTrue(context.should_stop())
