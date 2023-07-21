@@ -19,6 +19,9 @@ class Parallel(RunnerBase):
         executor: RunnerExecutor,
     ) -> None:
         contexts = [(runner, context.fork()) for runner in self.runners]
+
+        # Seems like it is a bad idea using lambda as the function in submit,
+        # which results into inconsistent invocation (wrong arguments)
         fs = [executor.submit(runner.run, inner, executor) for (runner, inner) in contexts]
         try:
             dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
