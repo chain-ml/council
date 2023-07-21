@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import time
 
+from council.utils import read_env_int
+
 
 class BudgetExpiredException(Exception):
     pass
@@ -53,7 +55,8 @@ class Budget:
         Returns:
             Budget
         """
-        return Budget(duration=30)
+        duration = read_env_int("COUNCIL_DEFAULT_BUDGET", required=False, default=30)
+        return Budget(duration=duration.unwrap())
 
 
 class InfiniteBudget(Budget):

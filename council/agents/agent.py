@@ -8,6 +8,7 @@ from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
+from ..runners.budget import InfiniteBudget
 
 logger = logging.getLogger(__name__)
 
@@ -112,4 +113,4 @@ class Agent:
              AgentResult:
         """
         context = AgentContext(ChatHistory.from_user_message(message))
-        return self.execute(context)
+        return self.execute(context, budget=InfiniteBudget())
