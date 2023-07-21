@@ -11,12 +11,12 @@ from council.skills import SkillBase
 
 
 class LLMMessagesToStr(Protocol):
-    def __call__(self, messages: List[LLMMessage]) -> str:
+    def __call__(self, messages: List[LLMMessage]) -> List[str]:
         ...
 
 
-def llm_message_content_to_str(messages: List[LLMMessage]) -> str:
-    return "\n".join([msg.content for msg in messages])
+def llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
+    return [msg.content for msg in messages]
 
 
 class MockSkill(SkillBase):
@@ -38,19 +38,23 @@ class MockLLM(LLMBase):
     def __init__(self, action: Optional[LLMMessagesToStr] = None):
         self._action = action
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
+    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
         if self._action is not None:
             return self._action(messages)
-        return f"{self.__class__.__name__}"
+        return [f"{self.__class__.__name__}"]
 
     @staticmethod
     def from_responses(responses: List[str]) -> "MockLLM":
-        value = "\n".join([r for r in responses])
-        return MockLLM(action=(lambda x: value))
+        return MockLLM(action=(lambda x: responses))
 
     @staticmethod
     def from_response(response: str) -> "MockLLM":
-        return MockLLM(action=(lambda x: response))
+        return MockLLM(action=(lambda x: [response]))
+
+    @staticmethod
+    def from_multi_line_response(responses: List[str]) -> "MockLLM":
+        response = "\n".join(responses)
+        return MockLLM(action=(lambda x: [response]))
 
 
 class MockErrorSimilarityScorer(ScorerBase):

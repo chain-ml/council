@@ -50,7 +50,7 @@ class LLMEvaluator(EvaluatorBase):
 
         # Send prompt to inner LLM
         messages = [LLMMessage.system_message(prompt)]
-        llm_response = self.llm.post_chat_request(messages=messages)
+        llm_response = self.llm.post_chat_request(messages=messages)[0]
 
         # Parse LLM response with the score for each message we want to score
         scores = [self.__parse_eval(line) for line in llm_response.split("\n")]

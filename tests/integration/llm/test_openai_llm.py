@@ -15,12 +15,12 @@ class TestLlmOpenAI(unittest.TestCase):
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("what are the largest cities in South America")]
 
-        result = self.llm.post_chat_request(messages, model="gpt-3.5-turbo")
+        result = self.llm.post_chat_request(messages, model="gpt-3.5-turbo")[0]
         print(result)
         messages.append(LLMMessage.system_message(result))
 
         messages = [LLMMessage.user_message("what are the largest cities in South America")]
-        result = self.llm.post_chat_request(messages, model="gpt-4")
+        result = self.llm.post_chat_request(messages, model="gpt-4")[0]
         print(result)
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
