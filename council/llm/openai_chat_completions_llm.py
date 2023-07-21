@@ -3,7 +3,6 @@ import httpx
 
 from typing import List, Any, Protocol, Sequence
 
-
 from . import LLMConfigurationBase
 from .llm_message import LLMMessage
 from .llm_exception import LLMException
@@ -42,6 +41,8 @@ class Choice:
     _message: Message
 
     def __init__(self, index: int, finish_reason: str, message: Message):
+        self._index = index
+        self._finish_reason = finish_reason
         self._message = message
 
     @property
@@ -91,6 +92,7 @@ class OpenAIChatCompletionsResult:
         self._usage = usage
         self._model = model
         self._choices = choices
+        self._created = created
 
     @property
     def id(self) -> str:
