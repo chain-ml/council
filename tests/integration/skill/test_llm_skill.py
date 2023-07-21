@@ -14,8 +14,8 @@ from council.runners import Budget
 from council.skills.llm_skill import LLMSkill
 
 
-def first_llm_message_content_to_str(messages: List[LLMMessage]) -> str:
-    return messages[0].content
+def first_llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
+    return [messages[0].content]
 
 
 class TestLlmSkill(unittest.TestCase):

@@ -32,7 +32,7 @@ class TestPrompt(unittest.TestCase):
         self.llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt, context_messages=p.to_system_message)
 
     def test_injection(self):
-        llm = MockLLM.from_responses(["São Paulo", "Lima", "London"])
+        llm = MockLLM.from_multi_line_response(["São Paulo", "Lima", "London"])
         mock_llm_skill = LLMSkill(llm=llm, system_prompt="")
 
         chain = Chain("GPT-4", "Answer to an user prompt about geography", [mock_llm_skill, self.llm_skill])

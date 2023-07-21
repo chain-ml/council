@@ -80,5 +80,6 @@ class LLMSkill(SkillBase):
         system_prompt = LLMMessage.system_message(self._builder.apply(context))
         messages = [system_prompt, *history_messages]
         llm_response = self._llm.post_chat_request(messages=messages)
-
-        return self.build_success_message(message=llm_response, data=None)
+        if len(llm_response) < 1:
+            return self.build_error_message(message="no response")
+        return self.build_success_message(message=llm_response[0], data=llm_response)

@@ -55,7 +55,7 @@ class LLMController(ControllerBase):
             ),
         ]
 
-        response = self._llm.post_chat_request(messages)
+        response = self._llm.post_chat_request(messages)[0]
         logger.debug(f"llm response: {response}")
 
         parsed = [self.parse_line(line, chains) for line in response.splitlines()]
