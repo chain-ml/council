@@ -8,3 +8,8 @@ Council extends the LLM tool ecosystem by enabling advanced control and scalable
 The framework provides connectivity to a wide variety of Large Language Models (LLMs) natively and by integrating with popular libraries such as LangChain.
 
 Council aims to facilitate packaging and seamlessly deploying Agents at scale on multiple deployment platforms while enabling enterprise-grade monitoring and advanced quality control in a future release (contributions are welcome).
+
+# Community
+
+Join our Discord community to connect with the core development team and users <a href="https://discord.gg/uhusYQcP">here</a>.
+
