@@ -48,7 +48,7 @@ This example builds on the previous one and shows how to consume the iteration i
             print(message)
             return self.build_success_message(message=message)
 
-    chain = Chain(name="name", description="parallel for", runners=[ParallelFor(generator, MySkill(), parallelism=1)])
+    chain = Chain(name="name", description="parallel for", runners=[ParallelFor(generator, MySkill(), parallelism=5)])
     context = ChainContext.empty()
     context.new_iteration()
     chain.execute(context, Budget(1))

@@ -4,6 +4,7 @@ from concurrent import futures
 import logging
 
 from council.contexts import ChainContext
+from .runner_context import RunnerContext
 from .budget import Budget
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor
@@ -12,27 +13,34 @@ logger = logging.getLogger(__name__)
 
 
 class RunnerBase(abc.ABC):
+    def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
+        context = RunnerContext(chain_context, budget)
+        try:
+            self.run(context, executor)
+        finally:
+            chain_context.current.extend(context.messages)
+
     """
     Base runner class that handles common execution logic, including error management and timeout
     """
 
     def run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
-        if self.should_stop(context, budget):
+        if context.should_stop():
             return
 
         logger.debug("start running %s", self.__class__.__name__)
         try:
-            return self._run(context, budget, executor)
+            self._run(context, executor)
         except futures.TimeoutError as e:
             logger.debug("timeout running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise RunnerTimeoutError(self.__class__.__name__) from e
         except RunnerError:
+            logger.debug("runner error running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise
         except Exception as e:
@@ -46,19 +54,10 @@ class RunnerBase(abc.ABC):
     def rethrow_if_exception(fs: Set[futures.Future]):
         [f.result(timeout=0) for f in fs]
 
-    @staticmethod
-    def should_stop(context: ChainContext, budget: Budget) -> bool:
-        if budget.is_expired():
-            logger.debug('message="stopping" reason="budget expired"')
-        if context.cancellation_token.cancelled:
-            logger.debug('message="stopping" reason="cancellation token is set"')
-        return budget.is_expired() or context.cancellation_token.cancelled
-
     @abc.abstractmethod
     def _run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
         pass
