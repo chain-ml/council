@@ -56,6 +56,7 @@ class TestLlmAzure(unittest.TestCase):
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
             choices = llm.post_chat_request(messages)
+            self.assertEquals(3, len(choices))
             [print("\n- Choice:" + choice) for choice in choices]
         finally:
             del os.environ["AZURE_LLM_N"]
