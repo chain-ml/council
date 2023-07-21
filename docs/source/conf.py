@@ -71,14 +71,15 @@ html_css_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",
 ]
-# html_theme_options = {
-#     "footer_icons": [
-#         {
-#             "name": "Discord",
-#             "url": "https://discord.gg/uhusYQcP",
-#             "html": "",
-#             "class": "fa-brands fa-solid fa-discord"
-#         }
-#     ]
-# }
+html_theme_options = {
+    "footer_icons": [
+        {"name": "Discord", "url": "https://discord.gg/uhusYQcP", "html": "", "class": "fa-brands fa-solid fa-discord"},
+        {
+            "name": "Github",
+            "url": "https://github.com/chain-ml/council",
+            "html": "",
+            "class": "fa-brands fa-solid fa-github",
+        },
+    ]
+}
 # html_theme_options = {"dark_logo": "00_chainml_logo.png", "light_logo": "02_chainml_logo_black.png"}
