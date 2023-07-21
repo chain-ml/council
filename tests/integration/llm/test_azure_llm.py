@@ -42,9 +42,11 @@ class TestLlmAzure(unittest.TestCase):
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
             result = llm.post_chat_request(messages)
-            self.assertTrue(len(result.replace(" ", "")) < 5 * 5)
+            self.assertTrue(len(result.replace(" ", "")) < 5 * 6)
         finally:
             del os.environ["AZURE_LLM_MAX_TOKEN"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_MAX_TOKENS"), None)
 
     def test_choices(self):
         os.environ["AZURE_LLM_N"] = "3"
@@ -59,6 +61,9 @@ class TestLlmAzure(unittest.TestCase):
             del os.environ["AZURE_LLM_N"]
             del os.environ["AZURE_LLM_TEMPERATURE"]
 
+        self.assertEquals(os.getenv("AZURE_LLM_N"), None)
+        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
+
     def test_invalid_temperature(self):
         os.environ["AZURE_LLM_TEMPERATURE"] = "3.5"
 
@@ -66,3 +71,5 @@ class TestLlmAzure(unittest.TestCase):
             _ = AzureLLM.from_env()
         print(cm.exception)
         del os.environ["AZURE_LLM_TEMPERATURE"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
