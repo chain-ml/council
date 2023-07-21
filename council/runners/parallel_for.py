@@ -49,17 +49,17 @@ class ParallelFor(LoopRunnerBase):
     def _run(self, context: RunnerContext, executor: RunnerExecutor) -> None:
         chain_context = context.make_chain_context()
         inner_contexts = []
+        all_fs = []
         try:
             for batch in batched(self._generate(chain_context, context.budget.remaining()), self._parallelism):
                 inner = [context.fork() for _ in batch]
                 inner_contexts.extend(inner)
                 fs = [executor.submit(self._run_skill, inner, iteration) for (inner, iteration) in zip(inner, batch)]
-                try:
-                    dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
-                    self.rethrow_if_exception(dones)
-                finally:
-                    [f.cancel() for f in fs]
+                all_fs.extend(fs)
+                dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
+                self.rethrow_if_exception(dones)
         finally:
+            [f.cancel() for f in all_fs]
             context.merge(inner_contexts)
 
     def _run_skill(self, context: RunnerContext, iteration: IterationContext):
