@@ -1,6 +1,4 @@
-from council.contexts import ChainContext
-
-from .budget import Budget
+from .runner_context import RunnerContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
@@ -15,14 +13,13 @@ class Sequential(RunnerBase):
 
     def _run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
         for runner in self.runners:
-            if self.should_stop(context, budget):
+            if context.should_stop():
                 return
-            runner.run(context, budget.remaining(), executor)
+            runner.run(context, executor)
 
     @staticmethod
     def from_list(*runners: RunnerBase) -> RunnerBase:

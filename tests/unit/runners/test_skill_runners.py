@@ -44,6 +44,22 @@ class SkillTest(SkillBase):
         return self.build_success_message(self._name, context.iteration.map_or(lambda i: i.value, -1))
 
 
+class SkillTestAppend(SkillBase):
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+        message = context.try_last_message.map_or(lambda m: m.message, "")
+        return self.build_success_message(message + self.name)
+
+
+class SkillTestMerge(SkillBase):
+    def __init__(self, from_skills: list[str]):
+        super().__init__("merge")
+        self.from_skills = from_skills
+
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+        message = "".join([context.try_last_message_from_skill(name).unwrap().message for name in self.from_skills])
+        return self.build_success_message(message)
+
+
 class TestSkillRunners(unittest.TestCase):
     def setUp(self) -> None:
         self.history = ChatHistory()
@@ -51,7 +67,7 @@ class TestSkillRunners(unittest.TestCase):
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        runner.run(self.context, budget, self.executor)
+        runner.run_from_chain_context(self.context, budget, self.executor)
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -99,26 +115,40 @@ class TestSkillRunners(unittest.TestCase):
     def test_parallel(self):
         instance = Parallel(SkillTest("first", 0.2), SkillTest("second", 0.1))
         self._execute(instance, Budget(1))
-        self.assertSuccessMessages(["second", "first"])
+        self.assertSuccessMessages(["first", "second"])
 
     def test_parallel_sequence(self):
-        sequence = Sequential(SkillTest("first", 0.1), SkillTest("fourth", 0.2))
-        parallel = Parallel(sequence, SkillTest("second", 0.15), SkillTest("third", 0.2))
+        sequence = Sequential(SkillTest("first", 0.1), SkillTest("second", 0.2))
+        parallel = Parallel(sequence, SkillTest("third", 0.15), SkillTest("fourth", 0.4))
         self._execute(parallel, Budget(1))
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
+    def test_parallel_many_sequences(self):
+        instance = Sequential(
+            SkillTestAppend("a"),
+            Parallel(
+                Sequential(SkillTestAppend("b"), SkillTestAppend("c")),
+                Sequential(SkillTestAppend("d"), SkillTestAppend("e")),
+                Sequential(SkillTestAppend("f"), SkillTestAppend("g")),
+            ),
+            SkillTestMerge(["c", "e", "g"]),
+        )
+
+        self._execute(instance, Budget(1))
+        self.assertEqual(self.context.last_message.message, "abcadeafg")
+
     def test_parallel_with_exception(self):
-        instance = Parallel(SkillTest("first", 3), SkillTest("second", -2), SkillTest("third", 1))
+        instance = Parallel(SkillTest("first", 0.3), SkillTest("second", -0.2), SkillTest("third", 0.1))
         with self.assertRaises(RunnerSkillError) as cm:
-            self._execute(instance, Budget(10))
+            self._execute(instance, Budget(1))
 
         self.assertIsInstance(cm.exception.__cause__, MySkillException)
         self.assertTrue(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["third"])
-        self.assertTrue(self.context.current.try_last_message.unwrap().is_error)
+        self.assertTrue(self.context.current.last_message_from_skill("second").is_error)
 
-        time.sleep(0.5)
+        time.sleep(0.2)
         self.assertSuccessMessages(["third"])
 
     def test_if_runner_true(self):
@@ -167,7 +197,6 @@ class TestSkillRunners(unittest.TestCase):
         self._execute(instance, Budget(2))
         self.assertSuccessMessages(["for each" for i in range(count)])
         data = [m.data for m in self.context.current.messages if m.is_ok]
-        data.sort()
         self.assertEqual([i for i in range(count)], data)
 
     def test_parallel_for_last_throw(self):

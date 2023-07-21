@@ -1,7 +1,6 @@
 from concurrent import futures
-from council.contexts import ChainContext
 
-from .budget import Budget
+from .runner_context import RunnerContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
@@ -16,13 +15,17 @@ class Parallel(RunnerBase):
 
     def _run(
         self,
-        context: ChainContext,
-        budget: Budget,
+        context: RunnerContext,
         executor: RunnerExecutor,
     ) -> None:
-        fs = [executor.submit(lambda: runner.run(context, budget, executor)) for runner in self.runners]
+        contexts = [(runner, context.fork()) for runner in self.runners]
+
+        # Seems like it is a bad idea using lambda as the function in submit,
+        # which results into inconsistent invocation (wrong arguments)
+        fs = [executor.submit(runner.run, inner, executor) for (runner, inner) in contexts]
         try:
-            dones, not_dones = futures.wait(fs, budget.remaining().duration, futures.FIRST_EXCEPTION)
+            dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
             self.rethrow_if_exception(dones)
         finally:
+            context.merge([context for (_, context) in contexts])
             [f.cancel() for f in fs]
