@@ -1,6 +1,6 @@
 ![Council](council_banner.png "council")
 
-<h1><p align="center">Council: AI Agent Platform with Control Flow and Scalable Oversight</p></h1>
+<h1><p align="center">Council: AI Agent Platform with Control Flow & Scalable Oversight</p></h1>
 
 # Welcome
 
