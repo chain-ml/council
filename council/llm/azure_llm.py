@@ -1,46 +1,42 @@
-import logging
+from typing import Any
+
 import httpx
 
-from typing import List, Any
-
-from .azure_configuration import AzureConfiguration
-from .llm_message import LLMMessage
-from .llm_exception import LLMException
-from .llm_base import LLMBase
+from . import OpenAIChatCompletionsModel
+from .azure_llm_configuration import AzureLLMConfiguration
 
 
-class AzureLLM(LLMBase):
+class AzureOpenAIChatCompletionsModelProvider:
     """
     Represents an OpenAI language model hosted on Azure.
     """
 
-    config: AzureConfiguration
+    config: AzureLLMConfiguration
 
-    def __init__(self, config: AzureConfiguration):
+    def __init__(self, config: AzureLLMConfiguration):
         self.config = config
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
-        payload = {
-            "messages": [message.dict() for message in messages],
-            "temperature": self.config.temperature,
-        }
-        for key, value in kwargs.items():
-            payload[key] = value
-
-        return self.post_request(payload, **kwargs)
-
-    def post_request(self, payload, **kwargs: Any):
+    def post_request(self, payload: dict[str, Any]) -> httpx.Response:
         uri = f"{self.config.api_base}/openai/deployments/{self.config.deployment_name}/chat/completions"
         headers = {"api-key": self.config.api_key, "Content-Type": "application/json"}
         params = {"api-version": self.config.api_version}
-        logging.debug(f'message="Sending request" payload="{payload}"')
+
         with httpx.Client() as client:
             client.timeout.read = self.config.timeout
-            response = client.post(url=uri, headers=headers, params=params, json=payload)
-            return AzureLLM.validate_and_parse_response(response)
+            return client.post(url=uri, headers=headers, params=params, json=payload)
+
+
+class AzureLLM(OpenAIChatCompletionsModel):
+    """
+    Represents an OpenAI language model hosted on Azure.
+    """
+
+    config: AzureLLMConfiguration
+
+    def __init__(self, config: AzureLLMConfiguration):
+        super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config).post_request)
 
     @staticmethod
-    def validate_and_parse_response(response: httpx.Response) -> str:
-        if response.status_code != httpx.codes.OK:
-            raise LLMException(f"Wrong status code: {response.status_code}. Reason: {response.text}")
-        return response.json()["choices"][0]["message"]["content"]
+    def from_env() -> "AzureLLM":
+        config: AzureLLMConfiguration = AzureLLMConfiguration.from_env()
+        return AzureLLM(config)

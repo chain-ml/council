@@ -29,7 +29,7 @@ class Option(Generic[T]):
         unwrap the value in the instance.
 
         Parameters:
-            message (Optional(str)): error message to be set on the :class:`council.utils.OptionException`
+            message (Optional(str)): error message to be set on the :class:`~.OptionException`
             if there is no value to unwrap
         returns:
             T: the value

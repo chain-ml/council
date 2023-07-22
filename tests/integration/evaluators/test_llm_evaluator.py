@@ -2,17 +2,16 @@ import unittest
 
 import dotenv
 
-from council.core import ChatHistory, AgentContext, Budget
-from council.core.execution_context import SkillSuccessMessage
-from council.llm import AzureConfiguration, AzureLLM
-from council.evaluators.llm_evaluator import LLMEvaluator
+from council.contexts import ChatHistory, AgentContext, ChatMessage
+from council.llm import AzureLLM
+from council.evaluators import LLMEvaluator
+from council.runners import Budget
 
 
 class TestLlmEvaluator(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        llm = AzureLLM(config)
+        llm = AzureLLM.from_env()
         self.llm = llm
 
     def test_basic_prompt(self):
@@ -32,7 +31,7 @@ class TestLlmEvaluator(unittest.TestCase):
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
             chain_context = context.new_chain_context(chain_name)
-            chain_context.current.messages.append(SkillSuccessMessage("a skill", message))
+            chain_context.current.append(ChatMessage.skill("a skill", message))
 
         result = evaluator.execute(context, Budget(10))
 

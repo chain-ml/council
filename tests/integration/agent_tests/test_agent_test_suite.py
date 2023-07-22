@@ -6,17 +6,17 @@ import dotenv
 from council.agents import Agent
 from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controllers import LLMController
-from council.core import Chain
+from council.chains import Chain
 from council.evaluators import LLMEvaluator
-from council.llm import AzureLLM, AzureConfiguration
-from council.scorer import LLMSimilarityScorer
-from council.skill import LLMSkill
+from council.llm import AzureLLM
+from council.scorers import LLMSimilarityScorer
+from council.skills import LLMSkill
 
 
 class TestTestSuite(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM(config=AzureConfiguration.from_env())
+        llm = AzureLLM.from_env()
 
         prompt = "you are an assistant expert in Finance. When asked about something else, say you don't know"
         finance_skill = LLMSkill(llm=llm, system_prompt=prompt)

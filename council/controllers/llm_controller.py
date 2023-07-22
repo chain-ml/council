@@ -1,13 +1,14 @@
 import logging
 from typing import List, Tuple
 
-from .controller_base import ControllerBase
-from council.core import AgentContext, Budget
-from council.core.chain import Chain
-from council.core.execution_context import ScoredAgentMessage
-from council.core.execution_unit import ExecutionUnit
+from council.contexts import AgentContext, ScoredChatMessage
+from council.chains import Chain
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
+from council.runners import Budget
+
+from .controller_base import ControllerBase
+from .execution_unit import ExecutionUnit
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class LLMController(ControllerBase):
         self._response_threshold = response_threshold
         self._top_k = top_k_execution_plan
 
-    def select_responses(self, context: AgentContext) -> List[ScoredAgentMessage]:
+    def select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
         return context.evaluationHistory[-1]
 
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
@@ -50,7 +51,7 @@ class LLMController(ControllerBase):
         messages = [
             LLMMessage.system_message("\n".join(task_description)),
             LLMMessage.user_message(
-                f"what are most relevant categories for: {context.chatHistory.last_user_message().unwrap().message}"
+                f"what are most relevant categories for: {context.chatHistory.try_last_user_message.unwrap().message}"
             ),
         ]
 
