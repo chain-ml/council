@@ -64,5 +64,31 @@ exclude_patterns = []
 html_title = f"{project} {release}"
 html_theme = "furo"
 html_show_copyright = False
+html_show_sphinx = False
 html_static_path = ["_static"]
-html_theme_options = {"dark_logo": "00_chainml_logo.png", "light_logo": "02_chainml_logo_black.png"}
+html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",
+]
+# fmt: off
+# so that black does not mess with it
+html_theme_options = {
+    "footer_icons": [
+        {
+            "name": "Discord",
+            "url": "https://discord.gg/uhusYQcP",
+            "html": "",
+            "class": "fa-brands fa-solid fa-discord",
+        },
+        {
+            "name": "Github",
+            "url": "https://github.com/chain-ml/council",
+            "html": "",
+            "class": "fa-brands fa-solid fa-github",
+        },
+    ]
+}
+# fmt: on
+
+# html_theme_options = {"dark_logo": "00_chainml_logo.png", "light_logo": "02_chainml_logo_black.png"}

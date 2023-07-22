@@ -3,10 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 
-from council.core.budget import Budget
-from council.core.chain import Chain
-from council.core.execution_context import AgentContext, ScoredAgentMessage
-from council.core.execution_unit import ExecutionUnit
+from council.chains import Chain
+from council.contexts import AgentContext, ScoredChatMessage
+from council.runners import Budget
+from .execution_unit import ExecutionUnit
 
 
 class ControllerBase(ABC):
@@ -34,7 +34,7 @@ class ControllerBase(ABC):
         pass
 
     @abstractmethod
-    def select_responses(self, context: AgentContext) -> List[ScoredAgentMessage]:
+    def select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
         """
         Selects responses from the agent's context.
 
@@ -42,7 +42,7 @@ class ControllerBase(ABC):
             context (AgentContext): The context for selecting responses.
 
         Returns:
-            List[ScoredAgentMessage]: A list of scored agent messages representing the selected responses.
+            List[ScoredChatMessage]: A list of scored agent messages representing the selected responses.
 
         Raises:
             None

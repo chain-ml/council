@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Iterable
 
-from council.core.execution_context import ChatMessageBase, ChatMessageKind
+from council.contexts import ChatMessage, ChatMessageKind
 
 
 class LLMMessageRole(str, Enum):
@@ -73,25 +73,25 @@ class LLMMessage:
         return LLMMessage(role=LLMMessageRole.Assistant, content=content)
 
     def dict(self) -> dict[str, str]:
-        return {"role": self._role, "content": self._content}
+        return {"role": self._role.value, "content": self._content}
 
     @property
     def content(self) -> str:
-        """Retrieve the content of the `LLMMessage`"""
+        """Retrieve the content of this instance"""
         return self._content
 
     @property
     def role(self) -> LLMMessageRole:
-        """Retrieve the role of the `LLMMessage`"""
+        """Retrieve the role of this instance"""
         return self._role
 
     def is_of_role(self, role: LLMMessageRole) -> bool:
-        """Check the role of the `LLMMessage`"""
+        """Check the role of this instance"""
         return self._role == role
 
     @staticmethod
-    def from_chat_message(chat_message: ChatMessageBase) -> Optional["LLMMessage"]:
-        """Convert :class:`~council.core.execution_context.ChatMessageBase` into :class:`LLMMessage`"""
+    def from_chat_message(chat_message: ChatMessage) -> Optional["LLMMessage"]:
+        """Convert :class:`~.ChatMessage` into :class:`.LLMMessage`"""
         if chat_message.kind == ChatMessageKind.User:
             return LLMMessage.user_message(chat_message.message)
         elif chat_message.kind == ChatMessageKind.Agent:
@@ -99,6 +99,6 @@ class LLMMessage:
         return None
 
     @staticmethod
-    def from_chat_messages(messages: List[ChatMessageBase]) -> List["LLMMessage"]:
+    def from_chat_messages(messages: Iterable[ChatMessage]) -> List["LLMMessage"]:
         m = map(LLMMessage.from_chat_message, messages)
         return [msg for msg in m if msg is not None]

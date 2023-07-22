@@ -24,7 +24,7 @@ Note: Some of the features listed above are work-in-progress and due in a future
 
 Key components of the framework are shown in below image and further introduced in this section.
 
-<img src="engine_flow.png" width="800px">
+![engine flow](engine_flow.png "engine")
 
 ## Agent
 Agents encapsulate the end-to-end application logic from prompt input to final response across Controller, Evaluation and registered Chains of Skills. Agents itself can be recursively nested within other Agents in the form of AgentChains.
@@ -68,18 +68,18 @@ Set up your required API keys in a `.env`  (e.g. OpenAI). Refer to `.env.example
 Import Council.
 
 ```python
-from council.core import Chain
-from council.skill import LLMSkill
-from council.llm import OpenAILLM, OpenAIConfiguration
+from council.chains import Chain
+from council.skills import LLMSkill
+from council.llm import OpenAILLM, OpenAILLMConfiguration
 ```
 
-Setup API keys in .env file (example in repository) and use it to setup the LLM (here: AzureLLM).
+Setup API keys in .env file (example in repository) and use it to setup the LLM (here: OpenAILLM).
 
 ```python
 import dotenv
 
 dotenv.load_dotenv()
-openai_llm = OpenAILLM(config=OpenAIConfiguration.from_env())
+openai_llm = OpenAILLM(config=OpenAILLMConfiguration.from_env())
 ```
 
 Create your first Hello World Skill and Wrap it in a Chain.
@@ -90,7 +90,7 @@ hw_skill = LLMSkill(llm=openai_llm, system_prompt=prompt)
 hw_chain = Chain(name="Hello World", description="Answers with a poem about titled Hello World", runners=[hw_skill])
 ```
 
-Create a second Skill (that responds with generated Ascii art).
+Create a second Skill (that responds only with Emojis).
 
 ```python
 prompt = "You are responding to every prompt with an emoji that best addresses the question asked or statement made"
@@ -120,20 +120,14 @@ Finalize setup of the Hello World first Agent by combining all components create
 
 ```python
 from council.agents import Agent
-from council.core import Budget
 
 agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=evaluator)
 ```
 
-Now, we are ready to invoke the agent. The ChatHistory object is used to track message history between User and Agents.
+Now, we are ready to invoke the agent.
 
 ```python
-from council.core.execution_context import AgentContext, ChatHistory
-
-chat_history = ChatHistory()
-chat_history.add_user_message(message="hello world?!")
-context = AgentContext(chat_history=chat_history)
-result = agent.execute(context=context, budget=Budget(20))
+result = agent.execute_from_user_message("hello world?!")
 print(result.best_message.message)
 ```
 
@@ -147,7 +141,7 @@ Use `black .` to automatically reformat files.
 
 # Documentation
 
-A detailed documentation of Council can be found at <a href="council.dev">council.dev</a>.
+A detailed documentation of Council can be found at <a href="https://council.dev">council.dev</a>.
 
 # Roadmap
 
@@ -174,5 +168,5 @@ Council is a project under active development. We welcome all contributions, pul
 
 # Community
 
-Join our Discord community to connect with the core development team and users here: (link to be provided soon).
+Join our Discord community to connect with the core development team and users <a href="https://discord.gg/uhusYQcP">here</a>.
 

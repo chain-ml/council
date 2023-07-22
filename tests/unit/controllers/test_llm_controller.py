@@ -1,18 +1,10 @@
 import unittest
-from typing import List, Any
 
+from council.chains import Chain
 from council.controllers import LLMController
-from council.core import Chain, Budget
-from council.core.execution_context import AgentContext, ChatHistory
-from council.llm import LLMMessage, LLMBase
-
-
-class MockLLM(LLMBase):
-    def __init__(self, response: List[str]):
-        self.response = "\n".join(response)
-
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
-        return self.response
+from council.contexts import AgentContext, ChatHistory
+from council.mocks import MockLLM
+from council.runners import Budget
 
 
 class LLMControllerTest(unittest.TestCase):
@@ -23,32 +15,32 @@ class LLMControllerTest(unittest.TestCase):
         self.context = AgentContext(history)
 
     def test_plan_parse(self):
-        llm = MockLLM(["first;10", "second;6"])
+        llm = MockLLM.from_multi_line_response(["first;10", "second;6"])
         controller = LLMController(llm)
         result = controller.get_plan(self.context, self.chains, Budget(10))
         self.assertEqual(["first", "second"], [item.chain.name for item in result])
 
     def test_plan_parse_top_1(self):
-        llm = MockLLM(["first;10", "second;6"])
+        llm = MockLLM.from_multi_line_response(["first;10", "second;6"])
         controller = LLMController(llm, top_k_execution_plan=1)
         result = controller.get_plan(self.context, self.chains, Budget(10))
         self.assertEqual(["first"], [item.chain.name for item in result])
 
     def test_plan_parse_top_1_unsorted(self):
-        llm = MockLLM(["second;6", "first;10"])
+        llm = MockLLM.from_multi_line_response(["second;6", "first;10"])
         controller = LLMController(llm, top_k_execution_plan=1)
         result = controller.get_plan(self.context, self.chains, Budget(10))
         self.assertEqual(["first"], [item.chain.name for item in result])
 
     def test_plan_parse_case_mismatch(self):
         chains = [Chain("first", "", []), Chain("second", "", []), Chain("ThiRd", "", [])]
-        llm = MockLLM(["FiRsT;6", "second;4", "third;5"])
+        llm = MockLLM.from_multi_line_response(["FiRsT;6", "second;4", "third;5"])
         controller = LLMController(llm, top_k_execution_plan=5)
         result = controller.get_plan(self.context, chains, Budget(10))
         self.assertEqual(["first", "ThiRd", "second"], [item.chain.name for item in result])
 
     def test_plan_parse_no_matching_chain(self):
-        llm = MockLLM(["first;10", "secondDoesNotExists;4", "third;2"])
+        llm = MockLLM.from_multi_line_response(["first;10", "secondDoesNotExists;4", "third;2"])
         controller = LLMController(llm, top_k_execution_plan=3)
         result = controller.get_plan(self.context, self.chains, Budget(10))
         self.assertEqual(["first", "third"], [item.chain.name for item in result])

@@ -3,32 +3,28 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.core import AgentContext, Budget, ScorerBase, SkillBase
-from council.core.execution_context import (
-    ScoredAgentMessage,
-    AgentMessage,
-    SkillContext,
-    SkillMessage,
-    SkillSuccessMessage,
-)
+from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage
 from council.llm import LLMBase, LLMMessage
+from council.runners import Budget
+from council.scorers import ScorerBase
+from council.skills import SkillBase
 
 
 class LLMMessagesToStr(Protocol):
-    def __call__(self, messages: List[LLMMessage]) -> str:
+    def __call__(self, messages: List[LLMMessage]) -> List[str]:
         ...
 
 
-def llm_message_content_to_str(messages: List[LLMMessage]) -> str:
-    return "\n".join([msg.content for msg in messages])
+def llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
+    return [msg.content for msg in messages]
 
 
 class MockSkill(SkillBase):
-    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], SkillMessage]] = None):
+    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], ChatMessage]] = None):
         super().__init__(name)
         self._action = action if action is not None else self.empty_message
 
-    def execute(self, context: SkillContext, budget: Budget) -> SkillMessage:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
         return self._action(context, budget)
 
     def empty_message(self, context: SkillContext, budget: Budget):
@@ -42,26 +38,30 @@ class MockLLM(LLMBase):
     def __init__(self, action: Optional[LLMMessagesToStr] = None):
         self._action = action
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
+    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
         if self._action is not None:
             return self._action(messages)
-        return f"{self.__class__.__name__}"
+        return [f"{self.__class__.__name__}"]
 
     @staticmethod
     def from_responses(responses: List[str]) -> "MockLLM":
-        value = "\n".join([r for r in responses])
-        return MockLLM(action=(lambda x: value))
+        return MockLLM(action=(lambda x: responses))
 
     @staticmethod
     def from_response(response: str) -> "MockLLM":
-        return MockLLM(action=(lambda x: response))
+        return MockLLM(action=(lambda x: [response]))
+
+    @staticmethod
+    def from_multi_line_response(responses: List[str]) -> "MockLLM":
+        response = "\n".join(responses)
+        return MockLLM(action=(lambda x: [response]))
 
 
 class MockErrorSimilarityScorer(ScorerBase):
     def __init__(self, exception: Exception = Exception()):
         self.exception = exception
 
-    def _score(self, message: AgentMessage) -> float:
+    def _score(self, message: ChatMessage) -> float:
         raise self.exception
 
 
@@ -81,9 +81,9 @@ class MockAgent(Agent):
         self.sleep = sleep
         self.sleep_interval = sleep_interval
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         time.sleep(random.uniform(self.sleep, self.sleep + self.sleep_interval))
-        return AgentResult([ScoredAgentMessage(AgentMessage(self.message, self.data), score=self.score)])
+        return AgentResult([ScoredChatMessage(ChatMessage.agent(self.message, self.data), score=self.score)])
 
 
 class MockErrorAgent(Agent):
@@ -91,5 +91,5 @@ class MockErrorAgent(Agent):
     def __init__(self, exception: Exception = Exception()):
         self.exception = exception
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         raise self.exception

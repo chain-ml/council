@@ -9,7 +9,7 @@ LLM
 .. automodule:: council.llm
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 1
     :glob:
 
     llm/*

@@ -1,15 +1,14 @@
 import logging
-from typing import List
+from typing import List, Optional
 
-from council.core.budget import Budget
-from council.core.chain import Chain
+from council.chains import Chain
+from council.contexts import AgentContext, ChatHistory
 from council.controllers import ControllerBase, BasicController
-from council.evaluators.evaluator_base import EvaluatorBase
-from council.core.execution_context import AgentContext, ChatHistory
-from council.core.runners import new_runner_executor
+from council.evaluators import BasicEvaluator, EvaluatorBase
+from council.runners import Budget, new_runner_executor
+from council.skills import SkillBase
 from .agent_result import AgentResult
-from ..core import SkillBase
-from ..evaluators import BasicEvaluator
+from ..runners.budget import InfiniteBudget
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +40,13 @@ class Agent:
         self.chains = chains
         self.evaluator = evaluator
 
-    def execute(self, context: AgentContext, budget: Budget = Budget.default()) -> AgentResult:
+    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
         Args:
             context (AgentContext): The context for executing the chains.
-            budget (Budget): The budget for agent execution.
+            budget (Optional[Budget]): The budget for agent execution. Defaults to :meth:`Budget.default` if `None`
 
         Returns:
             AgentResult:
@@ -56,6 +55,7 @@ class Agent:
             None
         """
         executor = new_runner_executor("agent")
+        budget = budget or Budget.default()
         try:
             logger.info('message="agent execution started"')
             while not budget.is_expired():
@@ -68,10 +68,12 @@ class Agent:
                 for unit in plan:
                     chain = unit.chain
                     budget = unit.budget
-                    logger.info(f'message="chain execution started" chain="{chain.name}"')
-                    chain_context = context.new_chain_context(chain.name)
+                    logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
+                    chain_context = context.new_chain_context(unit.name)
+                    if unit.initial_state is not None:
+                        chain_context.current.append(unit.initial_state)
                     chain.execute(chain_context, budget)
-                    logger.info(f'message="chain execution ended" chain="{chain.name}"')
+                    logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
 
                 result = self.evaluator.execute(context, budget)
                 context.evaluationHistory.append(result)
@@ -87,17 +89,18 @@ class Agent:
             executor.shutdown(wait=False, cancel_futures=True)
 
     @staticmethod
-    def from_skill(skill: SkillBase) -> "Agent":
+    def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
-            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a `class:.Chain`
+            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
 
         Parameters:
              skill(SkillBase): a skill
+             chain_description(str): Optional, chain description
         Returns:
             Agent: a new instance
         """
-        chain = Chain(name="BasicChain", description="basic chain", runners=[skill])
+        chain = Chain(name="BasicChain", description=chain_description or "basic chain", runners=[skill])
         return Agent(controller=BasicController(), chains=[chain], evaluator=BasicEvaluator())
 
     def execute_from_user_message(self, message: str) -> AgentResult:
@@ -110,4 +113,4 @@ class Agent:
              AgentResult:
         """
         context = AgentContext(ChatHistory.from_user_message(message))
-        return self.execute(context)
+        return self.execute(context, budget=InfiniteBudget())

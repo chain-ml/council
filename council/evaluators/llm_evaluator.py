@@ -6,10 +6,11 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.core import AgentContext, Budget
-from council.core.execution_context import ScoredAgentMessage, AgentMessage, SkillMessage, UserMessage, Option
+from council.contexts import AgentContext, ScoredChatMessage, ChatMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
+from council.runners import Budget
+from council.utils import Option
 
 
 class LLMEvaluator(EvaluatorBase):
@@ -25,17 +26,17 @@ class LLMEvaluator(EvaluatorBase):
         super().__init__()
         self.llm = llm
 
-    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredAgentMessage]:
-        query = context.chatHistory.last_user_message().unwrap()
+    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+        query = context.chatHistory.try_last_user_message.unwrap()
         chain_results = [
-            chain_history[-1].last_message().unwrap()
+            chain_history[-1].try_last_message.unwrap()
             for chain_history in context.chainHistory.values()
-            if chain_history[-1].last_message().is_some()
+            if chain_history[-1].try_last_message.is_some()
         ]
         scored_messages = self.__score_responses(query=query, skill_messages=chain_results)
         return list(scored_messages)
 
-    def __score_responses(self, query: UserMessage, skill_messages: list[SkillMessage]) -> List[ScoredAgentMessage]:
+    def __score_responses(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[ScoredChatMessage]:
         """
         Score agent response.
 
@@ -49,15 +50,15 @@ class LLMEvaluator(EvaluatorBase):
 
         # Send prompt to inner LLM
         messages = [LLMMessage.system_message(prompt)]
-        llm_response = self.llm.post_chat_request(messages=messages)
+        llm_response = self.llm.post_chat_request(messages=messages)[0]
 
         # Parse LLM response with the score for each message we want to score
         scores = [self.__parse_eval(line) for line in llm_response.split("\n")]
 
         agent_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(skill_messages, scores)):
-            agent_message = ScoredAgentMessage(
-                AgentMessage(message=skill_message.message, data=skill_message.data), score.unwrap()
+            agent_message = ScoredChatMessage(
+                ChatMessage.agent(message=skill_message.message, data=skill_message.data), score.unwrap()
             )
             agent_messages.append(agent_message)
 

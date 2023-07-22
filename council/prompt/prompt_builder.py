@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 from jinja2 import Template
 
-from council.core import ChainContext, ChatMessageKind
+from council.contexts import SkillContext, ChatMessageKind
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,12 @@ class PromptBuilder:
         else:
             self._instructions = ""
 
-    def apply(self, context: ChainContext) -> str:
+    def apply(self, context: SkillContext) -> str:
         """
         Builds and returns the prompt by rendering the template and appending instructions.
 
         Args:
-            context (ChainContext): The context object containing the necessary data for rendering the template.
+            context (SkillContext): The context object containing the necessary data for rendering the template.
 
         Returns:
             str: The generated prompt string.
@@ -64,37 +64,37 @@ class PromptBuilder:
         return prompt
 
     @staticmethod
-    def __build_chat_history(context: ChainContext) -> dict[str, Any]:
-        last_message = context.chatHistory.last_message()
-        last_user_message = context.chatHistory.last_user_message()
-        last_agent_message = context.chatHistory.last_agent_message()
+    def __build_chat_history(context: SkillContext) -> dict[str, Any]:
+        last_message = context.chat_history.try_last_message
+        last_user_message = context.chat_history.try_last_user_message
+        last_agent_message = context.chat_history.try_last_agent_message
 
         return {
             "agent": {
                 "messages": [
-                    msg.message for msg in context.chatHistory.messages if msg.is_of_kind(ChatMessageKind.Agent)
+                    msg.message for msg in context.chat_history.messages if msg.is_of_kind(ChatMessageKind.Agent)
                 ],
                 "last_message": last_agent_message.map_or(lambda m: m.message, ""),
             },
             "user": {
                 "messages": [
-                    msg.message for msg in context.chatHistory.messages if msg.is_of_kind(ChatMessageKind.User)
+                    msg.message for msg in context.chat_history.messages if msg.is_of_kind(ChatMessageKind.User)
                 ],
                 "last_message": last_user_message.map_or(lambda m: m.message, ""),
             },
-            "messages": [msg.message for msg in context.chatHistory.messages],
+            "messages": [msg.message for msg in context.chat_history.messages],
             "last_message": last_message.map_or(lambda m: m.message, ""),
         }
 
     @staticmethod
-    def __build_chain_history(context: ChainContext) -> dict[str, Any]:
-        if len(context.chainHistory) == 0:
+    def __build_chain_history(context: SkillContext) -> dict[str, Any]:
+        if len(context.chain_histories) == 0:
             return {
                 "messages": [],
                 "last_message": "",
             }
 
-        last_message = context.current.last_message()
+        last_message = context.current.try_last_message
         return {
             "messages": [msg.message for msg in context.current.messages],
             "last_message": last_message.map_or(lambda m: m.message, ""),

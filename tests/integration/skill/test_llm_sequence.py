@@ -5,16 +5,17 @@ from typing import Any
 import dotenv
 
 from council.agents import Agent
+from council.chains import Chain
 from council.controllers import BasicController
-from council.core import Chain, ChatHistory, AgentContext, Budget, ChainContext
-from council.core.runners import ParallelFor
+from council.contexts import ChatHistory, AgentContext, ChainContext
 from council.evaluators import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM
-from council.skill import LLMSkill
+from council.llm import AzureLLM
+from council.runners import Budget, ParallelFor
+from council.skills import LLMSkill
 
 
 def book_title_generator(context: ChainContext, _b: Budget) -> Any:
-    result = context.last_message.map_or(lambda m: m.message, "")
+    result = context.try_last_message.map_or(lambda m: m.message, "")
     titles = result.split("\n")
     for t in titles:
         yield t[2:]
@@ -27,8 +28,7 @@ class MyTestCase(unittest.TestCase):
         logging.getLogger("council").setLevel(logging.DEBUG)
 
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        self.llm = AzureLLM(config)
+        self.llm = AzureLLM.from_env()
 
     def test_llm_sequence(self):
         system_prompt = "You are a Finance expert answering question about finance topic."

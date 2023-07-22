@@ -1,19 +1,19 @@
+import os
 import unittest
 from typing import List
 
 import dotenv
 
 from council.agents import Agent
-from council.controllers import BasicController
-from council.core import Chain, ChatHistory, AgentContext, Budget
-from council.evaluators import BasicEvaluator
-from council.llm import AzureConfiguration, AzureLLM, LLMMessage
+from council.contexts import ChatHistory, AgentContext
+from council.llm import AzureLLM, LLMMessage
 from council.mocks import MockLLM
-from council.skill.llm_skill import LLMSkill
+from council.runners import Budget
+from council.skills.llm_skill import LLMSkill
 
 
-def first_llm_message_content_to_str(messages: List[LLMMessage]) -> str:
-    return messages[0].content
+def first_llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
+    return [messages[0].content]
 
 
 class TestLlmSkill(unittest.TestCase):
@@ -21,21 +21,35 @@ class TestLlmSkill(unittest.TestCase):
 
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        config = AzureConfiguration.from_env()
-        llm = AzureLLM(config)
+        llm = AzureLLM.from_env()
         system_prompt = "You are an agent developed with Council framework and you are a Finance expert."
         llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt)
-
-        controller = BasicController()
-        evaluator = BasicEvaluator()
-        chain = Chain("GPT-4", "Answer to an user prompt using gpt4", [llm_skill])
-        self.agent = Agent(controller, [chain], evaluator)
+        self.agent = Agent.from_skill(llm_skill, "Answer to an user prompt about finance using gpt4")
 
     def test_basic_prompt(self):
         chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
         run_context = AgentContext(chat_history)
         result = self.agent.execute(run_context, Budget(10))
         print(result.best_message)
+
+    def test_choices(self):
+        os.environ["AZURE_LLM_N"] = "3"
+        os.environ["AZURE_LLM_TEMPERATURE"] = "1.0"
+
+        try:
+            llm = AzureLLM.from_env()
+            system_prompt = "You are an agent developed with Council framework and you are a Finance expert."
+            llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt)
+            agent = Agent.from_skill(llm_skill, "Answer to an user prompt using gpt4")
+            result = agent.execute_from_user_message("Give me examples of a currency")
+            self.assertEquals(3, len(result.best_message.data))
+
+        finally:
+            del os.environ["AZURE_LLM_N"]
+            del os.environ["AZURE_LLM_TEMPERATURE"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_N"), None)
+        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
 
     def test_template_prompt(self):
         llm = MockLLM(action=first_llm_message_content_to_str)
