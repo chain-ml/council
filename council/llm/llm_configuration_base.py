@@ -46,15 +46,21 @@ class LLMConfigurationBase(abc.ABC):
             frequency in the text.
     """
 
-    temperature: Parameter[float] = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
-    max_tokens: Parameter[int] = Parameter.int(name="max_tokens", required=False, validator=_mtv)
-    top_p: Parameter[float] = Parameter.float(name="top_p", required=False)
-    n: Parameter[int] = Parameter.int(name="n", required=False, default=1)
-    presence_penalty: Parameter[float] = Parameter.float(name="presence_penalty", required=False, validator=_pv)
-    frequency_penalty: Parameter[float] = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
+    temperature: Parameter[float]
+    max_tokens: Parameter[int]
+    top_p: Parameter[float]
+    n: Parameter[int]
+    presence_penalty: Parameter[float]
+    frequency_penalty: Parameter[float]
 
     def __init__(self, env_var_prefix: str):
         self._prefix = env_var_prefix
+        self.temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
+        self.max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
+        self.top_p = Parameter.float(name="top_p", required=False)
+        self.n = Parameter.int(name="n", required=False, default=1)
+        self.presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=_pv)
+        self.frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
 
     def read_env(self):
         self.temperature.from_env(self._prefix + "LLM_TEMPERATURE")

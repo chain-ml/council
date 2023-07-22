@@ -1,7 +1,7 @@
 import logging
 from typing import List, Protocol
 
-from council.contexts import ChainContext, SkillContext, ChatMessage
+from council.contexts import SkillContext, ChatMessage
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.runners import Budget
@@ -34,12 +34,12 @@ class PromptToMessages:
     def __init__(self, prompt_builder: PromptBuilder):
         self._builder = prompt_builder
 
-    def to_system_message(self, context: ChainContext) -> List[LLMMessage]:
+    def to_system_message(self, context: SkillContext) -> List[LLMMessage]:
         msg = self._builder.apply(context)
         logging.debug(msg=f'prompt="{msg}')
         return [LLMMessage.system_message(msg)]
 
-    def to_user_message(self, context: ChainContext) -> List[LLMMessage]:
+    def to_user_message(self, context: SkillContext) -> List[LLMMessage]:
         msg = self._builder.apply(context)
         logging.debug(msg=f'prompt="{msg}')
         return [LLMMessage.user_message(msg)]
@@ -80,5 +80,6 @@ class LLMSkill(SkillBase):
         system_prompt = LLMMessage.system_message(self._builder.apply(context))
         messages = [system_prompt, *history_messages]
         llm_response = self._llm.post_chat_request(messages=messages)
-
-        return self.build_success_message(message=llm_response, data=None)
+        if len(llm_response) < 1:
+            return self.build_error_message(message="no response")
+        return self.build_success_message(message=llm_response[0], data=llm_response)

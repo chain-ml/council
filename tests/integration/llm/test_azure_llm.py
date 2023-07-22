@@ -17,7 +17,7 @@ class TestLlmAzure(unittest.TestCase):
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("Give me an example of a currency")]
 
-        result = self.llm.post_chat_request(messages)
+        result = self.llm.post_chat_request(messages)[0]
         print(result)
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
@@ -41,10 +41,12 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            result = llm.post_chat_request(messages)
-            self.assertTrue(len(result.replace(" ", "")) < 5 * 5)
+            first_choice = llm.post_chat_request(messages)[0]
+            self.assertTrue(len(first_choice.replace(" ", "")) <= 5 * 5)
         finally:
-            del os.environ["AZURE_LLM_MAX_TOKEN"]
+            del os.environ["AZURE_LLM_MAX_TOKENS"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_MAX_TOKENS"), None)
 
     def test_choices(self):
         os.environ["AZURE_LLM_N"] = "3"
@@ -53,11 +55,15 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            result = llm.post_chat_request(messages)
-            [print("\n- Choice:" + choice) for choice in result.split("--- choices ---")]
+            choices = llm.post_chat_request(messages)
+            self.assertEquals(3, len(choices))
+            [print("\n- Choice:" + choice) for choice in choices]
         finally:
             del os.environ["AZURE_LLM_N"]
             del os.environ["AZURE_LLM_TEMPERATURE"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_N"), None)
+        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
 
     def test_invalid_temperature(self):
         os.environ["AZURE_LLM_TEMPERATURE"] = "3.5"
@@ -66,3 +72,5 @@ class TestLlmAzure(unittest.TestCase):
             _ = AzureLLM.from_env()
         print(cm.exception)
         del os.environ["AZURE_LLM_TEMPERATURE"]
+
+        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
