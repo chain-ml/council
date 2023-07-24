@@ -12,7 +12,7 @@ class LLMBase(abc.ABC):
     Abstract base class representing a language model.
     """
 
-    def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
+    def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
         """
         Sends a chat request to the language model.
 
@@ -37,5 +37,5 @@ class LLMBase(abc.ABC):
             logger.debug('message="done execution of llm request"')
 
     @abc.abstractmethod
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> str:
+    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
         pass

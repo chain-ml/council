@@ -36,7 +36,7 @@ class TestLLMEvaluator(unittest.TestCase):
 
         self.add_one_iteration_result()
 
-        result = LLMEvaluator(MockLLM.from_responses(responses)).execute(self.context, Budget(10))
+        result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context, Budget(10))
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_chain_with_no_message(self):
@@ -49,12 +49,12 @@ class TestLLMEvaluator(unittest.TestCase):
         self.add_one_iteration_result()
         self.context.new_chain_context("this chain does not provide any message")
 
-        result = LLMEvaluator(MockLLM.from_responses(responses)).execute(self.context, Budget(10))
+        result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context, Budget(10))
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_fail_to_parse(self):
-        responses = ["a response with no score"]
-        instance = LLMEvaluator(MockLLM(responses))
+        response = "a response with no score"
+        instance = LLMEvaluator(MockLLM.from_response(response))
         self.add_one_iteration_result()
         with self.assertRaises(Exception):
             instance.execute(self.context, Budget(10))
@@ -68,5 +68,5 @@ class TestLLMEvaluator(unittest.TestCase):
 
         self.add_one_iteration_result()
         self.add_one_iteration_result()
-        result = LLMEvaluator(MockLLM.from_responses(responses)).execute(self.context, Budget(10))
+        result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context, Budget(10))
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))

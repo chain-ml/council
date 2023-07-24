@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 from jinja2 import Template
 
-from council.contexts import ChainContext, ChatMessageKind
+from council.contexts import SkillContext, ChatMessageKind
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,12 @@ class PromptBuilder:
         else:
             self._instructions = ""
 
-    def apply(self, context: ChainContext) -> str:
+    def apply(self, context: SkillContext) -> str:
         """
         Builds and returns the prompt by rendering the template and appending instructions.
 
         Args:
-            context (ChainContext): The context object containing the necessary data for rendering the template.
+            context (SkillContext): The context object containing the necessary data for rendering the template.
 
         Returns:
             str: The generated prompt string.
@@ -64,7 +64,7 @@ class PromptBuilder:
         return prompt
 
     @staticmethod
-    def __build_chat_history(context: ChainContext) -> dict[str, Any]:
+    def __build_chat_history(context: SkillContext) -> dict[str, Any]:
         last_message = context.chat_history.try_last_message
         last_user_message = context.chat_history.try_last_user_message
         last_agent_message = context.chat_history.try_last_agent_message
@@ -87,7 +87,7 @@ class PromptBuilder:
         }
 
     @staticmethod
-    def __build_chain_history(context: ChainContext) -> dict[str, Any]:
+    def __build_chain_history(context: SkillContext) -> dict[str, Any]:
         if len(context.chain_histories) == 0:
             return {
                 "messages": [],

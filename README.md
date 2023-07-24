@@ -170,5 +170,5 @@ Council is a project under active development. We welcome all contributions, pul
 
 # Community
 
-Join our Discord community to connect with the core development team and users here: (link to be provided soon).
+Join our Discord community to connect with the core development team and users <a href="https://discord.gg/uhusYQcP">here</a>.
 
