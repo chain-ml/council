@@ -1,8 +1,10 @@
-<h1><p align="center">Council - AI Agent Platform with Advanced Control and Scalable Oversight</p></h1>
+![Council](council_banner.png "council")
+
+<h1><p align="center">Council: AI Agent Platform with Control Flow and Scalable Oversight</p></h1>
 
 # Welcome
 
-Council is an open-source framework for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
+Council is an open-source platform for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
 
 Council extends the LLM tool ecosystem by enabling advanced control and scalable oversight for AI agents. Users can create sophisticated agents with predictable behavior by leveraging Council's powerful approach to control flow using Controllers, Filters, Evaluators and Budgets for agents. This allows the automated routing between agents, comparing, evaluating and selecting the best results for a (sub-)task. 
 
@@ -12,11 +14,11 @@ Council aims to facilitate packaging and seamlessly deploying Agents at scale on
 
 # Key Features
 
-* 🧐 Support for Sophisticated Agents: Reliable agents that can iterate over tasks that require exploring alternatives, creating and completing subgoals, and evaluating quality under budget constraints.
-* 🥰 Built for Data Scientists: Python library, local development environment, integrated with popular frameworks.
-* 🚀 Seamless Production Deployments: Easy packaging, deployment and monitoring at scale on multiple deployment platforms via Kubernetes integration.
-* 🤝 Ecosystem Connectivity: Connected with a growing AI Agent ecosystem, integrated with LangChain.
-* 👮 Scalable Oversight: Built-in tooling to manage, version, monitor, evaluate and control deployed Agents.
+* 🧐 **Support for Sophisticated Agents**: Reliable agents that can iterate over tasks that require exploring alternatives, creating and completing subgoals, and evaluating quality under budget constraints.
+* 🥰 **Built for Data Scientists**: Python library, local development environment, integrated with popular frameworks.
+* 🚀 **Seamless Production Deployments**: Easy packaging, deployment and monitoring at scale on multiple deployment platforms via Kubernetes integration.
+* 🤝 **Ecosystem Connectivity**: Connected with a growing AI Agent ecosystem, integrated with LangChain.
+* 👮 **Scalable Oversight**: Built-in tooling to manage, version, monitor, evaluate and control deployed Agents.
 
 Note: Some of the features listed above are work-in-progress and due in a future release (refer to Roadmap section below).
 
