@@ -29,12 +29,12 @@
 
 .. toctree::
     :maxdepth: 2
-    :caption: Examples
+    :caption: Tutorials
     :hidden:
 
-    examples/social.md
-    examples/financial.md
-    examples/research.md
+    tutorials/social.md
+    tutorials/financial.md
+    tutorials/research.md
 
 .. toctree::
     :maxdepth: 2
