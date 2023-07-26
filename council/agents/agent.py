@@ -101,16 +101,31 @@ class Agent:
             Agent: a new instance
         """
         chain = Chain(name="BasicChain", description=chain_description or "basic chain", runners=[skill])
+        return Agent.from_chain(chain)
+
+    @staticmethod
+    def from_chain(chain: Chain) -> "Agent":
+        """
+        Helper function to create a new agent with a  :class:`.BasicController`, a
+            :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
+
+        Parameters:
+             chain(Chain): a chain
+        Returns:
+            Agent: a new instance
+        """
         return Agent(controller=BasicController(), chains=[chain], evaluator=BasicEvaluator())
 
-    def execute_from_user_message(self, message: str) -> AgentResult:
+    def execute_from_user_message(self, message: str, budget: Optional[Budget] = None) -> AgentResult:
         """
         Helper function that executes an agent with a simple user message.
 
         Parameters:
             message(str): the user message
+            budget (Budget): the budget for the agent execution
         Returns:
              AgentResult:
         """
+        execution_budget = budget or InfiniteBudget()
         context = AgentContext(ChatHistory.from_user_message(message))
-        return self.execute(context, budget=InfiniteBudget())
+        return self.execute(context, budget=execution_budget)

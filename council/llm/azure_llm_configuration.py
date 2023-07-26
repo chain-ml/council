@@ -1,3 +1,5 @@
+from typing import Optional
+
 from council.llm import LLMConfigurationBase
 from council.utils import read_env_str, read_env_int
 
@@ -8,10 +10,9 @@ class AzureLLMConfiguration(LLMConfigurationBase):
 
     Args:
         api_key (str): the Azure api key
-        api_version (str): the Azure api key. i.e. `2023-03-15-preview`, `2023-05-15`, `2023-06-01-preview`
+        api_version (str): The API version to use i.e. `2023-03-15-preview`, `2023-05-15`, `2023-06-01-preview`
         api_base (str): the base path for Azure api
         deployment_name (str): the deployment name in Azure
-        temperature (int): temperature settings for the LLM
 
     Notes:
         https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
@@ -21,10 +22,14 @@ class AzureLLMConfiguration(LLMConfigurationBase):
     api_version: str
     api_base: str
     deployment_name: str
-    timeout: int = 30
+    timeout: int
 
-    def __init__(self):
+    def __init__(self, api_version: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
         super().__init__("AZURE_")
+        self.api_version = api_version
+        self.timeout = timeout or 30
+        if api_key is not None:
+            self.api_key = api_key
 
     @staticmethod
     def from_env() -> "AzureLLMConfiguration":
