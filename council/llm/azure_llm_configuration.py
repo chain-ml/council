@@ -26,7 +26,8 @@ class AzureLLMConfiguration(LLMConfigurationBase):
 
     def __init__(self, api_version: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
         super().__init__("AZURE_")
-        self.api_version = api_version
+        if api_version is not None:
+            self.api_version = api_version
         self.timeout = timeout or 30
         if api_key is not None:
             self.api_key = api_key
