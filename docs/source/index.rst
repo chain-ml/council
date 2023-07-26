@@ -26,7 +26,15 @@
     use_cases/multi_chain_agent.ipynb
     use_cases/llamaindex_integration.ipynb
     use_cases/langchain_llm_integration.ipynb
-    
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Tutorials
+    :hidden:
+
+    tutorials/social.md
+    tutorials/financial.md
+    tutorials/research.md
 
 .. toctree::
     :maxdepth: 2
