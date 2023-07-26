@@ -1,0 +1,12 @@
+.sidebar-logo-container {
+    margin-top: 25px;
+}
+
+.sidebar-brand-text {
+    text-indent: -85px;
+    overflow: hidden;
+}
+
+.bottom-of-page .left-details {
+    font-size: 0;
+}
