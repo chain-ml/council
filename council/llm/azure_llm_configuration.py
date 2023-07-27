@@ -25,7 +25,7 @@ class AzureLLMConfiguration(LLMConfigurationBase):
     timeout: int
 
     def __init__(self, api_version: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
-        super().__init__("AZURE_")
+        super().__init__()
         if api_version is not None:
             self.api_version = api_version
         self.timeout = timeout or 30
@@ -35,7 +35,7 @@ class AzureLLMConfiguration(LLMConfigurationBase):
     @staticmethod
     def from_env() -> "AzureLLMConfiguration":
         config = AzureLLMConfiguration()
-        config.read_env()
+        config.read_env(env_var_prefix="AZURE_")
 
         config.api_key = read_env_str("AZURE_LLM_API_KEY").unwrap()
         config.api_version = read_env_str("AZURE_LLM_API_VERSION").unwrap()

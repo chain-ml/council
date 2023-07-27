@@ -23,7 +23,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
     timeout: int
 
     def __init__(self, model: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
-        super().__init__("OPENAI_")
+        super().__init__()
         self.model = Option(model)
         self.timeout = timeout or 30
         if api_key is not None:
@@ -36,12 +36,13 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         return payload
 
     @staticmethod
-    def from_env(default_model: Optional[str] = None) -> "OpenAILLMConfiguration":
-        config = OpenAILLMConfiguration()
-        config.read_env()
+    def from_env(model: Optional[str] = None) -> "OpenAILLMConfiguration":
+        config = OpenAILLMConfiguration(model=model)
+        config.read_env(env_var_prefix="OPENAI_")
 
         config._set_api_key(read_env_str("OPENAI_API_KEY").unwrap())
-        config.model = read_env_str("OPENAI_LLM_MODEL", required=False, default=default_model)
+        if config.model.is_none():
+            config.model = read_env_str("OPENAI_LLM_MODEL", required=False, default="gpt-3.5-turbo")
         config.timeout = read_env_int("OPENAI_LLM_TIMEOUT", required=False, default=30).unwrap()
         return config
 

@@ -1,6 +1,6 @@
 import httpx
 
-from typing import Any
+from typing import Any, Optional
 
 from . import OpenAIChatCompletionsModel
 from .openai_llm_configuration import OpenAILLMConfiguration
@@ -27,7 +27,7 @@ class OpenAIChatCompletionsModelProvider:
 
 class OpenAILLM(OpenAIChatCompletionsModel):
     """
-    Represents an OpenAI language model hosted on Azure.
+    Represents an OpenAI large language model hosted on OpenAI.
     """
 
     config: OpenAILLMConfiguration
@@ -36,6 +36,6 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         super().__init__(config, OpenAIChatCompletionsModelProvider(config).post_request)
 
     @staticmethod
-    def from_env() -> "OpenAILLM":
-        config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env()
+    def from_env(model: Optional[str] = None) -> "OpenAILLM":
+        config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env(model=model)
         return OpenAILLM(config)
