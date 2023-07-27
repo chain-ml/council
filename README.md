@@ -151,16 +151,15 @@ We have big plans and an ambitious roadmap for the framework with incremental re
 
 Major milestones the core team is working towards are shown below. The roadmap is subject to frequent changes as community needs emerge. Breaking changes to our APIs are still to be expected.
 
+**Q3 2023**
+- [x] **Framework Core**: Key features and interfaces
+- [ ] **Conversational Automation**: Expand upon framework core with advanced filtering, evaluation and budgeting for agents
+- [ ] **Ecosystem Integration**: Integrate with tools and frameworks in the broader LLM ecosystem
 
-| Status | Feature  | Details | ETA |
-| ------------- | ------------- | ------------- | ------------- |
-| - [x] | **Framework Core**  | Key features and interfaces | Q3 2023 |
-| - [ ] | **Conversational Automation**  | Expand upon framework core with advanced filtering, evaluation and budgeting for agents | Q3 2023 |
-| - [ ] | **Ecosystem Integration** | Integrate with tools and frameworks in the broader LLM ecosystem | Q3 2023  |
-| - [ ] | **Application Templates**  | Provide reusable templates for LLM-enabled applications that allow fast creation of Agents addressing common use cases | Q3 2023 |
-| - [ ] | **Deployment Platform Integration**  | Package, deploy and operate agents at scale in production via integration with popular deployment platforms | Q4 2023 |
-| - [ ] | **Quality & Evaluation Framework**  | Automated and human-supervised test suites (via tool integration), enable management of reusable test cases | Q4 2023 |
-
+**Q4 2023**
+- [ ] **Application Templates**: Provide reusable templates for LLM-enabled applications that allow fast creation of Agents addressing common use cases
+- [ ] **Deployment Platform Integration**: Package, deploy and operate agents at scale in production via integration with popular deployment platforms
+- [ ] **Quality & Evaluation Framework**: Automated and human-supervised test suites (via tool integration), enable management of reusable test cases 
 
 # Support
 
