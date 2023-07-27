@@ -16,8 +16,7 @@ class TestLlmEvaluator(unittest.TestCase):
 
     def test_basic_prompt(self):
         evaluator = LLMEvaluator(llm=self.llm)
-        chat_history = ChatHistory()
-        chat_history.add_user_message(message="Hello, who are you?")
+        chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
         context = AgentContext(chat_history=chat_history)
 
         rose_message = "Roses are red"

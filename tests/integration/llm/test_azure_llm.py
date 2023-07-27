@@ -21,8 +21,8 @@ class TestLlmAzure(unittest.TestCase):
         print(result)
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
-        result = self.llm.post_chat_request(messages)
-        print(result)
+        results = self.llm.post_chat_request(messages)
+        [print(result) for result in results]
 
     def test_censored_prompt(self):
         messages = [

@@ -4,13 +4,9 @@ import dotenv
 
 from council.agents import Agent
 from council.chains import Chain
-from council.controllers import BasicController
-from council.contexts import ChatHistory, AgentContext
-from council.evaluators import BasicEvaluator
 from council.llm import AzureLLM
 from council.mocks import MockLLM
 from council.prompt import PromptBuilder
-from council.runners import Budget
 from council.skills import LLMSkill, PromptToMessages
 
 template = """
@@ -36,9 +32,8 @@ class TestPrompt(unittest.TestCase):
         mock_llm_skill = LLMSkill(llm=llm, system_prompt="")
 
         chain = Chain("GPT-4", "Answer to an user prompt about geography", [mock_llm_skill, self.llm_skill])
-        agent = Agent(BasicController(), [chain], BasicEvaluator())
+        agent = Agent.from_chain(chain)
 
-        chat_history = ChatHistory.from_user_message(message="what are the three largest cities in South America?")
-        run_context = AgentContext(chat_history)
-        result = agent.execute(run_context, Budget(60))
+        result = agent.execute_from_user_message("what are the three largest cities in South America?")
+        self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)

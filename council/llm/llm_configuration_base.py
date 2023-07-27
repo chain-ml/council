@@ -53,8 +53,7 @@ class LLMConfigurationBase(abc.ABC):
     presence_penalty: Parameter[float]
     frequency_penalty: Parameter[float]
 
-    def __init__(self, env_var_prefix: str):
-        self._prefix = env_var_prefix
+    def __init__(self):
         self.temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
         self.max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
         self.top_p = Parameter.float(name="top_p", required=False)
@@ -62,13 +61,13 @@ class LLMConfigurationBase(abc.ABC):
         self.presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=_pv)
         self.frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
 
-    def read_env(self):
-        self.temperature.from_env(self._prefix + "LLM_TEMPERATURE")
-        self.max_tokens.from_env(self._prefix + "LLM_MAX_TOKENS")
-        self.top_p.from_env(self._prefix + "LLM_TOP_P")
-        self.n.from_env(self._prefix + "LLM_N")
-        self.presence_penalty.from_env(self._prefix + "LLM_PRESENCE_PENALTY")
-        self.frequency_penalty.from_env(self._prefix + "LLM_FREQUENCY_PENALTY")
+    def read_env(self, env_var_prefix: str):
+        self.temperature.from_env(env_var_prefix + "LLM_TEMPERATURE")
+        self.max_tokens.from_env(env_var_prefix + "LLM_MAX_TOKENS")
+        self.top_p.from_env(env_var_prefix + "LLM_TOP_P")
+        self.n.from_env(env_var_prefix + "LLM_N")
+        self.presence_penalty.from_env(env_var_prefix + "LLM_PRESENCE_PENALTY")
+        self.frequency_penalty.from_env(env_var_prefix + "LLM_FREQUENCY_PENALTY")
 
     def build_default_payload(self) -> dict[str, Any]:
         payload: dict[str, Any] = {}

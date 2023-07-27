@@ -6,9 +6,7 @@ import dotenv
 
 from council.agents import Agent
 from council.chains import Chain
-from council.controllers import BasicController
-from council.contexts import ChatHistory, AgentContext, ChainContext
-from council.evaluators import BasicEvaluator
+from council.contexts import ChainContext
 from council.llm import AzureLLM
 from council.runners import Budget, ParallelFor
 from council.skills import LLMSkill
@@ -38,10 +36,9 @@ class MyTestCase(unittest.TestCase):
 
         chain = Chain("GPT-4", "Answer to an user prompt about Finance", [defi_llm_skill, rater_llm_skill])
 
-        agent = Agent(BasicController(), [chain], BasicEvaluator())
-        chat_history = ChatHistory.from_user_message(message="What is inflation?")
-        run_context = AgentContext(chat_history)
-        result = agent.execute(run_context, Budget(180))
+        agent = Agent.from_chain(chain)
+        result = agent.execute_from_user_message(message="What is inflation?")
+        self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)
 
     def test_llm_sequence_with_parallel_for(self):
@@ -60,8 +57,8 @@ class MyTestCase(unittest.TestCase):
             ],
         )
 
-        agent = Agent(BasicController(), [chain], BasicEvaluator())
-        chat_history = ChatHistory.from_user_message(message="corporate finance")
-        run_context = AgentContext(chat_history)
-        result = agent.execute(run_context, Budget(6000))
+        agent = Agent.from_chain(chain)
+        result = agent.execute_from_user_message(message="corporate finance")
+
+        self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)

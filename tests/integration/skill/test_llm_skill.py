@@ -30,6 +30,8 @@ class TestLlmSkill(unittest.TestCase):
         chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
         run_context = AgentContext(chat_history)
         result = self.agent.execute(run_context, Budget(10))
+
+        self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)
 
     def test_choices(self):
@@ -42,6 +44,7 @@ class TestLlmSkill(unittest.TestCase):
             llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt)
             agent = Agent.from_skill(llm_skill, "Answer to an user prompt using gpt4")
             result = agent.execute_from_user_message("Give me examples of a currency")
+            self.assertTrue(result.try_best_message.is_some())
             self.assertEquals(3, len(result.best_message.data))
 
         finally:
@@ -57,4 +60,5 @@ class TestLlmSkill(unittest.TestCase):
         agent = Agent.from_skill(llm_skill)
         result = agent.execute_from_user_message("User Message")
 
+        self.assertTrue(result.try_best_message.is_some())
         self.assertEquals(result.best_message.message, "The last user message is: 'User Message'")
