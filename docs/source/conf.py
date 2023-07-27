@@ -62,6 +62,7 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_title = f"{project} {release}"
+html_short_title = f"{release}"
 html_theme = "furo"
 html_show_copyright = False
 html_show_sphinx = False
@@ -70,6 +71,7 @@ html_css_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",
+    "council.css",
 ]
 # fmt: off
 # so that black does not mess with it
@@ -87,8 +89,9 @@ html_theme_options = {
             "html": "",
             "class": "fa-brands fa-solid fa-github",
         },
-    ]
+    ],
+    "dark_logo": "Council_RGB_Horizontal_DarkBKG_Gradient.png",
+    "light_logo": "Council_RGB_Horizontal_LightBKG_Gradient.png",
+    "sidebar_hide_name": False,
 }
 # fmt: on
-
-# html_theme_options = {"dark_logo": "00_chainml_logo.png", "light_logo": "02_chainml_logo_black.png"}
