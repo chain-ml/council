@@ -2,7 +2,7 @@ import httpx
 
 from typing import Any, Optional
 
-from . import OpenAIChatCompletionsModel
+from . import OpenAIChatCompletionsModel, OpenAITokenCounter
 from .openai_llm_configuration import OpenAILLMConfiguration
 
 
@@ -33,7 +33,11 @@ class OpenAILLM(OpenAIChatCompletionsModel):
     config: OpenAILLMConfiguration
 
     def __init__(self, config: OpenAILLMConfiguration):
-        super().__init__(config, OpenAIChatCompletionsModelProvider(config).post_request)
+        super().__init__(
+            config,
+            OpenAIChatCompletionsModelProvider(config).post_request,
+            token_counter=OpenAITokenCounter.from_model(config.model.unwrap_or("")),
+        )
 
     @staticmethod
     def from_env(model: Optional[str] = None) -> "OpenAILLM":

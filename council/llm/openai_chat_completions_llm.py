@@ -1,10 +1,10 @@
 import logging
 import httpx
 
-from typing import List, Any, Protocol, Sequence
+from typing import List, Any, Protocol, Sequence, Optional
 
 from . import LLMConfigurationBase
-from .llm_message import LLMMessage
+from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from .llm_exception import LLMException
 from .llm_base import LLMBase
 
@@ -128,7 +128,10 @@ class OpenAIChatCompletionsModel(LLMBase):
 
     config: LLMConfigurationBase
 
-    def __init__(self, config: LLMConfigurationBase, provider: Provider):
+    def __init__(
+        self, config: LLMConfigurationBase, provider: Provider, token_counter: Optional[LLMessageTokenCounterBase]
+    ):
+        super().__init__(token_counter)
         self.config = config
         self._provider = provider
 

@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.llm import OpenAILLM, LLMMessage
+from council.llm import OpenAILLM, LLMMessage, LLMTokenLimitException
 
 
 class TestLlmOpenAI(unittest.TestCase):
@@ -26,3 +26,9 @@ class TestLlmOpenAI(unittest.TestCase):
         messages.append(LLMMessage.user_message("give me another example"))
         result = self.llm.post_chat_request(messages, model="gpt-4")
         print(result)
+
+    def test_prompt_exceed_token_limit(self):
+        messages = [LLMMessage.user_message("what are the largest cities in South America")] * 500
+        with self.assertRaises(LLMTokenLimitException) as cm:
+            _ = self.llm.post_chat_request(messages)
+        print(str(cm.exception))

@@ -1,6 +1,6 @@
 import unittest
 
-from council.llm import LLMMessage
+from council.llm import LLMMessage, LLMTokenLimitException
 from council.mocks import MockLLM, llm_message_content_to_str
 
 
@@ -24,3 +24,8 @@ class TestPrompt(unittest.TestCase):
         m = MockLLM(action=llm_message_content_to_str)
         r = m.post_chat_request([LLMMessage.user_message("Test")])
         self.assertEqual(["Test"], r)
+
+    def test_token_limit(self):
+        m = MockLLM(action=llm_message_content_to_str, token_limit=3)
+        with self.assertRaises(LLMTokenLimitException):
+            _ = m.post_chat_request([LLMMessage.user_message("Test")])

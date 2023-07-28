@@ -4,7 +4,7 @@ from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
 from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage
-from council.llm import LLMBase, LLMMessage
+from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException
 from council.runners import Budget
 from council.scorers import ScorerBase
 from council.skills import SkillBase
@@ -17,6 +17,20 @@ class LLMMessagesToStr(Protocol):
 
 def llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
     return [msg.content for msg in messages]
+
+
+class MockTokenCounter(LLMessageTokenCounterBase):
+    def __init__(self, limit: int = -1):
+        self._limit = limit
+
+    def count_messages_token(self, messages: List[LLMMessage]) -> int:
+        result = 0
+        for msg in messages:
+            result += len(msg.content)
+
+        if 0 < self._limit < result:
+            raise LLMTokenLimitException(token_count=result, limit=self._limit, model="mock")
+        return result
 
 
 class MockSkill(SkillBase):
@@ -35,7 +49,8 @@ class MockSkill(SkillBase):
 
 
 class MockLLM(LLMBase):
-    def __init__(self, action: Optional[LLMMessagesToStr] = None):
+    def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1):
+        super().__init__(token_counter=MockTokenCounter(token_limit))
         self._action = action
 
     def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:

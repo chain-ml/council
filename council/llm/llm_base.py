@@ -1,8 +1,8 @@
 import abc
 import logging
 
-from typing import List, Any
-from .llm_message import LLMMessage
+from typing import List, Any, Optional
+from .llm_message import LLMMessage, LLMessageTokenCounterBase
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +11,9 @@ class LLMBase(abc.ABC):
     """
     Abstract base class representing a language model.
     """
+
+    def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None):
+        self._token_counter = token_counter
 
     def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
         """
@@ -24,8 +27,12 @@ class LLMBase(abc.ABC):
             str: The response from the language model.
 
         Raises:
+            LLMTokenLimitException: If messages exceed the maximum number of tokens.
             Exception: If an error occurs during the execution of the chat request.
         """
+
+        if self._token_counter is not None:
+            _ = self._token_counter.count_messages_token(messages=messages)
 
         logger.debug('message="starting execution of llm request"')
         try:
