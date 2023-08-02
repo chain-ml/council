@@ -26,7 +26,7 @@ Note: Some of the features listed above are work-in-progress and due in a future
 
 Key components of the framework are shown in below image and further introduced in this section.
 
-![engine flow](engine_flow.png "engine")
+![engine flow](docs/source/introduction/engine_flow.png "engine")
 
 ## Agent
 Agents encapsulate the end-to-end application logic from prompt input to final response across Controller, Evaluation and registered Chains of Skills. Agents itself can be recursively nested within other Agents in the form of AgentChains.
