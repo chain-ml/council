@@ -2,7 +2,7 @@
 
 from .llm_exception import LLMException, LLMTokenLimitException
 from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
-from .llm_base import LLMBase
+from .llm_base import LLMBase, LLMResult
 from .llm_configuration_base import LLMConfigurationBase
 
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel

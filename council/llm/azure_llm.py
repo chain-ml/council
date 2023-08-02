@@ -34,7 +34,7 @@ class AzureLLM(OpenAIChatCompletionsModel):
     config: AzureLLMConfiguration
 
     def __init__(self, config: AzureLLMConfiguration):
-        super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config).post_request)
+        super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config).post_request, None)
 
     @staticmethod
     def from_env() -> "AzureLLM":

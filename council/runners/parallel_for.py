@@ -56,7 +56,7 @@ class ParallelFor(LoopRunnerBase):
                 inner_contexts.extend(inner)
                 fs = [executor.submit(self._run_skill, inner, iteration) for (inner, iteration) in zip(inner, batch)]
                 all_fs.extend(fs)
-                dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
+                dones, not_dones = futures.wait(fs, context.budget.remaining_duration, futures.FIRST_EXCEPTION)
                 self.rethrow_if_exception(dones)
         finally:
             [f.cancel() for f in all_fs]

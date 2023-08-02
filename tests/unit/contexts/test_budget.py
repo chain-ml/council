@@ -13,7 +13,7 @@ class TestAgentResult(unittest.TestCase):
     def test_remaining(self):
         b = Budget.default()
         time.sleep(0.3)
-        self.assertTrue(b.remaining().duration < 30)
+        self.assertTrue(b.remaining_duration < 30)
 
     def test_expired(self):
         b = Budget(duration=0.1)

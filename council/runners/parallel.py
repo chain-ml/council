@@ -24,7 +24,7 @@ class Parallel(RunnerBase):
         # which results into inconsistent invocation (wrong arguments)
         fs = [executor.submit(runner.run, inner, executor) for (runner, inner) in contexts]
         try:
-            dones, not_dones = futures.wait(fs, context.budget.remaining().duration, futures.FIRST_EXCEPTION)
+            dones, not_dones = futures.wait(fs, context.budget.remaining_duration, futures.FIRST_EXCEPTION)
             self.rethrow_if_exception(dones)
         finally:
             context.merge([context for (_, context) in contexts])

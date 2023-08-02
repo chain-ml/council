@@ -28,10 +28,10 @@ class LLMSimilarityScorer(ScorerBase):
 
     def _score(self, message: ChatMessage) -> float:
         messages = self._build_messages(message)
-        choices = self._llm.post_chat_request(messages)
-        if len(choices) < 1:
+        result = self._llm.post_chat_request(messages)
+        if len(result.choices) < 1:
             return self._parse_response("")
-        return self._parse_response(choices[0])
+        return self._parse_response(result.first_choice)
 
     def _build_messages(self, message: ChatMessage) -> List[LLMMessage]:
         prompt = [

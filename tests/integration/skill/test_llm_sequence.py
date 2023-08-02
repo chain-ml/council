@@ -9,6 +9,7 @@ from council.chains import Chain
 from council.contexts import ChainContext
 from council.llm import AzureLLM
 from council.runners import Budget, ParallelFor
+from council.runners.budget import Consumption
 from council.skills import LLMSkill
 
 
@@ -16,7 +17,8 @@ def book_title_generator(context: ChainContext, _b: Budget) -> Any:
     result = context.try_last_message.map_or(lambda m: m.message, "")
     titles = result.split("\n")
     for t in titles:
-        yield t[2:]
+        if len(t) > 5:
+            yield t[2:]
 
 
 class MyTestCase(unittest.TestCase):
@@ -42,14 +44,14 @@ class MyTestCase(unittest.TestCase):
         print(result.best_message)
 
     def test_llm_sequence_with_parallel_for(self):
-        system_prompt = "Give three non-fiction books about a given topic"
+        system_prompt = "Give the title of two must-read non-fiction books about a given topic"
         book_finder_llm_skill = LLMSkill(llm=self.llm, system_prompt=system_prompt)
 
         system_prompt = "Give five takeaways from a book"
         book_takeaways_llm_skill = LLMSkill(llm=self.llm, name="Take", system_prompt=system_prompt)
 
         chain = Chain(
-            "GPT-4",
+            "GPT-Book",
             "...",
             [
                 book_finder_llm_skill,
@@ -58,7 +60,12 @@ class MyTestCase(unittest.TestCase):
         )
 
         agent = Agent.from_chain(chain)
-        result = agent.execute_from_user_message(message="corporate finance")
+        limit_tokens = Consumption(1500, "token", "gpt-35-turbo")
+        limit_calls = Consumption(3, "call", "LLMSkill")
+        budget = Budget(6000, limits=[limit_tokens, limit_calls])
+        result = agent.execute_from_user_message(message="corporate finance", budget=budget)
 
         self.assertTrue(result.try_best_message.is_some())
+        self.assertLess(limit_tokens.value, 1500.0)
+        self.assertTrue(budget.is_expired())
         print(result.best_message)
