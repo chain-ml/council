@@ -5,8 +5,6 @@ from typing import List, Optional
 
 from council.utils import read_env_int
 
-import random
-
 
 class BudgetExpiredException(Exception):
     pass

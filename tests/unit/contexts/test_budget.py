@@ -2,7 +2,7 @@ import os
 import time
 import unittest
 
-from council.runners import Budget
+from council.runners import Budget, Consumption
 
 
 class TestAgentResult(unittest.TestCase):
@@ -14,6 +14,16 @@ class TestAgentResult(unittest.TestCase):
         b = Budget.default()
         time.sleep(0.3)
         self.assertTrue(b.remaining_duration < 30)
+
+    def test_remaining_consumption(self):
+        consumption = Consumption(10, "unit", "test")
+        b = Budget(60, limits=[consumption])
+        b.add_consumption(Consumption(6, "unit", "test"), "unit-test")
+        b.add_consumption(Consumption(50, "unit", "test2"), "unit-test")
+        self.assertFalse(b.is_expired())
+        self.assertEquals(4, consumption.value)
+        b.add_consumption(Consumption(5, "unit", "test"), "unit-test")
+        self.assertTrue(b.is_expired())
 
     def test_expired(self):
         b = Budget(duration=0.1)
