@@ -1,12 +1,13 @@
 import logging
 import httpx
 
-from typing import List, Any, Protocol, Sequence
+from typing import List, Any, Protocol, Sequence, Optional
 
 from . import LLMConfigurationBase
-from .llm_message import LLMMessage
+from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from .llm_exception import LLMException
-from .llm_base import LLMBase
+from .llm_base import LLMBase, LLMResult
+from ..runners import Consumption
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,10 @@ class Usage:
     def __str__(self) -> str:
         return f'prompt_tokens="{self._prompt}" total_tokens="{self._total}" completion_tokens="{self._completion}"'
 
+    @property
+    def total_tokens(self) -> int:
+        return self._total
+
     @staticmethod
     def from_dict(obj: Any) -> "Usage":
         _completion_tokens = int(obj.get("completion_tokens"))
@@ -128,18 +133,22 @@ class OpenAIChatCompletionsModel(LLMBase):
 
     config: LLMConfigurationBase
 
-    def __init__(self, config: LLMConfigurationBase, provider: Provider):
+    def __init__(
+        self, config: LLMConfigurationBase, provider: Provider, token_counter: Optional[LLMessageTokenCounterBase]
+    ):
+        super().__init__(token_counter)
         self.config = config
         self._provider = provider
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> List[str]:
+    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         payload = self.config.build_default_payload()
         payload["messages"] = [message.dict() for message in messages]
         for key, value in kwargs.items():
             payload[key] = value
 
         r = self._post_request(payload)
-        return [c.message.content for c in r.choices]
+        consumption = Consumption(r.usage.total_tokens, "token", r.model)
+        return LLMResult(choices=[c.message.content for c in r.choices], consumptions=[consumption])
 
     def _post_request(self, payload) -> OpenAIChatCompletionsResult:
         logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from council.chains import Chain
 from council.contexts import AgentContext, ChatHistory
-from council.controllers import ControllerBase, BasicController
+from council.controllers import ControllerBase, BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
@@ -66,14 +66,7 @@ class Agent:
                 if len(plan) == 0:
                     return AgentResult()
                 for unit in plan:
-                    chain = unit.chain
-                    budget = unit.budget
-                    logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
-                    chain_context = context.new_chain_context(unit.name)
-                    if unit.initial_state is not None:
-                        chain_context.current.append(unit.initial_state)
-                    chain.execute(chain_context, budget)
-                    logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
+                    budget = self._execute_unit(context, unit)
 
                 result = self.evaluator.execute(context, budget)
                 context.evaluationHistory.append(result)
@@ -87,6 +80,17 @@ class Agent:
         finally:
             logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
+
+    def _execute_unit(self, context: AgentContext, unit: ExecutionUnit) -> Budget:
+        chain = unit.chain
+        budget = unit.budget
+        logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
+        chain_context = context.new_chain_context(unit.name)
+        if unit.initial_state is not None:
+            chain_context.current.append(unit.initial_state)
+        chain.execute(chain_context, budget)
+        logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
+        return budget
 
     @staticmethod
     def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":

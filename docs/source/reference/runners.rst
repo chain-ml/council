@@ -21,6 +21,9 @@ RunnerErrors
     :full:
     :namespace: council.runners
 
+Classes
+-------
+
 .. toctree::
     :maxdepth: 1
     :glob:

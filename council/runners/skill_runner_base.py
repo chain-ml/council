@@ -33,7 +33,7 @@ class SkillRunnerBase(RunnerBase):
         """
         future = executor.submit(self.run_in_current_thread, context, IterationContext.empty())
         try:
-            future.result(timeout=context.budget.remaining().duration)
+            future.result(timeout=context.budget.remaining_duration)
         finally:
             future.cancel()
 

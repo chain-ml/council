@@ -5,6 +5,7 @@ from council.contexts import SkillContext, ChatMessage
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.runners import Budget
+from council.runners.budget import Consumption
 from council.skills import SkillBase
 
 
@@ -73,13 +74,18 @@ class LLMSkill(SkillBase):
         self._context_messages = context_messages
         self._builder = PromptBuilder(system_prompt)
 
-    def execute(self, context: SkillContext, _budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
         """Execute `LLMSkill`."""
 
         history_messages = self._context_messages(context)
         system_prompt = LLMMessage.system_message(self._builder.apply(context))
         messages = [system_prompt, *history_messages]
         llm_response = self._llm.post_chat_request(messages=messages)
-        if len(llm_response) < 1:
+        if len(llm_response.choices) < 1:
             return self.build_error_message(message="no response")
-        return self.build_success_message(message=llm_response[0], data=llm_response)
+
+        budget.add_consumption(consumption=Consumption(1, "call", "LLMSkill"), source=self.name)
+        for c in llm_response.consumptions:
+            budget.add_consumption(consumption=c, source=self.name)
+
+        return self.build_success_message(message=llm_response.first_choice, data=llm_response)
