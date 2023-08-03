@@ -11,7 +11,30 @@ class BudgetExpiredException(Exception):
 
 
 class Consumption:
+    """
+    A class representing a consumption measurement with value, unit, and kind information.
+
+    Attributes:
+        _value (float): The numeric value of the consumption measurement.
+        _unit (str): The unit of measurement for the consumption (e.g., tokens, api_calls, etc.).
+        _kind (str): The kind or category of the consumption.
+
+    Methods:
+        __init__(value: float, unit: str, kind: str):
+            Initializes a Consumption instance with the provided value, unit, and kind.
+
+    """
+
     def __init__(self, value: float, unit: str, kind: str):
+        """
+        Initializes a Consumption instance.
+
+        Args:
+            value (float): The numeric value of the consumption measurement.
+            unit (str): The unit of measurement for the consumption (e.g., liters, watts, etc.).
+            kind (str): The kind or category of the consumption (e.g., water, electricity, etc.).
+
+        """
         self._value = value
         self._unit = unit
         self._kind = kind
@@ -45,7 +68,29 @@ class Consumption:
 
 
 class ConsumptionEvent:
+    """
+    A class representing an event related to consumption, along with the source and timestamp information.
+
+    Attributes:
+        _consumption (Consumption): An instance of the Consumption class representing the consumption measurement.
+        _source (str): The source of the consumption event (e.g., sensor name, device, etc.).
+        _timestamp (float): The timestamp of the consumption event.
+
+    Methods:
+        __init__(consumption: Consumption, source: str):
+            Initializes a ConsumptionEvent instance with the provided consumption, source, and timestamp.
+
+    """
+
     def __init__(self, consumption: Consumption, source: str):
+        """
+        Initializes a ConsumptionEvent instance.
+
+        Args:
+            consumption (Consumption): An instance of the Consumption class representing the consumption measurement.
+            source (str): The source of the consumption event (e.g., sensor name, device, etc.).
+
+        """
         self._consumption = consumption
         self._source = source
         self._timestamp = time.monotonic()
@@ -68,10 +113,8 @@ class ConsumptionEvent:
 
 class Budget:
     """
-    Represents the budget available for the execution
+    A class representing a budget with duration, limits, and consumption events.
 
-    Attributes:
-        duration (float): The number of seconds
     """
 
     def __init__(
@@ -79,12 +122,19 @@ class Budget:
         duration: float,
         limits: Optional[List[Consumption]] = None,
         consumptions: Optional[List[ConsumptionEvent]] = None,
-    ):
+    ) -> None:
         """
         Initialize the Budget object
 
         Args:
-            duration (float): The number of seconds
+            duration (float): The duration of the budget in some time unit (e.g., days, months, etc.).
+            limits (List[Consumption]): Optional. A list of Consumption objects representing the budget limits.
+                                        Each Consumption object contains a value, unit, and kind.
+            consumptions (List[ConsumptionEvent]): Optional. A list of ConsumptionEvent objects representing
+                                                   the consumption events within the budget duration.
+                                                   Each ConsumptionEvent object contains a consumption measurement,
+                                                   a source, and an optional timestamp.
+
         """
         self._duration = duration
         self._deadline = time.monotonic() + duration
