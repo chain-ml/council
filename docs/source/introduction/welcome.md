@@ -1,7 +1,7 @@
 # Welcome
 
 
-Council is an open-source framework for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
+[Council](https://github.com/chain-ml/council/) is an open-source framework for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
 
 Council extends the LLM tool ecosystem by enabling advanced control and scalable oversight for AI agents. Users can create sophisticated agents with predictable behavior by leveraging Council's powerful approach to control flow using Controllers, Filters, Evaluators and Budgets for agents. This allows the automated routing between agents, comparing, evaluating and selecting the best results for a (sub-)task. 
 
