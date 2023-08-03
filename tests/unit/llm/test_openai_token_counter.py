@@ -22,23 +22,29 @@ class TestLlmOpenAI(unittest.TestCase):
             str(cm.exception),
         )
 
-    def test_first_message_filter(self):
+    def test_filter_first_messages(self):
         model = "gpt-3.5-turbo"
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
+
+        self.assertLess(counter.token_limit - counter.count_messages_token(messages), 4000)
 
         filtered = counter.filter_first_messages(messages, 4000)
         self.assertEqual(4, len(filtered))
         self.assertEqual(messages[-1], filtered[-1])
+        self.assertGreaterEqual(counter.token_limit - counter.count_messages_token(filtered), 4000)
 
-    def test_last_message_filter(self):
+    def test_filter_last_messages(self):
         model = "gpt-3.5-turbo"
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
 
+        self.assertLess(counter.token_limit - counter.count_messages_token(messages), 4000)
+
         filtered = counter.filter_last_messages(messages, 4000)
         self.assertEqual(4, len(filtered))
         self.assertEqual(messages[0], filtered[0])
+        self.assertGreaterEqual(counter.token_limit - counter.count_messages_token(filtered), 4000)
 
     @staticmethod
     def _get_messages(repeat: int = 1):

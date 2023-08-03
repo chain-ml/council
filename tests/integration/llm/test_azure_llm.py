@@ -22,7 +22,7 @@ class TestLlmAzure(unittest.TestCase):
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
         results = self.llm.post_chat_request(messages)
-        [print(result) for result in results]
+        [print(choice) for choice in results.choices]
 
     def test_censored_prompt(self):
         messages = [
@@ -41,8 +41,8 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            first_choice = llm.post_chat_request(messages)[0]
-            self.assertTrue(len(first_choice.replace(" ", "")) <= 5 * 5)
+            result = llm.post_chat_request(messages)
+            self.assertTrue(len(result.first_choice.replace(" ", "")) <= 5 * 5)
         finally:
             del os.environ["AZURE_LLM_MAX_TOKENS"]
 
@@ -55,9 +55,9 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            choices = llm.post_chat_request(messages)
-            self.assertEquals(3, len(choices))
-            [print("\n- Choice:" + choice) for choice in choices]
+            result = llm.post_chat_request(messages)
+            self.assertEquals(3, len(result.choices))
+            [print("\n- Choice:" + choice) for choice in result.choices]
         finally:
             del os.environ["AZURE_LLM_N"]
             del os.environ["AZURE_LLM_TEMPERATURE"]
