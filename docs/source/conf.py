@@ -79,7 +79,7 @@ html_theme_options = {
     "footer_icons": [
         {
             "name": "Discord",
-            "url": "https://discord.gg/uhusYQcP",
+            "url": "https://discord.gg/DWNCftGQZ3",
             "html": "",
             "class": "fa-brands fa-solid fa-discord",
         },
