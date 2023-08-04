@@ -163,7 +163,7 @@ Major milestones the core team is working towards are shown below. The roadmap i
 
 # Support
 
-Please submit a Github issue should you need any help or reach out to the team via Discord.
+Please submit a Github issue should you need any help or reach out to the team via <a href="https://discord.gg/DWNCftGQZ3">Discord</a>.
 
 # Contributors
 
@@ -171,5 +171,5 @@ Council is a project under active development. We welcome all contributions, pul
 
 # Community
 
-Join our Discord community to connect with the core development team and users <a href="https://discord.gg/uhusYQcP">here</a>.
+Join our Discord community to connect with the core development team and users <a href="https://discord.gg/DWNCftGQZ3">here</a>.
 

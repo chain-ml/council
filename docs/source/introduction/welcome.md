@@ -11,5 +11,5 @@ Council aims to facilitate packaging and seamlessly deploying Agents at scale on
 
 # Community
 
-Join our Discord community to connect with the core development team and users <a href="https://discord.gg/uhusYQcP">here</a>.
+Join our Discord community to connect with the core development team and users <a href="https://discord.gg/DWNCftGQZ3">here</a>.
 
