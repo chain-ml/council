@@ -2,15 +2,20 @@
 
 <h1><p align="center">Council: AI Agent Platform with Control Flow and Scalable Oversight</p></h1>
 
+![Supported Python versions](https://raw.githubusercontent.com/chain-ml/council/main/docs/source/_static/python.svg)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+[![PyPI version](https://badge.fury.io/py/council-ai.svg)](https://badge.fury.io/py/council-ai)
+
 # Welcome
 
-Council is an open-source platform for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
+**Council** is an open-source platform for the rapid development and robust deployment of customized generative AI applications using teams of `agents` - built in Python and (soon) Rust.
 
 Council extends the LLM tool ecosystem by enabling advanced control and scalable oversight for AI agents. Users can create sophisticated agents with predictable behavior by leveraging Council's powerful approach to control flow using Controllers, Filters, Evaluators and Budgets for agents. This allows the automated routing between agents, comparing, evaluating and selecting the best results for a (sub-)task. 
 
 The framework provides connectivity to a wide variety of Large Language Models (LLMs) natively and by integrating with popular libraries such as LangChain.
 
-Council aims to facilitate packaging and seamlessly deploying Agents at scale on multiple deployment platforms while enabling enterprise-grade monitoring and advanced quality control in a future release (contributions are welcome).
+**Council** aims to facilitate packaging and seamlessly deploying Agents at scale on multiple deployment platforms while enabling enterprise-grade monitoring and advanced quality control in a future release (contributions are welcome).
+
 
 # Key Features
 
@@ -20,7 +25,7 @@ Council aims to facilitate packaging and seamlessly deploying Agents at scale on
 * 🤝 **Ecosystem Connectivity**: Connected with a growing AI Agent ecosystem, integrated with LangChain, LlamaIndex and leading AI models.
 * 👮 **Scalable Oversight**: Built-in tooling to manage, version, monitor, evaluate and control deployed Agents.
 
-Note: Some of the features listed above are work-in-progress and due in a future release (refer to Roadmap section below).
+Note: Some of the features listed above are work-in-progress and due in a future release (refer to [Roadmap](https://github.com/chain-ml/council#roadmap) section below).
 
 # Key Concepts
 
@@ -60,6 +65,10 @@ Install Council in one of multiple ways:
    - Navigate to local project root and install via `pip install -e .`
 
 Uninstall with: `pip uninstall council-ai`
+
+### Current Stable Version
+<a href="https://pypi.org/project/council-ai/#history"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/chain-ml/council"></a>
+
 
 ## Setup
 
