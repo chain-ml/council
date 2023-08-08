@@ -5,6 +5,7 @@
 ![Supported Python versions](https://raw.githubusercontent.com/chain-ml/council/main/docs/source/_static/python.svg)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![PyPI version](https://badge.fury.io/py/council-ai.svg)](https://badge.fury.io/py/council-ai)
+[![](https://dcbadge.vercel.app/api/server/DWNCftGQZ3?compact=true&style=flat)](href="https://discord.gg/DWNCftGQZ3) 
 
 # Welcome
 
