@@ -41,7 +41,7 @@ class PromptBuilder:
         else:
             self._instructions = ""
 
-    def apply(self, context: SkillContext, **kwargs: any) -> str:
+    def apply(self, context: SkillContext, **kwargs: Any) -> str:
         """
         Builds and returns the prompt by rendering the template and appending instructions.
 
