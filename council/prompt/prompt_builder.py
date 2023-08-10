@@ -37,12 +37,11 @@ class PromptBuilder:
 
         self._template = Template(t)
         if instructions is not None and len(instructions) > 0:
-            self._instructions = "\n# Instructions: "
-            self._instructions += "\n".join(instructions)
+            self._instructions = "\n".join(["# Instructions: "] + instructions) + "\n"
         else:
             self._instructions = ""
 
-    def apply(self, context: SkillContext) -> str:
+    def apply(self, context: SkillContext, **kwargs: any) -> str:
         """
         Builds and returns the prompt by rendering the template and appending instructions.
 
@@ -57,10 +56,11 @@ class PromptBuilder:
         template_context = {
             "chat_history": self.__build_chat_history(context),
             "chain_history": self.__build_chain_history(context),
+            "instructions": self._instructions,
+            **kwargs,
         }
 
         prompt = self._template.render(template_context)
-        prompt += self._instructions
         return prompt
 
     @staticmethod
@@ -82,7 +82,7 @@ class PromptBuilder:
                 ],
                 "last_message": last_user_message.map_or(lambda m: m.message, ""),
             },
-            "messages": [msg.message for msg in context.chat_history.messages],
+            "messages": [msg for msg in context.chat_history.messages],
             "last_message": last_message.map_or(lambda m: m.message, ""),
         }
 

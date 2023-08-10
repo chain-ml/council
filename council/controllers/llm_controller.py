@@ -37,24 +37,7 @@ class LLMController(ControllerBase):
         return context.evaluationHistory[-1]
 
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
-        answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in chains])
-        task_description = [
-            "You are an assistant responsible to identify the intent of the user. ",
-            "Categories are given as a name and a category (name: {name}, description: {description})",
-            answer_choices,
-            "Instructions:" "# score categories out of 10 using there description",
-            "# For each category, you will answer with {name};{score}",
-            "# Each response is provided on a new line",
-            "# When no category is relevant, you will answer exactly with 'unknown'",
-        ]
-
-        messages = [
-            LLMMessage.system_message("\n".join(task_description)),
-            LLMMessage.user_message(
-                f"what are most relevant categories for: {context.chatHistory.try_last_user_message.unwrap().message}"
-            ),
-        ]
-
+        messages = self._build_llm_messages(chains, context)
         llm_result = self._llm.post_chat_request(messages)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
@@ -69,6 +52,25 @@ class LLMController(ControllerBase):
 
         return result[: self._top_k]
 
+    def _build_llm_messages(self, chains, context):
+        answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in chains])
+        task_description = [
+            "You are an assistant responsible to identify the intent of the user. ",
+            "Categories are given as a name and a category (name: {name}, description: {description})",
+            answer_choices,
+            "Instructions:" "# score categories out of 10 using there description",
+            "# For each category, you will answer with {name};{score}",
+            "# Each response is provided on a new line",
+            "# When no category is relevant, you will answer exactly with 'unknown'",
+        ]
+        messages = [
+            LLMMessage.system_message("\n".join(task_description)),
+            LLMMessage.user_message(
+                f"what are most relevant categories for: {context.chatHistory.try_last_user_message.unwrap().message}"
+            ),
+        ]
+        return messages
+
     @staticmethod
     def parse_line(line: str, chains: List[Chain]) -> Option[Tuple[Chain, int]]:
         result: Option[Tuple[Chain, int]] = Option.none()
@@ -79,6 +81,6 @@ class LLMController(ControllerBase):
             chain = next(filter(lambda item: item.name.casefold() == name, chains))
             result = Option.some((chain, int(score)))
         except StopIteration:
-            logger.warning(f'message="not chain found with name `{name}`"')
+            logger.warning(f'message="no chain found with name `{name}`"')
         finally:
             return result
