@@ -24,7 +24,7 @@ class LLMEvaluator(EvaluatorBase):
         """
         """Build a new LLMEvaluator."""
         super().__init__()
-        self.llm = llm
+        self._llm = llm
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()
@@ -33,10 +33,12 @@ class LLMEvaluator(EvaluatorBase):
             for chain_history in context.chainHistory.values()
             if chain_history[-1].try_last_message.is_some()
         ]
-        scored_messages = self.__score_responses(query=query, skill_messages=chain_results)
+        scored_messages = self.__score_responses(query=query, skill_messages=chain_results, budget=budget)
         return list(scored_messages)
 
-    def __score_responses(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[ScoredChatMessage]:
+    def __score_responses(
+        self, query: ChatMessage, skill_messages: list[ChatMessage], budget: Budget
+    ) -> List[ScoredChatMessage]:
         """
         Score agent response.
 
@@ -45,16 +47,23 @@ class LLMEvaluator(EvaluatorBase):
         :return: list of scored messages.
         """
         # Build prompt to send to the inner LLM
-        responses = [skill_message.message for skill_message in skill_messages]
-        prompt = self.__build_prompt(query.message, responses=responses)
+        if len(skill_messages) <= 0:
+            return []
+        elif len(skill_messages) == 1:
+            prompt = self.__build_prompt_single_response(query.message, skill_messages[0].message)
+        else:
+            responses = [skill_message.message for skill_message in skill_messages]
+            prompt = self.__build_prompt_multiple_responses(query.message, answers=responses)
 
         # Send prompt to inner LLM
         messages = [LLMMessage.system_message(prompt)]
-        result = self.llm.post_chat_request(messages=messages)
+        result = self._llm.post_chat_request(messages=messages)
+        for c in result.consumptions:
+            budget.add_consumption(c, "LLMEvaluator")
         llm_response = result.first_choice
 
         # Parse LLM response with the score for each message we want to score
-        scores = [self.__parse_eval(line) for line in llm_response.split("\n")]
+        scores = [self.__parse_eval(line) for line in llm_response.split("\n") if line != "------"]
 
         agent_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(skill_messages, scores)):
@@ -66,30 +75,54 @@ class LLMEvaluator(EvaluatorBase):
         return agent_messages
 
     @staticmethod
-    def __parse_eval(line: str) -> Option[int]:
+    def __parse_eval(line: str) -> Option[float]:
         """Parse the evaluation response from the inner `LLM`."""
-        line = line.removeprefix("response").strip()
+
+        line = line.lower().removeprefix("answer").strip()
         try:
             (_response, score) = line.split(":", 2)
-            return Option.some(int(score))
+            return Option.some(float(score))
+        except ValueError:
+            logging.exception(f'message="could not parse score" line="{line}"')
+            raise
         except Exception:
-            logging.exception('message="could not parse response evaluation"')
+            logging.exception(f'message="could not parse evaluation response" line="{line}"')
             raise
 
     @staticmethod
-    def __build_prompt(query: str, responses: list[str]) -> str:
+    def __build_prompt_multiple_responses(query: str, answers: list[str]) -> str:
         """Build prompt that will be sent to the inner `LLM`."""
-        answers = "\n".join(f"response {index}:\n{response}\n------" for index, response in enumerate(responses))
+        prompt_answers = "\n".join(f"answer #{index+1}:\n{answer}\n------" for index, answer in enumerate(answers))
         task_description = [
-            "You are grading the following question:",
+            "# You are grading the multiple answers given to the following question:",
             query,
-            "Answers are given as a response (response: {response})",
-            "Answers are separated with `------`",
-            "You are grading how informative each of the following response is:",
-            answers,
-            "# Instructions: ",
-            "# What grade do you give from 0 to 10",
-            "# For each answer, you will answer exactly with `response {index}: {score}`",
+            "# Given answers are with the following format (answer #{index}: {answer})",
+            "# Given answers are separated with `------`",
+            "# ANSWERS:",
+            prompt_answers,
+            "# INSTRUCTIONS: ",
+            "# Give a grade from 0 to 10 based on how informative and accurate the given answer is.",
+            "# Same answers must have the same grade",
+            "# Irrelevant or empty answer must be graded 0",
+            "# For each given answer, you will give your grade formatted precisely as `answer #{index}: {grade}`",
+            "# You will not provide any justification",
+        ]
+        prompt = "\n".join(task_description)
+        return prompt
+
+    @staticmethod
+    def __build_prompt_single_response(query: str, answer: str) -> str:
+        """Build prompt that will be sent to the inner `LLM`."""
+
+        task_description = [
+            "# You are grading the answer to the following question:",
+            query,
+            "# Here is the answer given to the question:",
+            answer,
+            "# INSTRUCTIONS: ",
+            "# Give a grade from 0 to 10 based on how informative and accurate the given answer is.",
+            "# Irrelevant or empty answer must be graded 0",
+            "# You will give your grade formatted precisely as  `answer: {grade}`",
             "# You will not provide any justification",
         ]
         prompt = "\n".join(task_description)

@@ -233,3 +233,18 @@ class ScoredChatMessage:
     def __init__(self, message: ChatMessage, score: float):
         self.message = message
         self.score = score
+
+    def __gt__(self, other: "ScoredChatMessage"):
+        return self.score > other.score
+
+    def __lt__(self, other: "ScoredChatMessage"):
+        return self.score < other.score
+
+    def __ge__(self, other: "ScoredChatMessage"):
+        return self.score >= other.score
+
+    def __le__(self, other: "ScoredChatMessage"):
+        return self.score <= other.score
+
+    def __str__(self):
+        return f"{self.score}"
