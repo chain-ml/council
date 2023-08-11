@@ -111,3 +111,9 @@ class Option(Generic[T]):
               Option[T]: a new instance
         """
         return Option(None)
+
+    def __repr__(self) -> str:
+        return "Option(None)" if self.is_none() else f"Option({self._some})"
+
+    def __str__(self) -> str:
+        return "none" if self.is_none() else f"{self._some}"
