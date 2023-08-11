@@ -45,7 +45,7 @@ class LLMFallback(LLMBase):
 
     def _llm_call_with_retry(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         retry_count = 0
-        while retry_count < self._retry_before_fallback:
+        while retry_count == 0 or retry_count < self._retry_before_fallback:
             try:
                 return self._llm.post_chat_request(messages, **kwargs)
             except LLMCallException as e:
@@ -56,6 +56,7 @@ class LLMFallback(LLMBase):
                     raise e
             except Exception:
                 raise
+        raise LLMException("Main LLM failed")
 
     @staticmethod
     def _is_retryable(code: int) -> bool:

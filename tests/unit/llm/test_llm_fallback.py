@@ -14,6 +14,15 @@ class TestPrompt(unittest.TestCase):
         r = fb_llm.post_chat_request([])
         self.assertEqual("Test", r.first_choice)
 
+    def test_no_fallback_retry_negative(self):
+        m = MockLLM.from_response("Test")
+        fb = MockLLM.from_response("FallBack")
+
+        fb_llm = LLMFallback(m, fb, retry_before_fallback=-1)
+
+        r = fb_llm.post_chat_request([])
+        self.assertEqual("Test", r.first_choice)
+
     def test_fallback_with_retryable_error(self):
         m = MockErrorLLM(exception=LLMCallException(503, "Service unavailable"))
         fb = MockLLM.from_response("FallBack")
