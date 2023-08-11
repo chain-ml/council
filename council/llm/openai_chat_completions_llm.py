@@ -5,7 +5,7 @@ from typing import List, Any, Protocol, Sequence, Optional
 
 from . import LLMConfigurationBase
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
-from .llm_exception import LLMException
+from .llm_exception import LLMCallException
 from .llm_base import LLMBase, LLMResult
 from ..runners import Consumption
 
@@ -154,7 +154,7 @@ class OpenAIChatCompletionsModel(LLMBase):
         logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')
         response = self._provider.__call__(payload)
         if response.status_code != httpx.codes.OK:
-            raise LLMException(f"Wrong status code: {response.status_code}. Reason: {response.text}")
+            raise LLMCallException(response.status_code, response.text)
 
         r = OpenAIChatCompletionsResult.from_dict(response.json())
         logger.debug(f'message="got chat GPT completions result" id="{r.id}" model="{r.model}" {r.usage}')

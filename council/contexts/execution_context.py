@@ -413,3 +413,7 @@ class AgentContext:
         if iterations is None or len(iterations) == 0:
             return None
         return iterations[-1]
+
+    @staticmethod
+    def empty() -> "AgentContext":
+        return AgentContext(chat_history=ChatHistory())
