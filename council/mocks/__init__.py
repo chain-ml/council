@@ -4,7 +4,7 @@ from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
 from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage
-from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult
+from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult, LLMException
 from council.runners import Budget
 from council.scorers import ScorerBase
 from council.skills import SkillBase
@@ -70,6 +70,15 @@ class MockLLM(LLMBase):
     def from_multi_line_response(responses: List[str]) -> "MockLLM":
         response = "\n".join(responses)
         return MockLLM(action=(lambda x: [response]))
+
+
+class MockErrorLLM(LLMBase):
+    def __init__(self, exception: LLMException = LLMException()):
+        super().__init__()
+        self.exception = exception
+
+    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+        raise self.exception
 
 
 class MockErrorSimilarityScorer(ScorerBase):

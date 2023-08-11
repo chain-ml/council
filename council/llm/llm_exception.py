@@ -1,12 +1,27 @@
 class LLMException(Exception):
+    pass
+
+
+class LLMCallException(LLMException):
     """
     Custom exception raised when the Large Language mModel is executed.
     """
 
-    pass
+    def __init__(self, code: int, error: str):
+        self._code = code
+        self._error = error
+        super().__init__(f"Wrong status code: {code}. Reason: {error}")
+
+    @property
+    def code(self) -> int:
+        return self._code
+
+    @property
+    def error(self) -> str:
+        return self._error
 
 
-class LLMTokenLimitException(Exception):
+class LLMTokenLimitException(LLMException):
     """
     Custom exception raised when the number of tokens exceed the model limit.
     """
