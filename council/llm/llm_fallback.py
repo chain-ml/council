@@ -15,14 +15,6 @@ class LLMFallback(LLMBase):
         _retry_before_fallback (int): The number of retry attempts with the primary language model
             before switching to the fallback.
 
-    Methods:
-        __init__(llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2):
-            Initializes an LLMFallback instance with the primary and fallback language models and the retry threshold.
-        _post_chat_request(messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
-            Posts a chat request using the primary language model and falls back to the fallback model upon failure.
-        _llm_call_with_retry(messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
-            Calls the primary language model with retry mechanism and exponential backoff.
-
     """
 
     _llm: LLMBase

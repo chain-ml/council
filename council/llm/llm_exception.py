@@ -8,9 +8,9 @@ class LLMCallException(LLMException):
     """
 
     def __init__(self, code: int, error: str):
+        super().__init__(f"Wrong status code: {code}. Reason: {error}")
         self._code = code
         self._error = error
-        super().__init__(f"Wrong status code: {code}. Reason: {error}")
 
     @property
     def code(self) -> int:
