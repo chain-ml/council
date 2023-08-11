@@ -84,3 +84,19 @@ class TestLlmEvaluator(unittest.TestCase):
         result = evaluator.execute(context, Budget(10))
         for i in range(0, 3):
             self.assertLessEqual(result[i].score, 2)
+
+    def test_basic_prompt_same_responses(self):
+        evaluator = LLMEvaluator(llm=self.llm)
+        chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
+        context = AgentContext(chat_history=chat_history)
+
+        messages = ["I am council", "I am council", "I am council", "I am council"]
+        for index, message in enumerate(messages):
+            chain_name = f"chain {index}"
+            chain_context = context.new_chain_context(chain_name)
+            chain_context.current.append(ChatMessage.skill(message, None, "a skill"))
+
+        result = evaluator.execute(context, Budget(10))
+        first_score = result[0].score
+        for i in range(1, 3):
+            self.assertEqual(result[i].score, first_score)
