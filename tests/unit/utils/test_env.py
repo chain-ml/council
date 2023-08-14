@@ -8,6 +8,7 @@ from council.utils import (
     read_env_bool,
     MissingEnvVariableException,
     EnvVariableValueException,
+    OsEnviron,
 )
 
 
@@ -52,3 +53,20 @@ class TestPrompt(unittest.TestCase):
         os.environ["INVALID_BOOL"] = "Tue"
         with self.assertRaises(EnvVariableValueException):
             _ = read_env_int("INVALID_BOOL").unwrap()
+
+    def test_os_env_new_var(self):
+        self.assertIsNone(os.environ.get("NEW_VAR", None))
+        with OsEnviron("NEW_VAR", "I'm here"):
+            self.assertEqual(os.environ["NEW_VAR"], "I'm here")
+        self.assertIsNone(os.environ.get("NEW_VAR", None))
+
+    def test_os_env_overwrite_existing(self):
+        os.environ["EXISTING_VAR"] = "hi"
+        self.assertEqual(os.environ["EXISTING_VAR"], "hi")
+        with OsEnviron("NEW_VAR", "hey"):
+            self.assertEqual(os.environ["NEW_VAR"], "hey")
+        self.assertEqual(os.environ["EXISTING_VAR"], "hi")
+
+        with OsEnviron("NEW_VAR"):
+            self.assertIsNone(os.environ.get("NEW_VAR", None))
+        self.assertEqual(os.environ["EXISTING_VAR"], "hi")
