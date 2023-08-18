@@ -57,13 +57,13 @@ class LLMController(ControllerBase):
         answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in chains])
         task_description = [
             "# Role:",
-            "You are an assistant responsible to identify the intent of the user against a list of possible categories.",
+            "You are an assistant responsible to identify the intent of the user against a list of categories.",
             "Categories are given as a name and a description formatted precisely as:",
             "name: {name}, description: {description})",
             answer_choices,
             "# Instructions:",
             "# Score how relevant a category is from 0 to 10 using their description",
-            "# For each category, your scores will formatted precisely as:",
+            "# For each category, your scores will be formatted precisely as:",
             "Name: {name};Score: {score as int};{short justification}",
             "# When no category is relevant, you will answer exactly with 'unknown'",
         ]
