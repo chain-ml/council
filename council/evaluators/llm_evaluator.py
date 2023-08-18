@@ -22,7 +22,6 @@ class LLMEvaluator(EvaluatorBase):
 
         :param llm: model to use for the evaluation.
         """
-        """Build a new LLMEvaluator."""
         super().__init__()
         self._llm = llm
 
@@ -50,20 +49,26 @@ class LLMEvaluator(EvaluatorBase):
         if len(skill_messages) <= 0:
             return []
         elif len(skill_messages) == 1:
-            prompt = self.__build_prompt_single_response(query.message, skill_messages[0].message)
+            prompt = self._build_system_prompt_single_answer()
+            messages = [
+                LLMMessage.system_message(prompt),
+                LLMMessage.user_message(self._build_single_answer_message(query.message, skill_messages[0].message)),
+            ]
         else:
             responses = [skill_message.message for skill_message in skill_messages]
-            prompt = self.__build_prompt_multiple_responses(query.message, answers=responses)
+            prompt = self._build_system_prompt_multiple_answers()
+            messages = [
+                LLMMessage.system_message(prompt),
+                LLMMessage.user_message(self._build_multiple_answers_message(query.message, responses)),
+            ]
 
-        # Send prompt to inner LLM
-        messages = [LLMMessage.system_message(prompt)]
         result = self._llm.post_chat_request(messages=messages)
         for c in result.consumptions:
             budget.add_consumption(c, "LLMEvaluator")
         llm_response = result.first_choice
 
         # Parse LLM response with the score for each message we want to score
-        scores = [self.__parse_eval(line) for line in llm_response.split("\n") if line != "------"]
+        scores = [self._parse_eval(line) for line in llm_response.split("\n") if line.lower().startswith("grade")]
 
         agent_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(skill_messages, scores)):
@@ -75,13 +80,13 @@ class LLMEvaluator(EvaluatorBase):
         return agent_messages
 
     @staticmethod
-    def __parse_eval(line: str) -> Option[float]:
+    def _parse_eval(line: str) -> Option[float]:
         """Parse the evaluation response from the inner `LLM`."""
 
-        line = line.lower().removeprefix("answer").strip()
+        line = line.lower().removeprefix("answer").strip().replace("-", ":")
         try:
-            (_response, score) = line.split(":", 2)
-            return Option.some(float(score))
+            score = line.split(":", 3)
+            return Option.some(float(score[1]))
         except ValueError:
             logging.exception(f'message="could not parse score" line="{line}"')
             raise
@@ -90,40 +95,46 @@ class LLMEvaluator(EvaluatorBase):
             raise
 
     @staticmethod
-    def __build_prompt_multiple_responses(query: str, answers: list[str]) -> str:
+    def _build_multiple_answers_message(query: str, answers: list[str]) -> str:
+        prompt_answers = "\n".join(f"Answer #{index+1} is:\n{answer}" for index, answer in enumerate(answers))
+        lines = ["# The question to grade is:", query, "# The given answers are:", prompt_answers, "# Please grade."]
+        return "\n".join(lines)
+
+    @staticmethod
+    def _build_single_answer_message(query: str, answer: str) -> str:
+        lines = ["# The question to grade is:", query, "# The given answer is:", answer, "# Please grade."]
+        return "\n".join(lines)
+
+    @staticmethod
+    def _build_system_prompt_multiple_answers() -> str:
         """Build prompt that will be sent to the inner `LLM`."""
-        prompt_answers = "\n".join(f"answer #{index+1}:\n{answer}\n------" for index, answer in enumerate(answers))
         task_description = [
-            "# You are grading the multiple answers given to the following question:",
-            query,
-            "# Given answers are with the following format (answer #{index}: {answer})",
-            "# Given answers are separated with `------`",
-            "# ANSWERS:",
-            prompt_answers,
+            "# You are a grading expert, grading how accurate and relevant multiple answers are to a given question.",
+            "# Your grade will only be based on the given answer.",
+            "# The list of given answers is formatted precisely as:",
+            "Answer #{index} is:",
+            "{answer}",
             "# INSTRUCTIONS: ",
-            "# Give a grade from 0 to 10 based on how informative and accurate the given answer is.",
-            "# Same answers must have the same grade",
-            "# Irrelevant or empty answer must be graded 0",
-            "# For each given answer, you will give your grade formatted precisely as `answer #{index}: {grade}`",
-            "# You will not provide any justification",
+            "# Give a grade from 0.0 to 10.0",
+            "# Same answers must have the same grade.",
+            "# Irrelevant or empty answer must be graded 0.0",
+            "# For each given answer, your grade will be formatted precisely as:",
+            "grade #{index}: {grade as float} - short justification",
         ]
         prompt = "\n".join(task_description)
         return prompt
 
     @staticmethod
-    def __build_prompt_single_response(query: str, answer: str) -> str:
+    def _build_system_prompt_single_answer() -> str:
         """Build prompt that will be sent to the inner `LLM`."""
 
         task_description = [
-            "# You are grading the answer to the following question:",
-            query,
-            "# Here is the answer given to the question:",
-            answer,
+            "# You are a grading expert, grading how accurate and relevant an answer is to a given question.",
             "# INSTRUCTIONS: ",
-            "# Give a grade from 0 to 10 based on how informative and accurate the given answer is.",
-            "# Irrelevant or empty answer must be graded 0",
-            "# You will give your grade formatted precisely as  `answer: {grade}`",
-            "# You will not provide any justification",
+            "# Give a grade from 0.0 to 10.0",
+            "# Irrelevant or empty answer must be graded 0.0",
+            "# Your grade will be formatted precisely as:",
+            "grade: {grade as float} - short justification",
         ]
         prompt = "\n".join(task_description)
         return prompt

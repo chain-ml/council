@@ -19,12 +19,12 @@ class TestLlmEvaluator(unittest.TestCase):
         chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
         context = AgentContext(chat_history=chat_history)
 
-        rose_message = "Roses are red"
         empty_message = ""
         agent_message = """
             I am an agent!
             How can I help you today?
             """
+        rose_message = "Roses are red"
 
         messages = [empty_message, agent_message, rose_message]
         for index, message in enumerate(messages):
@@ -39,10 +39,10 @@ class TestLlmEvaluator(unittest.TestCase):
 
     def test_basic_prompt_multiple_math_responses(self):
         evaluator = LLMEvaluator(llm=self.llm)
-        chat_history = ChatHistory.from_user_message(message="Could you calculate the value of (8*9)+3")
+        chat_history = ChatHistory.from_user_message(message="Given x=`(8*9)+3`. What is the value of x?")
         context = AgentContext(chat_history=chat_history)
 
-        messages = ["70", "71", "75", "72", "73", "74"]
+        messages = ["x=70", "x=71", "x=75", "x=72", "x=73", "x=78"]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
             chain_context = context.new_chain_context(chain_name)
@@ -68,7 +68,7 @@ class TestLlmEvaluator(unittest.TestCase):
 
         result = evaluator.execute(context, Budget(10))
 
-        self.assertGreater(result[0].score, 5)
+        self.assertGreater(result[0].score, 5.0)
 
     def test_basic_prompt_empty_responses(self):
         evaluator = LLMEvaluator(llm=self.llm)
