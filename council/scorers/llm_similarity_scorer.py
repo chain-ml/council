@@ -30,29 +30,38 @@ class LLMSimilarityScorer(ScorerBase):
         messages = self._build_messages(message)
         result = self._llm.post_chat_request(messages)
         if len(result.choices) < 1:
-            return self._parse_response("")
-        return self._parse_response(result.first_choice)
+            return self._parse_line("")
+        response = result.first_choice.lower()
+        parsed = [self._parse_line(line) for line in response.split("\n") if line.startswith("score:")]
+
+        return parsed[0]
 
     def _build_messages(self, message: ChatMessage) -> List[LLMMessage]:
-        prompt = [
-            "You are an assistant specialized in evaluating the similarity between two messages.",
-            "# Instructions",
-            "# compare the {expected} message and the {actual} message",
-            "# given a similarity score out of 100%",
-            "# provide the result exactly in the format `score: {similarity score}`",
-            "Expected message:",
-            self._expected,
+        system_prompt = [
+            "# Role:",
+            "You are an assistant specialized in evaluating how similar an expected message and an actual message are.",
+            "# Instructions:",
+            "Compare the {expected} message and the {actual} message",
+            "Give a similarity score out of 100%",
+            "Unrelated messages have a 0% similarity score",
+            "Provide the result exactly in the format `score: {similarity score} - short justification`",
+        ]
+        user_prompt = [
+            "Please give the similarity score of the actual message compared to the expected one.",
             "Actual message:",
             message.message,
+            "Expected message:",
+            self._expected,
         ]
-        result = [LLMMessage.system_message("\n".join(prompt))]
+
+        result = [LLMMessage.system_message("\n".join(system_prompt)), LLMMessage.user_message("\n".join(user_prompt))]
         return result
 
     @staticmethod
-    def _parse_response(llm_response: str) -> float:
+    def _parse_line(line: str) -> float:
+        line = line.lower().removeprefix("score").strip().replace("-", ":")
         try:
-            score = llm_response.strip().removeprefix("score")
-            score = score.strip(":% ")
-            return float(score) / 100.0
+            score = line.split(":", 3)
+            return float(score[1].strip(":% ")) / 100.0
         except Exception:
             raise

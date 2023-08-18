@@ -42,7 +42,7 @@ class LLMController(ControllerBase):
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
 
-        parsed = [self.parse_line(line, chains) for line in response.splitlines() if line.startswith("Name:")]
+        parsed = [self._parse_line(line, chains) for line in response.splitlines() if line.startswith("Name:")]
         filtered = [r.unwrap() for r in parsed if r.is_some() and r.unwrap()[1] > self._response_threshold]
         if (filtered is None) or (len(filtered) == 0):
             return []
@@ -76,7 +76,7 @@ class LLMController(ControllerBase):
         return messages
 
     @staticmethod
-    def parse_line(line: str, chains: List[Chain]) -> Option[Tuple[Chain, int]]:
+    def _parse_line(line: str, chains: List[Chain]) -> Option[Tuple[Chain, int]]:
         result: Option[Tuple[Chain, int]] = Option.none()
         name: str = ""
         score: str = ""

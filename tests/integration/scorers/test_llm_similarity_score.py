@@ -26,10 +26,10 @@ class TestLLMSimilarityScorer(unittest.TestCase):
         expected = """
             I am an assistant expert in build SQL query.
             How can I help you today?
-            """
+        """
         instance = LLMSimilarityScorer(self.llm, expected)
         actual = """
-            I am an assistant export in writing Python code.
+            I am an assistant expert in writing Python code.
             How can I help you today?
         """
         score = instance.score(ChatMessage.agent(actual))
@@ -39,20 +39,20 @@ class TestLLMSimilarityScorer(unittest.TestCase):
         expected = """
             I am an assistant expert in build SQL query.
             How can I help you today?
-            """
+        """
         instance = LLMSimilarityScorer(self.llm, expected)
         actual = """
             Hi, I'm here to assist you in your support case.
             How can I help you today?
-            """
+        """
         score = instance.score(ChatMessage.agent(actual))
-        self.assertAlmostEqual(0.33, score, delta=0.1)
+        self.assertAlmostEqual(0.1, score, delta=0.1)
 
     def test_similarity_unrelated(self):
         expected = """
             I am an assistant expert in build SQL query.
             How can I help you today?
-            """
+        """
         instance = LLMSimilarityScorer(self.llm, expected)
 
         score = instance.score(ChatMessage.agent("the capital of France is Paris"))
