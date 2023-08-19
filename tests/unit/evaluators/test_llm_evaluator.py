@@ -28,7 +28,7 @@ class TestLLMEvaluator(unittest.TestCase):
         return [(item.message.message, item.score) for item in items]
 
     def test_evaluate(self):
-        responses = ["result of a chain:2", "result of another chain:10"]
+        responses = ["grade:2", "grade:10"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
@@ -40,7 +40,7 @@ class TestLLMEvaluator(unittest.TestCase):
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_chain_with_no_message(self):
-        responses = ["result of a chain:2", "result of another chain:10"]
+        responses = ["grade:2", "grade:10"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
@@ -53,14 +53,14 @@ class TestLLMEvaluator(unittest.TestCase):
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_fail_to_parse(self):
-        response = "a response with no score"
+        response = "grade:Not a number"
         instance = LLMEvaluator(MockLLM.from_response(response))
         self.add_one_iteration_result()
         with self.assertRaises(Exception):
             instance.execute(self.context, Budget(10))
 
     def test_evaluate_with_execution_history(self):
-        responses = ["result of a chain:2", "result of another chain:10"]
+        responses = ["grade:2", "grade:10"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),

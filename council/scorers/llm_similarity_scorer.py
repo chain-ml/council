@@ -32,7 +32,7 @@ class LLMSimilarityScorer(ScorerBase):
         if len(result.choices) < 1:
             return self._parse_line("")
         response = result.first_choice.lower()
-        parsed = [self._parse_line(line) for line in response.split("\n") if line.startswith("score:")]
+        parsed = [self._parse_line(line) for line in response.split("\n") if line.strip().startswith("score")]
 
         return parsed[0]
 
