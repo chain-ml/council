@@ -39,15 +39,23 @@ class TestAzureLlmController(TestCase):
         ]
         dotenv.load_dotenv()
 
-    def test_controller(self):
+    def test_controller_chain_search(self):
         self._test_prompt("what is inflation?", [self.chain_search])
-        self._test_prompt("What recently impacted the USD/CAN exchange rate?", [self.chain_news])
-        self._test_prompt("tell me a joke about finance", [])
         self._test_prompt("what is APY?", [self.chain_search])
+
+    def test_controller_chain_news(self):
+        self._test_prompt("What recently impacted the USD/CAN exchange rate?", [self.chain_news])
+
+    def test_controller_no_chain(self):
+        self._test_prompt("tell me a joke about finance", [])
+
+    def test_controller_chain_text2sql(self):
         self._test_prompt(
             "generate a sql query to get the value of inflation for the last week",
             [self.chain_tex2sql],
         )
+
+    def test_controller_chain_forecast(self):
         self._test_prompt(
             "forecast the value of inflation for the next week, using one month of data",
             [self.chain_forecast],
