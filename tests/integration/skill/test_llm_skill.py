@@ -45,7 +45,7 @@ class TestLlmSkill(unittest.TestCase):
             agent = Agent.from_skill(llm_skill, "Answer to an user prompt using gpt4")
             result = agent.execute_from_user_message("Give me examples of a currency", budget=Budget(6000))
             self.assertTrue(result.try_best_message.is_some())
-            self.assertEquals(3, len(result.best_message.data))
+            self.assertEquals(3, len(result.best_message.data.choices))
 
         finally:
             del os.environ["AZURE_LLM_N"]
