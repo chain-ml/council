@@ -248,3 +248,6 @@ class ScoredChatMessage:
 
     def __str__(self):
         return f"{self.score}"
+
+    def __repr__(self):
+        return f"ScoredChatMessage({self.message}, {self.score})"

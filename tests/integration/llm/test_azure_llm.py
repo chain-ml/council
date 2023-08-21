@@ -17,7 +17,8 @@ class TestLlmAzure(unittest.TestCase):
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("Give me an example of a currency")]
 
-        result = self.llm.post_chat_request(messages)[0]
+        llm_result = self.llm.post_chat_request(messages)
+        result = llm_result.first_choice
         print(result)
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
