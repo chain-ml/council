@@ -20,12 +20,12 @@
 
 .. toctree::
     :maxdepth: 2
-    :caption: Use Cases
+    :caption: Examples
     :hidden:
 
-    use_cases/multi_chain_agent.ipynb
-    use_cases/llamaindex_integration.ipynb
-    use_cases/langchain_llm_integration.ipynb
+    examples/multi_chain_agent.ipynb
+    examples/llamaindex_integration.ipynb
+    examples/langchain_llm_integration.ipynb
 
 .. toctree::
     :maxdepth: 2
