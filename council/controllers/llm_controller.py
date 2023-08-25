@@ -31,7 +31,7 @@ class LLMController(ControllerBase):
         """
         super().__init__()
         self._llm = llm
-        self.monitor.register_child("llm", self._llm.monitor)
+        self.register_child("llm", self._llm)
         self._response_threshold = response_threshold
         self._top_k = top_k_execution_plan
 

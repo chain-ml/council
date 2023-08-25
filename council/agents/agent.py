@@ -9,7 +9,7 @@ from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
 from ..runners.budget import InfiniteBudget
-from ..monitors import Monitor, Monitorable
+from ..monitors import Monitorable
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,6 @@ class Agent(Monitorable):
     controller: ControllerBase
     chains: List[Chain]
     evaluator: EvaluatorBase
-    monitor: Monitor
 
     def __init__(self, controller: ControllerBase, chains: List[Chain], evaluator: EvaluatorBase) -> None:
         """
