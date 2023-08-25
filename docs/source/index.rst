@@ -24,8 +24,7 @@
     :hidden:
 
     examples/multi_chain_agent.ipynb
-    examples/llamaindex_integration.ipynb
-    examples/langchain_llm_integration.ipynb
+    examples/integrations/index
 
 .. toctree::
     :maxdepth: 2
