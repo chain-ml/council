@@ -2,6 +2,7 @@ import time
 import unittest
 from typing import List, Any
 
+from council import monitors
 from council.contexts import (
     ChatHistory,
     ChainContext,
@@ -123,6 +124,7 @@ class TestSkillRunners(unittest.TestCase):
         self._execute(parallel, Budget(1))
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
+        print(f"\n{monitors.render_as_text(parallel)}")
 
     def test_parallel_many_sequences(self):
         instance = Sequential(

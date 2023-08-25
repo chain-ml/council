@@ -7,13 +7,17 @@ from council.chains import Chain
 from council.contexts import AgentContext, ScoredChatMessage
 from council.runners import Budget
 from .execution_unit import ExecutionUnit
+from council.monitors import Monitorable
 
 
-class ControllerBase(ABC):
+class ControllerBase(Monitorable, ABC):
     """
     Abstract base class for an agent controller.
 
     """
+
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:

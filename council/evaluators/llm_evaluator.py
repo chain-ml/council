@@ -24,6 +24,7 @@ class LLMEvaluator(EvaluatorBase):
         """
         super().__init__()
         self._llm = llm
+        self.register_child("llm", self._llm)
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()

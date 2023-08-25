@@ -3,6 +3,7 @@ import logging
 
 from typing import List, Any, Optional, Sequence
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
+from ..monitors import Monitorable
 from ..runners.budget import Consumption
 
 logger = logging.getLogger(__name__)
@@ -26,12 +27,13 @@ class LLMResult:
         return self._consumptions
 
 
-class LLMBase(abc.ABC):
+class LLMBase(Monitorable, abc.ABC):
     """
     Abstract base class representing a language model.
     """
 
     def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None):
+        super().__init__()
         self._token_counter = token_counter
 
     def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:

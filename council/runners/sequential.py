@@ -9,7 +9,9 @@ class Sequential(RunnerBase):
     """
 
     def __init__(self, *runners: RunnerBase):
+        super().__init__()
         self.runners = runners
+        self.register_children("runners", runners)
 
     def _run(
         self,

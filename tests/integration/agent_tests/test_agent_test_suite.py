@@ -65,3 +65,8 @@ class TestTestSuite(unittest.TestCase):
         self.assertAlmostEqual(0.9, result.results[0].scorer_results[0].score, delta=0.1)
         self.assertAlmostEqual(0.6, result.results[1].scorer_results[0].score, delta=0.1)
         self.assertAlmostEqual(0.0, result.results[2].scorer_results[0].score, delta=0.1)
+
+    def test_monitor(self):
+        from council import monitors
+
+        print(f"\n{monitors.render_as_text(self.agent)}")

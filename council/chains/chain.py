@@ -1,10 +1,11 @@
 from typing import List, Any, Optional
 
 from council.contexts import ChainContext
+from council.monitors import Monitorable
 from council.runners import Budget, RunnerBase, Sequential, RunnerExecutor
 
 
-class Chain:
+class Chain(Monitorable):
     """
     Represents a chain of skills that can be executed in a specific order.
 
@@ -30,8 +31,11 @@ class Chain:
         Raises:
             None
         """
+        super().__init__()
         self.name = name
         self.runner = Sequential.from_list(*runners)
+        self.register_child("runner", self.runner)
+        self.monitor.properties["name"] = name
         self.description = description
 
     def get_description(self) -> str:

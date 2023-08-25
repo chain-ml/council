@@ -2,14 +2,18 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from council.contexts import AgentContext, ScoredChatMessage
+from council.monitors import Monitorable
 from council.runners import Budget
 
 
-class EvaluatorBase(ABC):
+class EvaluatorBase(Monitorable, ABC):
     """
     Abstract base class for an agent evaluator.
 
     """
+
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:

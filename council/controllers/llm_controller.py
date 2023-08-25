@@ -29,7 +29,9 @@ class LLMController(ControllerBase):
             response_threshold (float): a minimum threshold to select a response from its score
             top_k_execution_plan (int): maximum number of execution plan returned
         """
+        super().__init__()
         self._llm = llm
+        self.monitor.register_child("llm", self._llm.monitor)
         self._response_threshold = response_threshold
         self._top_k = top_k_execution_plan
 

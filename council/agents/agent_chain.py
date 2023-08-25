@@ -10,6 +10,7 @@ class AgentChain(Chain):
     def __init__(self, name: str, description: str, agent: Agent):
         super().__init__(name, description, [])
         self.agent = agent
+        self.register_child("agent", agent)
 
     def execute(
         self,

@@ -8,11 +8,12 @@ from .runner_context import RunnerContext
 from .budget import Budget
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor
+from ..monitors import Monitorable
 
 logger = logging.getLogger(__name__)
 
 
-class RunnerBase(abc.ABC):
+class RunnerBase(Monitorable, abc.ABC):
     def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
         context = RunnerContext(chain_context, budget)
         try:

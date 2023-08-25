@@ -42,8 +42,10 @@ class ParallelFor(LoopRunnerBase):
             generator(RunnerGenerator): a generator function that yields results
 
         """
+        super().__init__()
         self._generator = generator
         self._skill = skill
+        self.register_child("skill", skill)
         self._parallelism = parallelism
 
     def _run(self, context: RunnerContext, executor: RunnerExecutor) -> None:

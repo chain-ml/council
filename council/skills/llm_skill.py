@@ -71,6 +71,7 @@ class LLMSkill(SkillBase):
 
         super().__init__(name=name)
         self._llm = llm
+        self.register_child("llm", self._llm)
         self._context_messages = context_messages
         self._builder = PromptBuilder(system_prompt)
 

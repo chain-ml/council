@@ -13,6 +13,7 @@ class If(RunnerBase):
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
+        super().__init__()
         self.predicate = predicate
         self.runner = runner
 

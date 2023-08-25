@@ -18,6 +18,8 @@ class SkillRunnerBase(RunnerBase):
     """
 
     def __init__(self, name):
+        super().__init__()
+        self.monitor.properties["name"] = name
         self._name = name
 
     def _run(

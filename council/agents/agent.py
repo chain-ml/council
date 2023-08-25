@@ -9,11 +9,12 @@ from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
 from ..runners.budget import InfiniteBudget
+from ..monitors import Monitor, Monitorable
 
 logger = logging.getLogger(__name__)
 
 
-class Agent:
+class Agent(Monitorable):
     """
     Represents an agent that executes a set of chains to interact with the environment.
 
@@ -26,6 +27,7 @@ class Agent:
     controller: ControllerBase
     chains: List[Chain]
     evaluator: EvaluatorBase
+    monitor: Monitor
 
     def __init__(self, controller: ControllerBase, chains: List[Chain], evaluator: EvaluatorBase) -> None:
         """
@@ -36,9 +38,16 @@ class Agent:
             chains (List[Chain]): The list of chains that the agent executes.
             evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
         """
+        super().__init__()
+
         self.controller = controller
+        self.register_child("controller", self.controller)
+
         self.chains = chains
+        self.register_children("chains", chains)
+
         self.evaluator = evaluator
+        self.register_child("evaluator", self.evaluator)
 
     def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         """
