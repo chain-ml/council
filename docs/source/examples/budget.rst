@@ -28,6 +28,27 @@ Importance of Budgets
 
 5. **Preventing Abuse:** Budgets protect against malicious or poorly designed agents that might otherwise overload systems with excessive usage.
 
+Example
+=======
+
+The example below demonstrates how to use the budget to limit the amount of resources an agent is allowed to consume.
+
+.. testcode::
+
+    from council.runners import Budget, Consumption
+
+    # Limit the agent's execution time
+    maximum_time_execution = 100
+
+    # Limit the number of token the "gpt-35-turbo" model can produce.
+    limit_token = Consumption(120, "token", "gpt-35-turbo")
+
+    # Limit the number of call to the "LLMSkill"
+    limit_call = Consumption(5, "call", "LLMSkill")
+
+    budget = Budget(maximum_time_execution, limits=[limit_token, limit_call])
+
+
 Classes
 =======
 

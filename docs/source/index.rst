@@ -24,6 +24,7 @@
     :hidden:
 
     examples/multi_chain_agent.ipynb
+    examples/budget.rst
     examples/parallel.rst
     examples/integrations/index
 
