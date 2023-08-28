@@ -1,4 +1,5 @@
 import abc
+from copy import copy
 from typing import Any, Dict, List, Optional, Sequence, Callable, Iterable
 from typing_extensions import TypeGuard
 
@@ -7,6 +8,7 @@ from more_itertools import first
 from .messages import ChatMessage, ScoredChatMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
 from council.utils import Option
+from ..monitors import ExecutionLog, Monitored, ExecutionLogEntry
 
 
 class MessageCollection(abc.ABC):
@@ -354,6 +356,7 @@ class AgentContext:
     chatHistory: ChatHistory
     chainHistory: Dict[str, List[ChainHistory]]
     evaluationHistory: List[List[ScoredChatMessage]]
+    executionLog: ExecutionLog
 
     def __init__(self, chat_history: ChatHistory):
         """
@@ -365,6 +368,18 @@ class AgentContext:
         self.chatHistory = chat_history
         self.chainHistory: Dict[str, List[ChainHistory]] = {}
         self.evaluationHistory = []
+        self.executionLog = ExecutionLog()
+        self.path = ""
+
+    def new_for(self, monitored: Monitored, method: str = "") -> "AgentContext":
+        result = copy(self)
+        result.path = monitored.name if self.path == "" else f"{self.path}.{monitored.name}"
+        if method is not "":
+            result.path = f"{result.path}.{method}"
+        return result
+
+    def new_log_entry(self) -> ExecutionLogEntry:
+        return self.executionLog.new_entry(self.path)
 
     def new_chain_context(self, name: str) -> ChainContext:
         """

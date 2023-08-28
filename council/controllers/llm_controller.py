@@ -9,6 +9,7 @@ from council.runners import Budget
 
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
+from ..monitors import Monitored
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class LLMController(ControllerBase):
     """
 
     _llm: LLMBase
+    _monitored_llm: Monitored[LLMBase]
 
     def __init__(self, llm: LLMBase, response_threshold: float = 0, top_k_execution_plan: int = 10000):
         """
@@ -31,7 +33,7 @@ class LLMController(ControllerBase):
         """
         super().__init__()
         self._llm = llm
-        self.register_child("llm", self._llm)
+        self._monitored_llm = self.new_monitor("llm", self._llm)
         self._response_threshold = response_threshold
         self._top_k = top_k_execution_plan
 
@@ -40,7 +42,8 @@ class LLMController(ControllerBase):
 
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
         messages = self._build_llm_messages(chains, context)
-        llm_result = self._llm.post_chat_request(messages)
+        with context.new_for(self._monitored_llm).new_log_entry() as log_entry:
+            llm_result = self._llm.monitored_post_chat_request(log_entry, messages)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
 

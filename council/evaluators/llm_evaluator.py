@@ -9,6 +9,7 @@ from typing import List
 from council.contexts import AgentContext, ScoredChatMessage, ChatMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
+from council.monitors import Monitored
 from council.runners import Budget
 from council.utils import Option
 
@@ -24,7 +25,7 @@ class LLMEvaluator(EvaluatorBase):
         """
         super().__init__()
         self._llm = llm
-        self.register_child("llm", self._llm)
+        self._monitored_llm = Monitored("llm", self._llm)
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()
@@ -33,11 +34,11 @@ class LLMEvaluator(EvaluatorBase):
             for chain_history in context.chainHistory.values()
             if chain_history[-1].try_last_message.is_some()
         ]
-        scored_messages = self.__score_responses(query=query, skill_messages=chain_results, budget=budget)
+        scored_messages = self.__score_responses(context=context, query=query, skill_messages=chain_results, budget=budget)
         return list(scored_messages)
 
     def __score_responses(
-        self, query: ChatMessage, skill_messages: list[ChatMessage], budget: Budget
+        self, context: AgentContext, query: ChatMessage, skill_messages: list[ChatMessage], budget: Budget
     ) -> List[ScoredChatMessage]:
         """
         Score agent response.
@@ -63,7 +64,8 @@ class LLMEvaluator(EvaluatorBase):
                 LLMMessage.user_message(self._build_multiple_answers_message(query.message, responses)),
             ]
 
-        result = self._llm.post_chat_request(messages=messages)
+        with context.new_for(self._monitored_llm).new_log_entry() as log_entry:
+            result = self._llm.monitored_post_chat_request(log_entry=log_entry, messages=messages)
         for c in result.consumptions:
             budget.add_consumption(c, "LLMEvaluator")
         llm_response = result.first_choice

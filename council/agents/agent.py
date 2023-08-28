@@ -9,7 +9,7 @@ from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
 from ..runners.budget import InfiniteBudget
-from ..monitors import Monitorable
+from ..monitors import Monitorable, Monitored
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,9 @@ class Agent(Monitorable):
         evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
     """
 
-    controller: ControllerBase
-    chains: List[Chain]
-    evaluator: EvaluatorBase
+    _controller: Monitored[ControllerBase]
+    _chains: List[Chain]
+    _evaluator: Monitored[EvaluatorBase]
 
     def __init__(self, controller: ControllerBase, chains: List[Chain], evaluator: EvaluatorBase) -> None:
         """
@@ -39,14 +39,20 @@ class Agent(Monitorable):
         """
         super().__init__()
 
-        self.controller = controller
-        self.register_child("controller", self.controller)
+        self._controller = self.new_monitor("controller", controller)
 
         self.chains = chains
         self.register_children("chains", chains)
 
-        self.evaluator = evaluator
-        self.register_child("evaluator", self.evaluator)
+        self._evaluator = self.new_monitor("evaluator", evaluator)
+
+    @property
+    def controller(self) -> ControllerBase:
+        return self._controller.inner
+
+    @property
+    def evaluator(self) -> EvaluatorBase:
+        return self._evaluator.inner
 
     def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         """
@@ -68,7 +74,7 @@ class Agent(Monitorable):
             logger.info('message="agent execution started"')
             while not budget.is_expired():
                 logger.info(f'message="agent iteration started" iteration="{len(context.evaluationHistory)+1}"')
-                plan = self.controller.get_plan(context=context, chains=self.chains, budget=budget)
+                plan = self._controller.inner.monitor_get_plan(context=context.new_for(self._controller, "get_plan"), chains=self.chains, budget=budget)
                 logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
                 if len(plan) == 0:
@@ -76,10 +82,10 @@ class Agent(Monitorable):
                 for unit in plan:
                     budget = self._execute_unit(context, unit)
 
-                result = self.evaluator.execute(context, budget)
+                result = self._evaluator.inner.monitor_execute(context.new_for(self._evaluator), budget)
                 context.evaluationHistory.append(result)
 
-                result = self.controller.select_responses(context)
+                result = self._controller.inner.monitor_select_responses(context.new_for(self._controller, "select_responses"))
                 logger.debug("controller selected %d responses", len(result))
                 if len(result) > 0:
                     return AgentResult(messages=result)
@@ -88,6 +94,7 @@ class Agent(Monitorable):
         finally:
             logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
+
 
     def _execute_unit(self, context: AgentContext, unit: ExecutionUnit) -> Budget:
         chain = unit.chain

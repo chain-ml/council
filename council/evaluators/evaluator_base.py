@@ -15,6 +15,10 @@ class EvaluatorBase(Monitorable, ABC):
     def __init__(self):
         super().__init__()
 
+    def monitor_execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+        with context.new_log_entry():
+            return self.execute(context, budget)
+
     @abstractmethod
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """
