@@ -373,7 +373,7 @@ class AgentContext:
 
     def new_for(self, monitored: Monitored, method: str = "") -> "AgentContext":
         result = copy(self)
-        result.path = monitored.name if self.path == "" else f"{self.path}.{monitored.name}"
+        result.path = monitored.name if self.path == "" else f"{self.path}/{monitored.name}"
         if method is not "":
             result.path = f"{result.path}.{method}"
         return result
