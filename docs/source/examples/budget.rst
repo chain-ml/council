@@ -31,7 +31,7 @@ Importance of Budgets
 Example
 =======
 
-The example below demonstrate how to use the budget to limit the amount of resources an agent is allowed to consume.
+The example below demonstrates how to use the budget to limit the amount of resources an agent is allowed to consume.
 
 .. testcode::
 
