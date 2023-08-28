@@ -24,6 +24,7 @@
     :hidden:
 
     examples/multi_chain_agent.ipynb
+    examples/parallel.rst
     examples/integrations/index
 
 .. toctree::

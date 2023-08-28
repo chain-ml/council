@@ -1,3 +1,5 @@
+.. _skill-ref-label:
+
 Skills
 ======
 
