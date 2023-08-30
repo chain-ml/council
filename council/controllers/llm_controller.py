@@ -27,7 +27,7 @@ class LLMController(ControllerBase):
         Parameters:
             llm (LLMBase): the instance of LLM to use
             response_threshold (float): a minimum threshold to select a response from its score
-            top_k_execution_plan (int): maximum number of execution plan returned
+            top_k (int): maximum number of execution plan returned
         """
         super().__init__(chains=chains)
         self._llm = llm
