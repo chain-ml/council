@@ -5,22 +5,22 @@ from council.contexts import AgentContext, ScoredChatMessage
 from council.runners import Budget
 
 
-class EvaluatorBase(ABC):
+class FilterBase(ABC):
     """
-    Abstract base class for an agent evaluator.
+    Abstract base class for an agent controller.
 
     """
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """
-        Executes the evaluator on the agent's context within the given budget.
+        Selects responses from the agent's context.
 
         Args:
-            context (AgentContext): The context for executing the evaluator.
-            budget (Budget): The budget for evaluator execution.
+            context (AgentContext): The context for selecting responses.
+            budget (Budget): The budget for selecting responses.
 
         Returns:
-            List[ScoredChatMessage]: A list of scored agent messages resulting from the evaluation.
+            List[ScoredChatMessage]: A list of scored agent messages representing the selected responses.
 
         Raises:
             None

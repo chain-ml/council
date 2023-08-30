@@ -20,5 +20,8 @@ Chains are directed graphs of Skills that are co-located and expose a single ent
 ## Evaluator 
 Evaluators are responsible for assessing the quality of one or multiple Skills / Chains at runtime for example by ranking and selecting the best response or responses that meet a given quality threshold. This can happen in multiple ways and is dependent on the implementation chosen. Users can extend standard Evaluators to achieve custom behavior that best matches their requirements. 
 
+## Filter 
+Filters are responsible for filtering responses given back to the controller. 
+
 ## State Management
 Council provides native objects to facilitate management of Agent, Chain and Skill context. These objects make it easy to keep track of message history and intermediate results.
