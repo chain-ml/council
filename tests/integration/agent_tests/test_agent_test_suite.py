@@ -8,6 +8,7 @@ from council.agent_tests import AgentTestSuite, AgentTestCase
 from council.controllers import LLMController
 from council.chains import Chain
 from council.evaluators import LLMEvaluator
+from council.filters import BasicFilter
 from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 from council.skills import LLMSkill
@@ -30,11 +31,11 @@ class TestTestSuite(unittest.TestCase):
         fake_skill = LLMSkill(llm=llm, system_prompt=fake_prompt)
         fake_chain = Chain(name="fake", description="Can answer all questions", runners=[fake_skill])
 
-        controller = LLMController(llm=llm, response_threshold=5)
+        controller = LLMController(chains=[finance_chain, game_chain, fake_chain], llm=llm, response_threshold=5)
         evaluator = LLMEvaluator(llm=llm)
 
         self.llm = llm
-        self.agent = Agent(controller, [finance_chain, game_chain, fake_chain], evaluator)
+        self.agent = Agent(controller, evaluator, BasicFilter())
 
     def test_run(self):
         tests = [
