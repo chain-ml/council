@@ -1,3 +1,5 @@
+.. _parallel-ref-label:
+
 Parallel
 --------
 

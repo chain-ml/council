@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from council.chains import Chain
 from council.contexts import AgentContext, InfiniteBudget, ChainContext
@@ -9,6 +9,8 @@ from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
 from ..monitors import Monitorable, Monitored
+from ..filters import FilterBase, BasicFilter
+from ..runners.budget import InfiniteBudget
 
 logger = logging.getLogger(__name__)
 
@@ -19,31 +21,27 @@ class Agent(Monitorable):
 
     Attributes:
         controller (ControllerBase): The controller responsible for generating execution plans.
-        chains (List[Chain]): The list of chains that the agent executes.
         evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
     """
 
     _controller: Monitored[ControllerBase]
-    _chains: List[Chain]
     _evaluator: Monitored[EvaluatorBase]
 
-    def __init__(self, controller: ControllerBase, chains: List[Chain], evaluator: EvaluatorBase) -> None:
+    def __init__(self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase) -> None:
         """
         Initializes the Agent object.
 
         Args:
             controller (ControllerBase): The controller responsible for generating execution plans.
-            chains (List[Chain]): The list of chains that the agent executes.
             evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
+            filter (FilterBase): The filter responsible to filter responses.
         """
         super().__init__()
 
         self._controller = self.new_monitor("controller", controller)
-
-        self.chains = chains
-        self.register_children("chains", chains)
-
+        self.register_children("chains", self.controller.chains)
         self._evaluator = self.new_monitor("evaluator", evaluator)
+        self._filter = filter
 
     @property
     def controller(self) -> ControllerBase:
@@ -74,11 +72,7 @@ class Agent(Monitorable):
             while not budget.is_expired():
                 context.new_iteration()
                 logger.info(f'message="agent iteration started" iteration="{context.iteration_count}"')
-                plan = self._controller.inner.monitor_get_plan(
-                    context=context.new_agent_context_for(self._controller, "get_plan"),
-                    chains=self.chains,
-                    budget=budget,
-                )
+                plan = self.controller.execute(context=context.new_agent_context_for(self._controller), budget=budget)
                 logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
                 if len(plan) == 0:
@@ -86,14 +80,10 @@ class Agent(Monitorable):
                 for unit in plan:
                     budget = self._execute_unit(context, unit)
 
-                result = self._evaluator.inner.monitor_execute(
-                    context=context.new_agent_context_for(self._evaluator), budget=budget
-                )
+                result = self.evaluator.execute(context.new_agent_context_for(self._evaluator), budget)
                 context.set_evaluation(result)
 
-                result = self._controller.inner.monitor_select_responses(
-                    context.new_agent_context_for(self._controller, "select_responses")
-                )
+                result = self._filter.execute(context=context, budget=budget)
                 logger.debug("controller selected %d responses", len(result))
                 if len(result) > 0:
                     return AgentResult(messages=result)
@@ -103,7 +93,8 @@ class Agent(Monitorable):
             logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
 
-    def _execute_unit(self, context: AgentContext, unit: ExecutionUnit) -> Budget:
+    @staticmethod
+    def _execute_unit(context: AgentContext, unit: ExecutionUnit) -> Budget:
         chain = unit.chain
         budget = unit.budget
         logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
@@ -130,17 +121,21 @@ class Agent(Monitorable):
         return Agent.from_chain(chain)
 
     @staticmethod
-    def from_chain(chain: Chain) -> "Agent":
+    def from_chain(
+        chain: Chain, evaluator: EvaluatorBase = BasicEvaluator(), filter: FilterBase = BasicFilter()
+    ) -> "Agent":
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
             :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
 
         Parameters:
-             chain(Chain): a chain
+            chain(Chain): a chain
+            evaluator(EvaluatorBase): the Agent evaluator
+            filter(FilterBase): the Agent response filter
         Returns:
             Agent: a new instance
         """
-        return Agent(controller=BasicController(), chains=[chain], evaluator=BasicEvaluator())
+        return Agent(controller=BasicController([chain]), evaluator=evaluator, filter=filter)
 
     def execute_from_user_message(self, message: str, budget: Optional[Budget] = None) -> AgentResult:
         """

@@ -1,7 +1,7 @@
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
-from council.contexts import AgentContext, ScoredChatMessage
+from council.contexts import AgentContext
 from council.chains import Chain
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
@@ -22,63 +22,77 @@ class LLMController(ControllerBase):
     _llm: LLMBase
     _monitored_llm: Monitored[LLMBase]
 
-    def __init__(self, llm: LLMBase, response_threshold: float = 0, top_k_execution_plan: int = 10000):
+    def __init__(self, chains: List[Chain], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None):
         """
-        Initialize a new instance
+        Initialize a new instance of an LLMController
 
         Parameters:
             llm (LLMBase): the instance of LLM to use
             response_threshold (float): a minimum threshold to select a response from its score
-            top_k_execution_plan (int): maximum number of execution plan returned
+            top_k (int): maximum number of execution plan returned
         """
-        super().__init__()
+        super().__init__(chains=chains)
         self._llm = llm
         self._monitored_llm = self.new_monitor("llm", self._llm)
         self._response_threshold = response_threshold
-        self._top_k = top_k_execution_plan
+        self._top_k = top_k
+        self._llm_system_message = self._build_system_message()
 
-    def select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
-        return context.evaluationHistory[-1]
+    def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
+        response = self._call_llm(context, budget)
+        parsed = [
+            self._parse_line(line, self._chains)
+            for line in response.strip().splitlines()
+            if line.lower().startswith("name:")
+        ]
 
-    def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
-        messages = self._build_llm_messages(chains, context)
-        with context.new_agent_context_for(self._monitored_llm).log_entry as log_entry:
-            llm_result = self._llm.monitored_post_chat_request(log_entry, messages)
-        response = llm_result.first_choice
-        logger.debug(f"llm response: {response}")
-
-        parsed = [self._parse_line(line, chains) for line in response.splitlines() if line.lower().startswith("name:")]
         filtered = [r.unwrap() for r in parsed if r.is_some() and r.unwrap()[1] > self._response_threshold]
         if (filtered is None) or (len(filtered) == 0):
             return []
 
         filtered.sort(key=lambda item: item[1], reverse=True)
-        result = [ExecutionUnit(r[0], budget) for r in filtered if r is not None]
+        result = [
+            ExecutionUnit(chain, budget, name=f"{chain.name};{score}") for chain, score in filtered if chain is not None
+        ]
 
-        return result[: self._top_k]
+        if self._top_k is not None and self._top_k > 0:
+            return result[: self._top_k]
+        return result
 
-    @staticmethod
-    def _build_llm_messages(chains, context):
-        answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in chains])
+    def _call_llm(self, context: AgentContext, budget: Budget) -> str:
+        messages = self._build_llm_messages(context)
+        with context.new_agent_context_for(self._monitored_llm).log_entry as log_entry:
+            llm_result = self._llm.monitored_post_chat_request(log_entry, messages)
+        for c in llm_result.consumptions:
+            budget.add_consumption(c, self.__class__.__name__)
+        response = llm_result.first_choice
+        logger.debug(f"llm response: {response}")
+        return response
+
+    def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
+        messages = [
+            self._llm_system_message,
+            LLMMessage.user_message(
+                f"What are most relevant categories for:\n {context.chatHistory.try_last_user_message.unwrap().message}"
+            ),
+        ]
+        return messages
+
+    def _build_system_message(self) -> LLMMessage:
+        answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in self._chains])
         task_description = [
             "# Role:",
             "You are an assistant responsible to identify the intent of the user against a list of categories.",
             "Categories are given as a name and a description formatted precisely as:",
             "name: {name}, description: {description})",
             answer_choices,
-            "# Instructions:",
+            "# INSTRUCTIONS:",
             "# Score how relevant a category is from 0 to 10 using their description",
             "# For each category, your scores will be formatted precisely as:",
             "Name: {name};Score: {score as int};{short justification}",
             "# When no category is relevant, you will answer exactly with 'unknown'",
         ]
-        messages = [
-            LLMMessage.system_message("\n".join(task_description)),
-            LLMMessage.user_message(
-                f"What are most relevant categories for:\n {context.chatHistory.try_last_user_message.unwrap().message}"
-            ),
-        ]
-        return messages
+        return LLMMessage.system_message("\n".join(task_description))
 
     @staticmethod
     def _parse_line(line: str, chains: List[Chain]) -> Option[Tuple[Chain, int]]:
