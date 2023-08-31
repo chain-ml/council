@@ -184,7 +184,7 @@ class TestSkillRunners(unittest.TestCase):
 
     def test_sequence_if_predicate_with_context_runner(self):
         def predicate(chain_context: ChainContext, budget: Budget):
-            return chain_context.current.last_message.message == "first"
+            return chain_context.current.try_last_message.unwrap().message == "first"
 
         instance = Sequential(SkillTest("first", 0.1), If(predicate, SkillTest("maybe", 0.2)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))

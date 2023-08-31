@@ -18,6 +18,8 @@ class BasicEvaluator(EvaluatorBase):
         result: List[ScoredChatMessage] = []
         for chain_messages in context.chains:
             chain_result = chain_messages.last_message
+            if chain_result is None:
+                continue
             score = 1.0 if chain_result.is_kind_skill and chain_result.is_ok else 0.0
             result.append(
                 ScoredChatMessage(

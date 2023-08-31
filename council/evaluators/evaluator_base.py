@@ -15,7 +15,6 @@ class EvaluatorBase(Monitorable, ABC):
     def __init__(self):
         super().__init__()
 
-    @abstractmethod
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """
         Executes the evaluator on the agent's context within the given budget.

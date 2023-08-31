@@ -18,7 +18,7 @@ class BasicFilter(FilterBase):
         return filtered
 
     def _filter(self, context: AgentContext):
-        all_eval_results = context.last_evaluator_iteration()
+        all_eval_results = context.evaluation
         if all_eval_results is None:
             return []
         if self._score_threshold is not None:
