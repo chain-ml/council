@@ -4,8 +4,6 @@ from concurrent import futures
 import logging
 
 from council.contexts import ChainContext
-from .runner_context import RunnerContext
-from .budget import Budget
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor
 from ..monitors import Monitorable
@@ -14,12 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class RunnerBase(Monitorable, abc.ABC):
-    def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
-        context = RunnerContext(chain_context, budget)
-        try:
-            self.run(context, executor)
-        finally:
-            chain_context.current.extend(context.messages)
+    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor):
+        self.run(context, executor)
 
     """
     Base runner class that handles common execution logic, including error management and timeout
@@ -27,7 +21,7 @@ class RunnerBase(Monitorable, abc.ABC):
 
     def run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         if context.should_stop():
@@ -58,7 +52,7 @@ class RunnerBase(Monitorable, abc.ABC):
     @abc.abstractmethod
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         pass

@@ -2,7 +2,7 @@ import unittest
 
 from council.chains import Chain
 from council.controllers import LLMController
-from council.contexts import AgentContext, ChatHistory
+from council.contexts import AgentContext
 from council.mocks import MockLLM
 from council.runners import Budget
 
@@ -10,9 +10,7 @@ from council.runners import Budget
 class LLMControllerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.chains = [Chain("first", "", []), Chain("second", "", []), Chain("third", "", [])]
-        history = ChatHistory()
-        history.add_user_message("bla")
-        self.context = AgentContext(history)
+        self.context = AgentContext.from_user_message("bla")
 
     def test_plan_parse(self):
         llm = MockLLM.from_multi_line_response(["name: first;score: 10;because", "name: second;score: 6;because"])

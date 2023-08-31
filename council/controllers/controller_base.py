@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -21,7 +20,7 @@ class ControllerBase(Monitorable, ABC):
         super().__init__()
 
     def monitor_get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
-        with context.new_log_entry():
+        with context.log_entry:
             return self.get_plan(context, chains, budget)
 
     @abstractmethod
@@ -43,7 +42,7 @@ class ControllerBase(Monitorable, ABC):
         pass
 
     def monitor_select_responses(self, context: AgentContext) -> List[ScoredChatMessage]:
-        with context.new_log_entry():
+        with context.log_entry:
             return self.select_responses(context)
 
     @abstractmethod

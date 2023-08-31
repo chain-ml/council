@@ -4,7 +4,7 @@ import logging
 from typing import List, Any, Optional, Sequence
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from ..monitors import Monitorable, ExecutionLogEntry
-from ..runners.budget import Consumption
+from council.runners.budget import Consumption
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +36,10 @@ class LLMBase(Monitorable, abc.ABC):
         super().__init__()
         self._token_counter = token_counter
 
-    def monitored_post_chat_request(self, log_entry: ExecutionLogEntry, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
-        result = self.post_chat_request(messages,  **kwargs)
+    def monitored_post_chat_request(
+        self, log_entry: ExecutionLogEntry, messages: List[LLMMessage], **kwargs: Any
+    ) -> LLMResult:
+        result = self.post_chat_request(messages, **kwargs)
 
         log_entry.log_consumptions(result.consumptions)
         return result

@@ -1,6 +1,6 @@
 from concurrent import futures
+from council.contexts import ChainContext
 
-from .runner_context import RunnerContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
@@ -12,15 +12,14 @@ class Parallel(RunnerBase):
 
     def __init__(self, *runners: RunnerBase):
         super().__init__()
-        self.runners = runners
-        self.register_children("runners", runners)
+        self.runners = self.new_monitors("runners", runners)
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
-        contexts = [(runner, context.fork()) for runner in self.runners]
+        contexts = [(runner.inner, context.fork_for(runner)) for runner in self.runners]
 
         # Seems like it is a bad idea using lambda as the function in submit,
         # which results into inconsistent invocation (wrong arguments)

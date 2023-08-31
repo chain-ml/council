@@ -2,13 +2,12 @@ import logging
 from typing import List, Optional
 
 from council.chains import Chain
-from council.contexts import AgentContext, ChatHistory
+from council.contexts import AgentContext, InfiniteBudget, ChainContext
 from council.controllers import ControllerBase, BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.runners import Budget, new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
-from ..runners.budget import InfiniteBudget
 from ..monitors import Monitorable, Monitored
 
 logger = logging.getLogger(__name__)
@@ -73,8 +72,13 @@ class Agent(Monitorable):
         try:
             logger.info('message="agent execution started"')
             while not budget.is_expired():
-                logger.info(f'message="agent iteration started" iteration="{len(context.evaluationHistory)+1}"')
-                plan = self._controller.inner.monitor_get_plan(context=context.new_for(self._controller, "get_plan"), chains=self.chains, budget=budget)
+                context.new_iteration()
+                logger.info(f'message="agent iteration started" iteration="{context.iteration_count}"')
+                plan = self._controller.inner.monitor_get_plan(
+                    context=context.new_agent_context_for(self._controller, "get_plan"),
+                    chains=self.chains,
+                    budget=budget,
+                )
                 logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
                 if len(plan) == 0:
@@ -82,10 +86,14 @@ class Agent(Monitorable):
                 for unit in plan:
                     budget = self._execute_unit(context, unit)
 
-                result = self._evaluator.inner.monitor_execute(context.new_for(self._evaluator), budget)
-                context.evaluationHistory.append(result)
+                result = self._evaluator.inner.monitor_execute(
+                    context=context.new_agent_context_for(self._evaluator), budget=budget
+                )
+                context.set_evaluation(result)
 
-                result = self._controller.inner.monitor_select_responses(context.new_for(self._controller, "select_responses"))
+                result = self._controller.inner.monitor_select_responses(
+                    context.new_agent_context_for(self._controller, "select_responses")
+                )
                 logger.debug("controller selected %d responses", len(result))
                 if len(result) > 0:
                     return AgentResult(messages=result)
@@ -95,14 +103,13 @@ class Agent(Monitorable):
             logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
 
-
     def _execute_unit(self, context: AgentContext, unit: ExecutionUnit) -> Budget:
         chain = unit.chain
         budget = unit.budget
         logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
-        chain_context = context.new_chain_context(unit.name)
+        chain_context = ChainContext.from_agent_context(context, Monitored(unit.name, chain), unit.name, unit.budget)
         if unit.initial_state is not None:
-            chain_context.current.append(unit.initial_state)
+            chain_context.append(unit.initial_state)
         chain.execute(chain_context, budget)
         logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
         return budget
@@ -146,5 +153,5 @@ class Agent(Monitorable):
              AgentResult:
         """
         execution_budget = budget or InfiniteBudget()
-        context = AgentContext(ChatHistory.from_user_message(message))
+        context = AgentContext.from_user_message(message)
         return self.execute(context, budget=execution_budget)

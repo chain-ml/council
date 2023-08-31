@@ -1,14 +1,19 @@
 import abc
-from copy import copy
-from typing import Any, Dict, List, Optional, Sequence, Callable, Iterable
+import logging
+from typing import Any, Dict, List, Optional, Sequence, Callable, Iterable, Mapping
+
+import more_itertools
 from typing_extensions import TypeGuard
 
 from more_itertools import first
 
+from .budget import Budget
 from .messages import ChatMessage, ScoredChatMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
 from council.utils import Option
 from ..monitors import ExecutionLog, Monitored, ExecutionLogEntry
+
+logger = logging.getLogger(__name__)
 
 
 class MessageCollection(abc.ABC):
@@ -138,19 +143,40 @@ class MessageCollection(abc.ABC):
         return lambda m: m.is_of_kind(kind)
 
 
-class ChatHistory(MessageCollection):
+class CompositeMessageCollection(MessageCollection):
+    _collections: List[MessageCollection]
+
+    def __init__(self, collections: List[MessageCollection]):
+        self._collections = collections
+
+    @property
+    def messages(self) -> Iterable[ChatMessage]:
+        for collection in self._collections:
+            for message in collection.messages:
+                yield message
+
+    @property
+    def reversed(self) -> Iterable[ChatMessage]:
+        for collection in reversed(self._collections):
+            for message in collection.reversed:
+                yield message
+
+
+class MessageList(MessageCollection):
     """
     represents the history of messages exchanged between the user and the :class:`.Agent`
     """
 
     _messages: List[ChatMessage] = []
 
-    def __init__(self):
+    def __init__(self, messages: Optional[Iterable[ChatMessage]] = None):
         """
         initialize a new instance
         """
 
         self._messages = []
+        if messages is not None:
+            self._messages.extend(messages)
 
     @property
     def messages(self) -> Iterable[ChatMessage]:
@@ -181,6 +207,31 @@ class ChatHistory(MessageCollection):
 
         self._messages.append(ChatMessage.agent(message, data))
 
+    def add_message(self, message: ChatMessage):
+        self._messages.append(message)
+
+    def add_messages(self, messages: Iterable[ChatMessage]):
+        self._messages.extend(messages)
+
+
+class MonitoredMessageList(MessageCollection):
+    def __init__(self, message_list: MessageList):
+        self._inner = message_list
+
+    @property
+    def messages(self) -> Iterable[ChatMessage]:
+        return self._inner.messages
+
+    @property
+    def reversed(self) -> Iterable[ChatMessage]:
+        return self._inner.reversed
+
+    def append(self, message: ChatMessage, log_entry: ExecutionLogEntry):
+        log_entry.log_message(message)
+        self._inner.add_message(message)
+
+
+class ChatHistory(MessageList):
     @staticmethod
     def from_user_message(message: str) -> "ChatHistory":
         history = ChatHistory()
@@ -188,101 +239,286 @@ class ChatHistory(MessageCollection):
         return history
 
 
-class ChainHistory(MessageCollection):
-    """
-    Manages all the :class:`ChatMessage` generated during one execution of a :class:`.Chain`
-    """
+# AgentContext: {
+#     chatHistory: [ChatMessage],
+#     AgentIterationContext: [
+#         {
+#             chainContexts: Dict[str, ChainContext],
+#             evaluationContext: List[ScoredChatMessage]
+#         },
+#     ],
+#     CustomData: Dict[str, Any]
+# }
 
-    _messages: List[ChatMessage]
 
-    def __init__(self, messages: Optional[List[ChatMessage]] = None):
-        """Initialize a new instance"""
-        self._messages = messages or []
+class ExecutionContext:
+    _executionLog: ExecutionLog
+    _entry: ExecutionLogEntry
+
+    def __init__(self, execution_log: Optional[ExecutionLog] = None, path: str = ""):
+        self._executionLog = execution_log or ExecutionLog()
+        self._entry = self._executionLog.new_entry(path)
+
+    def _new_path(self, monitored: Monitored, method: str):
+        result = monitored.name if self._entry.source == "" else f"{self._entry.source}/{monitored.name}"
+        if method is not "":
+            result = f"{result}.{method}"
+        return result
+
+    def new_for(self, monitored: Monitored, method: str = "") -> "ExecutionContext":
+        return ExecutionContext(self._executionLog, self._new_path(monitored, method))
 
     @property
-    def messages(self) -> Sequence[ChatMessage]:
-        return self._messages
+    def entry(self) -> ExecutionLogEntry:
+        return self._entry
+
+
+class AgentIterationContextStore:
+    _chains: Dict[str, MonitoredMessageList]
+    _evaluator: List[ScoredChatMessage]
+
+    def __init__(self):
+        self._chains = {}
+        self._evaluator = []
 
     @property
-    def reversed(self) -> Iterable[ChatMessage]:
-        return reversed(self._messages)
+    def chains(self) -> Mapping[str, MessageCollection]:
+        return self._chains
 
-    def append(self, message: ChatMessage):
-        self._messages.append(message)
+    @property
+    def evaluator(self) -> List[ScoredChatMessage]:
+        return self._evaluator
 
-    def extend(self, messages: Iterable[ChatMessage]):
-        self._messages.extend(messages)
+    def ensure_chain_exists(self, name: str):
+        self._chains[name] = MonitoredMessageList(MessageList())
 
-    def copy(self) -> "ChainHistory":
-        return ChainHistory(self._messages.copy())
+    def append_to_chain(self, chain: str, message: ChatMessage, log_entry: ExecutionLogEntry):
+        self._chains[chain].append(message, log_entry)
 
 
-class ChainContext(MessageCollection):
-    """
-    Class representing the execution context of a :class:`.Chain`.
-    """
-
-    def __init__(self, chat_history: ChatHistory, chain_history: List[ChainHistory]):
-        """
-        Initializes the ChainContext with the provided chat and chain history.
-
-        Args:
-            chat_history (ChatHistory): The chat history.
-            chain_history (List[ChainHistory]): All the :class:`ChainHistory` from the many execution of a chain.
-        """
-        self._chat_history = chat_history
-        self._chain_histories = chain_history
+class AgentContextStore:
+    def __init__(self, chat_history: ChatHistory):
         self._cancellation_token = CancellationToken()
+        self._chat_history = chat_history
+        self._iterations: List[AgentIterationContextStore] = []
+        self._log = ExecutionLog()
 
-    def new_iteration(self):
-        """
-        Prepare this instance for a new execution of a chain by adding a new :class:`ChainHistory`
-        """
-        self._chain_histories.append(ChainHistory())
+        # to be deprecated
+        self._evaluation_history: List[List[ScoredChatMessage]] = []
 
     @property
     def cancellation_token(self) -> CancellationToken:
         return self._cancellation_token
 
     @property
+    def chat_history(self) -> ChatHistory:
+        return self._chat_history
+
+    @property
+    def iterations(self) -> Sequence[AgentIterationContextStore]:
+        return self._iterations
+
+    @property
+    def current_iteration(self) -> AgentIterationContextStore:
+        return self._iterations[-1]
+
+    @property
+    def execution_log(self) -> ExecutionLog:
+        return self._log
+
+    def new_iteration(self):
+        iteration = AgentIterationContextStore()
+        self._iterations.append(iteration)
+        self._evaluation_history.append(iteration.evaluator)
+
+    def chain_iterations(self, name: str) -> Iterable[MessageCollection]:
+        default = MessageList()
+        for iteration in self._iterations:
+            yield iteration.chains.get(name, default)
+
+    @property
+    def evaluation_history(self) -> Sequence[List[ScoredChatMessage]]:
+        return self._evaluation_history
+
+
+class ContextBase:
+    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext):
+        self._store = store
+        self._execution_context = execution_context
+
+    @property
+    def iteration_count(self) -> int:
+        return len(self._store.iterations)
+
+    @property
+    def log_entry(self) -> ExecutionLogEntry:
+        return self._execution_context.entry
+
+    @property
+    def chat_history(self) -> ChatHistory:
+        return self._store.chat_history
+
+    @property
+    def chatHistory(self) -> ChatHistory:
+        return self.chat_history
+
+
+class AgentContext(ContextBase):
+    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext):
+        super().__init__(store, execution_context)
+
+    @staticmethod
+    def empty() -> "AgentContext":
+        return AgentContext.from_chat_history(ChatHistory())
+
+    @staticmethod
+    def from_chat_history(chat_history: ChatHistory) -> "AgentContext":
+        store = AgentContextStore(chat_history)
+        return AgentContext(store, ExecutionContext(store.execution_log, "agent"))
+
+    @staticmethod
+    def from_user_message(message: str) -> "AgentContext":
+        return AgentContext.from_chat_history(ChatHistory.from_user_message(message))
+
+    def new_agent_context_for(self, monitored: Monitored, method: str = "") -> "AgentContext":
+        return AgentContext(self._store, self._execution_context.new_for(monitored, method))
+
+    def new_iteration(self):
+        self._store.new_iteration()
+
+    @property
+    def chains(self) -> Iterable[MessageCollection]:
+        return self._store.current_iteration.chains.values()
+
+    @property
+    def evaluation(self) -> List[ScoredChatMessage]:
+        return self._store.current_iteration.evaluator
+
+    @property
+    def evaluationHistory(self) -> Sequence[List[ScoredChatMessage]]:
+        return self._store.evaluation_history
+
+    def set_evaluation(self, messages: List[ScoredChatMessage]):
+        self._store.current_iteration.evaluator.extend(messages)
+
+
+class ChainContext(ContextBase, MessageCollection):
+    def __init__(
+        self,
+        store: AgentContextStore,
+        execution_context: ExecutionContext,
+        name: str,
+        budget: Budget,
+        messages: Optional[Iterable[ChatMessage]] = None,
+    ):
+        super().__init__(store, execution_context)
+        self._name = name
+        self._budget = budget
+        self._current_messages = MessageList()
+        self._previous_messages = MessageList(messages)
+
+        self._current_iteration_messages = CompositeMessageCollection([self._previous_messages, self._current_messages])
+        self._previous_iteration_messages = CompositeMessageCollection(
+            list(self._store.chain_iterations(self._name))[:-1]
+        )
+        self._all_iteration_messages = CompositeMessageCollection(
+            [self._previous_iteration_messages, self._current_iteration_messages]
+        )
+        self._all_messages = CompositeMessageCollection([self.chat_history, self._all_iteration_messages])
+
+    @property
+    def cancellation_token(self) -> CancellationToken:
+        return self._store.cancellation_token
+
+    @property
+    def budget(self) -> Budget:
+        return self._budget
+
+    @property
     def messages(self) -> Iterable[ChatMessage]:
-        for inner_list in [self._chat_history, *self._chain_histories]:
-            for item in inner_list.messages:
-                yield item
+        return self._all_messages.messages
 
     @property
     def reversed(self) -> Iterable[ChatMessage]:
-        for inner_list in reversed([self._chat_history, *self._chain_histories]):
-            for item in inner_list.reversed:
-                yield item
+        return self._all_messages.reversed
 
     @property
-    def chain_histories(self) -> Sequence[ChainHistory]:
-        return self._chain_histories
+    def chain_histories(self) -> Iterable[MessageCollection]:
+        for item in self._store.iterations:
+            chain = item.chains.get(self._name)
+            if chain is not None:
+                yield chain
 
     @property
-    def current(self) -> ChainHistory:
+    def previous_messages(self) -> Iterable[ChatMessage]:
+        return self._previous_messages.messages
+
+    @property
+    def current_messages(self) -> Iterable[ChatMessage]:
+        return self._current_messages.messages
+
+    @property
+    def current(self) -> MessageCollection:
         """
         Returns the :class:`ChainHistory` to be used for the current execution of a :class:`.Chain`
 
         Returns:
             ChainHistory: the chain history
         """
-        return self._chain_histories[-1]
-
-    @property
-    def chat_history(self) -> ChatHistory:
-        return self._chat_history
+        return self._current_iteration_messages
 
     @staticmethod
-    def empty() -> "ChainContext":
-        history = ChatHistory()
-        return ChainContext(history, [])
+    def from_agent_context(context: AgentContext, monitored: Monitored, name: str, budget: Budget):
+        context._store.current_iteration.ensure_chain_exists(name)
+        return ChainContext(context._store, context._execution_context.new_for(monitored), name, budget)
+
+    def fork_for(self, monitored: Monitored, budget: Optional[Budget] = None) -> "ChainContext":
+        return ChainContext(
+            self._store,
+            self._execution_context.new_for(monitored),
+            self._name,
+            budget or self._budget.remaining(),
+            more_itertools.flatten([self._previous_messages.messages, self._current_messages.messages]),
+        )
+
+    def should_stop(self) -> bool:
+        if self._budget.is_expired():
+            logger.debug('message="stopping" reason="budget expired"')
+            return True
+        if self.cancellation_token.cancelled:
+            logger.debug('message="stopping" reason="cancellation token is set"')
+            return True
+
+        return False
+
+    def merge(self, contexts: List["ChainContext"]):
+        for context in contexts:
+            self._current_messages.add_messages(context._current_messages.messages)
+
+    def append(self, message: ChatMessage):
+        self._current_messages.add_message(message)
+        self._store.current_iteration.append_to_chain(self._name, message, self._execution_context.entry)
+
+    def extend(self, messages: Iterable[ChatMessage]):
+        for message in messages:
+            self.append(message)
+
+    @staticmethod
+    def from_chat_history(history: ChatHistory) -> "ChainContext":
+        from .budget import InfiniteBudget
+        from ..mocks import MockMonitored
+
+        context = AgentContext.from_chat_history(history)
+        context.new_iteration()
+        return ChainContext.from_agent_context(context, MockMonitored(), "mock chain", InfiniteBudget())
 
     @staticmethod
     def from_user_message(message: str) -> "ChainContext":
-        history = ChatHistory.from_user_message(message)
-        return ChainContext(history, [])
+        return ChainContext.from_chat_history(ChatHistory.from_user_message(message))
+
+    @staticmethod
+    def empty() -> "ChainContext":
+        return ChainContext.from_chat_history(ChatHistory())
 
 
 class IterationContext:
@@ -328,8 +564,16 @@ class SkillContext(ChainContext):
     Class representing the execution context of a :class:`.SkillBase`.
     """
 
-    def __init__(self, chain_context: ChainContext, iteration: Option[IterationContext]):
-        super().__init__(chain_context.chat_history, chain_context._chain_histories)
+    def __init__(
+        self,
+        store: AgentContextStore,
+        execution_context: ExecutionContext,
+        name: str,
+        budget: Budget,
+        messages: Iterable[ChatMessage],
+        iteration: Option[IterationContext],
+    ):
+        super().__init__(store, execution_context, name, budget, messages)
         self._iteration = iteration
 
     @property
@@ -342,93 +586,13 @@ class SkillContext(ChainContext):
         """
         return self._iteration
 
-
-class AgentContext:
-    """
-    Class representing the execution context of an :class:`.Agent`.
-
-    Attributes:
-        chatHistory (ChatHistory): The chat history.
-        chainHistory (Dict[str, List[ChainHistory]]): The chain history for each :class:`.Chain`.
-        evaluationHistory (List[List[ScoredChatMessage]]): The iteration history of evaluated agent messages.
-    """
-
-    chatHistory: ChatHistory
-    chainHistory: Dict[str, List[ChainHistory]]
-    evaluationHistory: List[List[ScoredChatMessage]]
-    executionLog: ExecutionLog
-
-    def __init__(self, chat_history: ChatHistory):
-        """
-        Initializes the AgentContext with the provided chat history.
-
-        Args:
-            chat_history (ChatHistory): The chat history.
-        """
-        self.chatHistory = chat_history
-        self.chainHistory: Dict[str, List[ChainHistory]] = {}
-        self.evaluationHistory = []
-        self.executionLog = ExecutionLog()
-        self.path = ""
-
-    def new_for(self, monitored: Monitored, method: str = "") -> "AgentContext":
-        result = copy(self)
-        result.path = monitored.name if self.path == "" else f"{self.path}/{monitored.name}"
-        if method is not "":
-            result.path = f"{result.path}.{method}"
-        return result
-
-    def new_log_entry(self) -> ExecutionLogEntry:
-        return self.executionLog.new_entry(self.path)
-
-    def new_chain_context(self, name: str) -> ChainContext:
-        """
-        Creates a new chain context for the specified chain name.
-
-        Args:
-            name (str): The name of the chain.
-
-        Returns:
-            ChainContext: The new chain context.
-        """
-        history = self.chainHistory.get(name)
-        if history is None:
-            history = []
-            self.chainHistory[name] = history
-        history.append(ChainHistory())
-        return ChainContext(self.chatHistory, history)
-
-    def last_evaluator_iteration(self) -> Optional[List[ScoredChatMessage]]:
-        """
-        Retrieves the last iteration of the evaluator's history.
-
-        Returns:
-            Optional[List[ScoredChatMessage]]: The last iteration of the evaluator's history,
-                or None if the history is empty.
-        """
-        if len(self.evaluationHistory) == 0:
-            return None
-        return self.evaluationHistory[-1]
-
-    def last_chain_history_iteration(self, chain_name: str) -> Optional[ChainHistory]:
-        """
-        Retrieves the last iteration of the specified chain's history.
-
-        Args:
-            chain_name (str): The name of the chain.
-
-        Returns:
-            Optional[ChainHistory]: The last iteration of the specified chain's history,
-                or None if the history is empty.
-
-        Raises:
-            None
-        """
-        iterations: List[ChainHistory] = self.chainHistory[chain_name]
-        if iterations is None or len(iterations) == 0:
-            return None
-        return iterations[-1]
-
     @staticmethod
-    def empty() -> "AgentContext":
-        return AgentContext(chat_history=ChatHistory())
+    def from_chain_context(context: ChainContext, iteration: Option[IterationContext]) -> "SkillContext":
+        return SkillContext(
+            context._store,
+            context._execution_context,
+            context._name,
+            context.budget,
+            context.current.messages,
+            iteration,
+        )

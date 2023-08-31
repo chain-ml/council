@@ -2,7 +2,8 @@ from typing import List, Any, Optional
 
 from council.contexts import ChainContext
 from council.monitors import Monitorable
-from council.runners import Budget, RunnerBase, Sequential, RunnerExecutor
+from council.runners import RunnerBase, Sequential, RunnerExecutor
+from council.contexts import Budget
 
 
 class Chain(Monitorable):
@@ -73,7 +74,7 @@ class Chain(Monitorable):
         executor = (
             RunnerExecutor(max_workers=10, thread_name_prefix=f"chain_{self.name}") if executor is None else executor
         )
-        self.runner.run_from_chain_context(context, budget, executor)
+        self.runner.run(context, executor)
 
     def __repr__(self):
         return f"Chain({self.name}, {self.description})"

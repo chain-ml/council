@@ -8,7 +8,6 @@ from council.runners import Budget
 from council.scorers import ScorerBase, ScorerException
 from council.contexts import (
     AgentContext,
-    ChatHistory,
 )
 
 
@@ -136,9 +135,7 @@ class AgentTestCase:
         case_result = AgentTestCaseResult(self._prompt, self._scorers)
         # noinspection PyBroadException
         try:
-            history = ChatHistory()
-            history.add_user_message(self._prompt)
-            context = AgentContext(history)
+            context = AgentContext.from_user_message(self._prompt)
             agent_result = agent.execute(context, Budget(10))
         except Exception as e:
             case_result.set_error(e, time.monotonic() - start_time)

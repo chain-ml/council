@@ -3,9 +3,9 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage
+from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage, Budget
 from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult, LLMException
-from council.runners import Budget
+from council.monitors import Monitored, Monitorable
 from council.scorers import ScorerBase
 from council.skills import SkillBase
 
@@ -117,3 +117,8 @@ class MockErrorAgent(Agent):
 
     def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         raise self.exception
+
+
+class MockMonitored(Monitored):
+    def __init__(self, name: str = "mock"):
+        super().__init__(name, Monitorable())

@@ -1,6 +1,6 @@
 import unittest
 
-from council.contexts import ChainContext
+from council.contexts import ChainContext, ChatHistory
 from council.prompt import PromptBuilder
 
 template = """
@@ -28,11 +28,12 @@ template_ch = """
 
 class TestPrompt(unittest.TestCase):
     def test(self):
-        cc = ChainContext.from_user_message("what are the three largest cities in South America?")
-        cc.chat_history.add_agent_message("São Paulo")
-        cc.chat_history.add_agent_message("Lima")
-        cc.chat_history.add_agent_message("Bogotá")
+        chat_history = ChatHistory.from_user_message("what are the three largest cities in South America?")
+        chat_history.add_agent_message("São Paulo")
+        chat_history.add_agent_message("Lima")
+        chat_history.add_agent_message("Bogotá")
 
+        cc = ChainContext.from_chat_history(chat_history)
         prompt_builder = PromptBuilder(template)
         result = prompt_builder.apply(cc)
         self.assertTrue(result.strip().endswith("Bogotá"))

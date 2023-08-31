@@ -4,12 +4,12 @@ from typing import List, Any
 
 from council import monitors
 from council.contexts import (
-    ChatHistory,
     ChainContext,
-    ChainHistory,
     SkillContext,
     ChatMessage,
+    Budget,
 )
+from council.mocks import MockMonitored
 
 from council.skills.skill_base import SkillBase
 from council.runners import (
@@ -23,7 +23,6 @@ from council.runners import (
     RunnerPredicateError,
     RunnerGeneratorError,
     RunnerSkillError,
-    Budget,
 )
 
 
@@ -47,7 +46,7 @@ class SkillTest(SkillBase):
 
 class SkillTestAppend(SkillBase):
     def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        message = context.try_last_message.map_or(lambda m: m.message, "")
+        message = context.current.try_last_message.map_or(lambda m: m.message, "")
         return self.build_success_message(message + self.name)
 
 
@@ -63,12 +62,15 @@ class SkillTestMerge(SkillBase):
 
 class TestSkillRunners(unittest.TestCase):
     def setUp(self) -> None:
-        self.history = ChatHistory()
-        self.context = ChainContext(ChatHistory(), [ChainHistory()])
+        self.context = ChainContext.empty()
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        runner.run_from_chain_context(self.context, budget, self.executor)
+        context = self.context.fork_for(MockMonitored(), budget)
+        try:
+            runner.run(context, self.executor)
+        finally:
+            self.context.merge([context])
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -124,6 +126,7 @@ class TestSkillRunners(unittest.TestCase):
         self._execute(parallel, Budget(1))
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
+        print(f"\n{monitors.render_as_text(parallel)}")
 
     def test_parallel_many_sequences(self):
         instance = Sequential(
@@ -181,7 +184,7 @@ class TestSkillRunners(unittest.TestCase):
 
     def test_sequence_if_predicate_with_context_runner(self):
         def predicate(chain_context: ChainContext, budget: Budget):
-            return chain_context.current.messages[-1].message == "first"
+            return chain_context.current.last_message.message == "first"
 
         instance = Sequential(SkillTest("first", 0.1), If(predicate, SkillTest("maybe", 0.2)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))

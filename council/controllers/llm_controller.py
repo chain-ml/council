@@ -42,7 +42,7 @@ class LLMController(ControllerBase):
 
     def get_plan(self, context: AgentContext, chains: List[Chain], budget: Budget) -> List[ExecutionUnit]:
         messages = self._build_llm_messages(chains, context)
-        with context.new_for(self._monitored_llm).new_log_entry() as log_entry:
+        with context.new_agent_context_for(self._monitored_llm).log_entry as log_entry:
             llm_result = self._llm.monitored_post_chat_request(log_entry, messages)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")

@@ -1,10 +1,9 @@
 import abc
 import logging
 
-from council.contexts import SkillContext, IterationContext, ChatMessage
-from . import RunnerContext, RunnerSkillError
+from council.contexts import SkillContext, IterationContext, ChatMessage, Budget, ChainContext
+from . import RunnerSkillError
 
-from .budget import Budget
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 from ..utils import Option
@@ -24,12 +23,12 @@ class SkillRunnerBase(RunnerBase):
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         self.run_skill(context, executor)
 
-    def run_skill(self, context: RunnerContext, executor: RunnerExecutor) -> None:
+    def run_skill(self, context: ChainContext, executor: RunnerExecutor) -> None:
         """
         Run the skill in a different thread, and await for completion
         """
@@ -39,12 +38,12 @@ class SkillRunnerBase(RunnerBase):
         finally:
             future.cancel()
 
-    def run_in_current_thread(self, context: RunnerContext, iteration_context: Option[IterationContext]) -> None:
+    def run_in_current_thread(self, context: ChainContext, iteration_context: Option[IterationContext]) -> None:
         """
         Run the skill in the current thread
         """
         try:
-            skill_context = SkillContext(context.make_chain_context(), iteration_context)
+            skill_context = SkillContext.from_chain_context(context, iteration_context)
             message = self.execute_skill(skill_context, context.budget.remaining())
             context.append(message)
         except Exception as e:

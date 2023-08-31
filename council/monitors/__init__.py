@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict, Sequence, TypeVar, Any, Generic
+from typing import List, Dict, Sequence, TypeVar, Any, Generic, Iterable
 
 
 class Monitor:
@@ -40,9 +40,14 @@ class Monitorable:
     def monitor(self) -> Monitor:
         return self._monitor
 
-    def new_monitor(self, name: str, item: "Monitorable") -> Monitored[T_co]:
+    def new_monitor(self, name: str, item: T_co) -> Monitored[T_co]:
         self.register_child(name, item)
         return Monitored(name, item)
+
+    def new_monitors(self, name: str, items: Iterable[T_co]) -> List[Monitored[T_co]]:
+        result = [Monitored(f"{name}[{index}]", item) for index, item in enumerate(items)]
+        [self.register_child(item.name, item.inner) for item in result]
+        return result
 
     def register_child(self, relation: str, child: "Monitorable"):
         self._monitor.register_child(relation, child._monitor)
@@ -53,13 +58,13 @@ class Monitorable:
 
 
 class ExecutionLogEntry:
-    def __init__(self, source: str, method: str = ""):
+    def __init__(self, source: str):
         self._source = source
-        self._method = method
         self._start = datetime.utcnow()
         self._duration = 0
         self._error = None
-        self._consumptions = []
+        self._consumptions: List[Any] = []
+        self._messages: List[Any] = []
 
     @property
     def source(self) -> str:
@@ -71,6 +76,9 @@ class ExecutionLogEntry:
     def log_consumptions(self, consumptions: Sequence[Any]):
         [self.log_consumption(item) for item in consumptions]
 
+    def log_message(self, message: Any):
+        self._messages.append(message)
+
     def __enter__(self):
         return self
 
@@ -79,7 +87,7 @@ class ExecutionLogEntry:
         self._error = exc_val
 
     def __repr__(self):
-        return f"ExecutionLogEntry(source={self._source}, method={self._method}, start={self._start}, duration={self._duration}, error={self._error})"
+        return f"ExecutionLogEntry(source={self._source}, start={self._start}, duration={self._duration}, error={self._error})"
 
 
 class ExecutionLog:

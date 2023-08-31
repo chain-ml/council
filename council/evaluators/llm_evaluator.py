@@ -30,11 +30,13 @@ class LLMEvaluator(EvaluatorBase):
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()
         chain_results = [
-            chain_history[-1].try_last_message.unwrap()
-            for chain_history in context.chainHistory.values()
-            if chain_history[-1].try_last_message.is_some()
+            chain_messages.try_last_message.unwrap()
+            for chain_messages in context.chains
+            if chain_messages.try_last_message.is_some()
         ]
-        scored_messages = self.__score_responses(context=context, query=query, skill_messages=chain_results, budget=budget)
+        scored_messages = self.__score_responses(
+            context=context, query=query, skill_messages=chain_results, budget=budget
+        )
         return list(scored_messages)
 
     def __score_responses(
@@ -64,7 +66,7 @@ class LLMEvaluator(EvaluatorBase):
                 LLMMessage.user_message(self._build_multiple_answers_message(query.message, responses)),
             ]
 
-        with context.new_for(self._monitored_llm).new_log_entry() as log_entry:
+        with context.new_agent_context_for(self._monitored_llm).log_entry as log_entry:
             result = self._llm.monitored_post_chat_request(log_entry=log_entry, messages=messages)
         for c in result.consumptions:
             budget.add_consumption(c, "LLMEvaluator")

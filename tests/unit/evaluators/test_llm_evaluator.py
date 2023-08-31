@@ -4,24 +4,26 @@ from typing import List
 from council.evaluators import LLMEvaluator
 from council.contexts import (
     AgentContext,
-    ChatHistory,
     ScoredChatMessage,
     ChatMessage,
+    ChainContext,
 )
-from council.mocks import MockLLM
+from council.mocks import MockLLM, MockMonitored
 from council.runners import Budget
 
 
 class TestLLMEvaluator(unittest.TestCase):
     def setUp(self) -> None:
-        self.context = AgentContext(ChatHistory())
-        self.context.chatHistory.add_user_message("bla")
+        self.context = AgentContext.from_user_message("bla")
 
     def add_one_iteration_result(self):
-        self.first_context = self.context.new_chain_context("a chain")
-        self.second_context = self.context.new_chain_context("another chain")
-        self.first_context.current.append(ChatMessage.skill("result of a chain", source="first skill"))
-        self.second_context.current.append(ChatMessage.skill("result of another chain", source="another skill"))
+        self.context.new_iteration()
+        self.first_context = ChainContext.from_agent_context(self.context, MockMonitored(), "a chain", Budget.default())
+        self.second_context = ChainContext.from_agent_context(
+            self.context, MockMonitored(), "another chain", Budget.default()
+        )
+        self.first_context.append(ChatMessage.skill("result of a chain", source="first skill"))
+        self.second_context.append(ChatMessage.skill("result of another chain", source="another skill"))
 
     @staticmethod
     def to_tuple_message_score(items: List[ScoredChatMessage]):
@@ -47,7 +49,9 @@ class TestLLMEvaluator(unittest.TestCase):
         ]
 
         self.add_one_iteration_result()
-        self.context.new_chain_context("this chain does not provide any message")
+        ChainContext.from_agent_context(
+            self.context, MockMonitored(), "this chain does not provide any message", Budget.default()
+        )
 
         result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context, Budget(10))
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))

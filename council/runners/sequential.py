@@ -1,4 +1,4 @@
-from .runner_context import RunnerContext
+from council.contexts import ChainContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
@@ -15,7 +15,7 @@ class Sequential(RunnerBase):
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         for runner in self.runners:

@@ -4,9 +4,8 @@ from typing import Iterable
 
 from more_itertools import batched
 
-from council.contexts import IterationContext, ChainContext
+from council.contexts import IterationContext, ChainContext, Budget
 from council.utils import Option
-from . import RunnerContext, Budget
 
 from .errrors import RunnerGeneratorError
 from .loop_runner_base import LoopRunnerBase
@@ -44,17 +43,15 @@ class ParallelFor(LoopRunnerBase):
         """
         super().__init__()
         self._generator = generator
-        self._skill = skill
-        self.register_child("skill", skill)
+        self._skill = self.new_monitor("skill", skill)
         self._parallelism = parallelism
 
-    def _run(self, context: RunnerContext, executor: RunnerExecutor) -> None:
-        chain_context = context.make_chain_context()
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         inner_contexts = []
         all_fs = []
         try:
-            for batch in batched(self._generate(chain_context, context.budget.remaining()), self._parallelism):
-                inner = [context.fork() for _ in batch]
+            for batch in batched(self._generate(context, context.budget.remaining()), self._parallelism):
+                inner = [context.fork_for(self._skill) for _ in batch]
                 inner_contexts.extend(inner)
                 fs = [executor.submit(self._run_skill, inner, iteration) for (inner, iteration) in zip(inner, batch)]
                 all_fs.extend(fs)
@@ -64,11 +61,11 @@ class ParallelFor(LoopRunnerBase):
             [f.cancel() for f in all_fs]
             context.merge(inner_contexts)
 
-    def _run_skill(self, context: RunnerContext, iteration: IterationContext):
+    def _run_skill(self, context: ChainContext, iteration: IterationContext):
         index = iteration.index
         logger.debug(f'message="start iteration" index="{index}"')
         try:
-            self._skill.run_in_current_thread(context, Option.some(iteration))
+            self._skill.inner.run_in_current_thread(context, Option.some(iteration))
         finally:
             logger.debug(f'message="end iteration" index="{index}"')
 

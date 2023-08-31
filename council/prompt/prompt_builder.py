@@ -88,7 +88,7 @@ class PromptBuilder:
 
     @staticmethod
     def __build_chain_history(context: SkillContext) -> dict[str, Any]:
-        if len(context.chain_histories) == 0:
+        if context.iteration_count == 0:
             return {
                 "messages": [],
                 "last_message": "",
