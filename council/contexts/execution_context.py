@@ -249,7 +249,7 @@ class ExecutionContext:
 
     def _new_path(self, monitored: Monitored, method: str):
         result = monitored.name if self._entry.source == "" else f"{self._entry.source}/{monitored.name}"
-        if method is not "":
+        if method != "":
             result = f"{result}.{method}"
         return result
 

@@ -15,16 +15,16 @@ class Monitor:
         self.children[relation] = child
 
 
-T_co = TypeVar("T_co", bound="Monitorable", covariant=True)
+T = TypeVar("T", bound="Monitorable")
 
 
-class Monitored(Generic[T_co]):
-    def __init__(self, name: str, monitorable: T_co):
+class Monitored(Generic[T]):
+    def __init__(self, name: str, monitorable: T):
         self._name = name
         self._inner = monitorable
 
     @property
-    def inner(self) -> T_co:
+    def inner(self) -> T:
         return self._inner
 
     @property
@@ -40,11 +40,11 @@ class Monitorable:
     def monitor(self) -> Monitor:
         return self._monitor
 
-    def new_monitor(self, name: str, item: T_co) -> Monitored[T_co]:
+    def new_monitor(self, name: str, item: T) -> Monitored[T]:
         self.register_child(name, item)
         return Monitored(name, item)
 
-    def new_monitors(self, name: str, items: Iterable[T_co]) -> List[Monitored[T_co]]:
+    def new_monitors(self, name: str, items: Iterable[T]) -> List[Monitored[T]]:
         result = [Monitored(f"{name}[{index}]", item) for index, item in enumerate(items)]
         [self.register_child(item.name, item.inner) for item in result]
         return result
@@ -52,7 +52,7 @@ class Monitorable:
     def register_child(self, relation: str, child: "Monitorable"):
         self._monitor.register_child(relation, child._monitor)
 
-    def register_children(self, relation: str, children: Sequence[T_co]) -> None:
+    def register_children(self, relation: str, children: Sequence[T]) -> None:
         for index, child in enumerate(children):
             self.register_child(f"{relation}[{index}]", child)
 

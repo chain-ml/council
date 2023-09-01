@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import ChatHistory, AgentContext, ChatMessage, ChainContext
+from council.contexts import AgentContext, ChatMessage, ChainContext
 from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
 from council.mocks import MockMonitored

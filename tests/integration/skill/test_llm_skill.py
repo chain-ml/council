@@ -5,7 +5,7 @@ from typing import List
 import dotenv
 
 from council.agents import Agent
-from council.contexts import ChatHistory, AgentContext
+from council.contexts import AgentContext
 from council.llm import AzureLLM, LLMMessage
 from council.mocks import MockLLM
 from council.runners import Budget
