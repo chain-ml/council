@@ -4,12 +4,11 @@ from unittest import TestCase
 
 from council.agents import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChatMessage, SkillContext
+from council.contexts import AgentContext, ChatMessage, SkillContext, Budget
 from council.controllers import BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
 from council.mocks import MockSkill
-from council.runners import Budget
 
 
 class TestAgent(TestCase):
