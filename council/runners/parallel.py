@@ -12,7 +12,7 @@ class Parallel(RunnerBase):
 
     def __init__(self, *runners: RunnerBase):
         super().__init__()
-        self.runners = self.new_monitors("runners", runners)
+        self.runners = self.new_monitors("parallel", runners)
 
     def _run(
         self,

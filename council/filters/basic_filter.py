@@ -7,6 +7,7 @@ from council.runners import Budget
 
 class BasicFilter(FilterBase):
     def __init__(self, score_threshold: Optional[float] = None, top_k: Optional[int] = None):
+        super().__init__()
         self._score_threshold = score_threshold
         self._top_k = top_k
 

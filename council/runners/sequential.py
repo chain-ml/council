@@ -10,8 +10,7 @@ class Sequential(RunnerBase):
 
     def __init__(self, *runners: RunnerBase):
         super().__init__()
-        self.runners = runners
-        self.register_children("runners", runners)
+        self.runners = self.new_monitors("sequence", runners)
 
     def _run(
         self,
@@ -21,7 +20,8 @@ class Sequential(RunnerBase):
         for runner in self.runners:
             if context.should_stop():
                 return
-            runner.run(context, executor)
+
+            self.fork_run_merge(runner, context, executor)
 
     @staticmethod
     def from_list(*runners: RunnerBase) -> RunnerBase:

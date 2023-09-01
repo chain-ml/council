@@ -8,6 +8,7 @@ from council.contexts import (
     SkillContext,
     ChatMessage,
     Budget,
+    AgentContext,
 )
 from council.mocks import MockMonitored
 
@@ -62,15 +63,16 @@ class SkillTestMerge(SkillBase):
 
 class TestSkillRunners(unittest.TestCase):
     def setUp(self) -> None:
-        self.context = ChainContext.empty()
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        context = self.context.fork_for(MockMonitored(), budget)
-        try:
-            runner.run(context, self.executor)
-        finally:
-            self.context.merge([context])
+        print(f"\n{monitors.render_as_text(runner)}")
+        context = AgentContext.empty()
+        context.new_iteration()
+        with context.log_entry:
+            self.context = ChainContext.from_agent_context(context, MockMonitored("test"), "chain", budget)
+            with self.context:
+                runner.run(self.context, self.executor)
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -126,7 +128,6 @@ class TestSkillRunners(unittest.TestCase):
         self._execute(parallel, Budget(1))
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
-        print(f"\n{monitors.render_as_text(parallel)}")
 
     def test_parallel_many_sequences(self):
         instance = Sequential(

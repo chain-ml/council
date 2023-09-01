@@ -3,6 +3,7 @@ import time
 from typing import List, Any
 
 from council.llm import LLMBase, LLMMessage, LLMResult, LLMException, LLMCallException
+from council.monitors import Monitored
 
 
 class LLMFallback(LLMBase):
@@ -17,13 +18,13 @@ class LLMFallback(LLMBase):
 
     """
 
-    _llm: LLMBase
-    _fallback: LLMBase
+    _llm: Monitored[LLMBase]
+    _fallback: Monitored[LLMBase]
 
     def __init__(self, llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2):
         super().__init__()
-        self._llm = llm
-        self._fallback = fallback
+        self._llm = self.new_monitor("llm", llm)
+        self._fallback = self.new_monitor("fallback", fallback)
         self._retry_before_fallback = retry_before_fallback
 
     def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
@@ -31,7 +32,7 @@ class LLMFallback(LLMBase):
             return self._llm_call_with_retry(messages, **kwargs)
         except Exception as base_exception:
             try:
-                return self._fallback.post_chat_request(messages, **kwargs)
+                return self._fallback.inner._post_chat_request(messages, **kwargs)
             except Exception as e:
                 raise e from base_exception
 
@@ -39,7 +40,7 @@ class LLMFallback(LLMBase):
         retry_count = 0
         while retry_count == 0 or retry_count < self._retry_before_fallback:
             try:
-                return self._llm.post_chat_request(messages, **kwargs)
+                return self._llm.inner._post_chat_request(messages, **kwargs)
             except LLMCallException as e:
                 retry_count += 1
                 if self._is_retryable(e.code) and retry_count < self._retry_before_fallback:

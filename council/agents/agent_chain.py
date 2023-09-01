@@ -18,14 +18,13 @@ class AgentChain(Chain):
     def agent(self) -> Agent:
         return self._agent.inner
 
-    def execute(
+    def _execute(
         self,
         context: ChainContext,
         budget: Budget,
         executor: Optional[RunnerExecutor] = None,
     ) -> Any:
-        agent_context = AgentContext.from_chat_history(context.chat_history)
-        result = self.agent.execute(agent_context, budget)
+        result = self.agent.execute(AgentContext.from_chat_history(context.chat_history), budget)
         maybe_message = result.try_best_message
         if maybe_message.is_some():
             message = maybe_message.unwrap()

@@ -6,7 +6,7 @@ import logging
 from council.contexts import ChainContext
 from .errrors import RunnerTimeoutError, RunnerError
 from .runner_executor import RunnerExecutor
-from ..monitors import Monitorable
+from ..monitors import Monitorable, Monitored
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,13 @@ class RunnerBase(Monitorable, abc.ABC):
     Base runner class that handles common execution logic, including error management and timeout
     """
 
+    def fork_run_merge(self, runner: Monitored["RunnerBase"], context: ChainContext, executor: RunnerExecutor):
+        inner = context.fork_for(runner)
+        try:
+            runner.inner.run(inner, executor)
+        finally:
+            context.merge([inner])
+
     def run(
         self,
         context: ChainContext,
@@ -29,7 +36,8 @@ class RunnerBase(Monitorable, abc.ABC):
 
         logger.debug("start running %s", self.__class__.__name__)
         try:
-            self._run(context, executor)
+            with context:
+                self._run(context, executor)
         except futures.TimeoutError as e:
             logger.debug("timeout running %s", self.__class__.__name__)
             context.cancellation_token.cancel()

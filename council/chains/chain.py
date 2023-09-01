@@ -1,7 +1,7 @@
-from typing import List, Any, Optional
+from typing import List, Optional
 
 from council.contexts import ChainContext
-from council.monitors import Monitorable
+from council.monitors import Monitorable, Monitored
 from council.runners import RunnerBase, Sequential, RunnerExecutor
 from council.contexts import Budget
 
@@ -18,7 +18,7 @@ class Chain(Monitorable):
 
     name: str
     description: str
-    runner: RunnerBase
+    _runner: Monitored[RunnerBase]
 
     def __init__(self, name: str, description: str, runners: List[RunnerBase]):
         """
@@ -34,8 +34,7 @@ class Chain(Monitorable):
         """
         super().__init__()
         self.name = name
-        self.runner = Sequential.from_list(*runners)
-        self.register_child("runner", self.runner)
+        self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
         self.monitor.properties["name"] = name
         self.description = description
 
@@ -51,12 +50,16 @@ class Chain(Monitorable):
         """
         return self.description
 
-    def execute(
+    def execute(self, context: ChainContext, budget: Budget, executor: Optional[RunnerExecutor] = None) -> None:
+        with context:
+            self._execute(context, budget, executor)
+
+    def _execute(
         self,
         context: ChainContext,
         budget: Budget,
         executor: Optional[RunnerExecutor] = None,
-    ) -> Any:
+    ) -> None:
         """
         Executes the chain of skills based on the provided context, budget, and optional executor.
 
@@ -74,7 +77,8 @@ class Chain(Monitorable):
         executor = (
             RunnerExecutor(max_workers=10, thread_name_prefix=f"chain_{self.name}") if executor is None else executor
         )
-        self.runner.run(context, executor)
+
+        self._runner.inner.fork_run_merge(self._runner, context, executor)
 
     def __repr__(self):
         return f"Chain({self.name}, {self.description})"

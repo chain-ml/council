@@ -2,14 +2,18 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from council.contexts import AgentContext, ScoredChatMessage
+from council.monitors import Monitorable
 from council.runners import Budget
 
 
-class FilterBase(ABC):
+class FilterBase(Monitorable, ABC):
     """
     Abstract base class for an agent controller.
 
     """
+
+    def __init__(self):
+        super().__init__()
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """
@@ -25,7 +29,8 @@ class FilterBase(ABC):
         Raises:
             None
         """
-        return self._execute(context=context, budget=budget)
+        with context:
+            return self._execute(context=context, budget=budget)
 
     @abstractmethod
     def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:

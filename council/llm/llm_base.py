@@ -36,19 +36,12 @@ class LLMBase(Monitorable, abc.ABC):
         super().__init__()
         self._token_counter = token_counter
 
-    def monitored_post_chat_request(
-        self, log_entry: ExecutionLogEntry, messages: List[LLMMessage], **kwargs: Any
-    ) -> LLMResult:
-        result = self.post_chat_request(messages, **kwargs)
-
-        log_entry.log_consumptions(result.consumptions)
-        return result
-
-    def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def post_chat_request(self, log_entry: ExecutionLogEntry, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         """
         Sends a chat request to the language model.
 
         Parameters:
+            log_entry (ExecutionLogEntry): a log entry to track execution metrics
             messages (List[LLMMessage]): A list of LLMMessage objects representing the chat messages.
             **kwargs: Additional keyword arguments for the chat request.
 
@@ -65,7 +58,10 @@ class LLMBase(Monitorable, abc.ABC):
 
         logger.debug('message="starting execution of llm request"')
         try:
-            return self._post_chat_request(messages, **kwargs)
+            with log_entry:
+                result = self._post_chat_request(messages, **kwargs)
+                log_entry.log_consumptions(result.consumptions)
+                return result
         except Exception as e:
             logger.exception('message="failed execution of llm request"')
             raise e

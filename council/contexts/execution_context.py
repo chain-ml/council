@@ -239,18 +239,6 @@ class ChatHistory(MessageList):
         return history
 
 
-# AgentContext: {
-#     chatHistory: [ChatMessage],
-#     AgentIterationContext: [
-#         {
-#             chainContexts: Dict[str, ChainContext],
-#             evaluationContext: List[ScoredChatMessage]
-#         },
-#     ],
-#     CustomData: Dict[str, Any]
-# }
-
-
 class ExecutionContext:
     _executionLog: ExecutionLog
     _entry: ExecutionLogEntry
@@ -361,6 +349,16 @@ class ContextBase:
     @property
     def chatHistory(self) -> ChatHistory:
         return self.chat_history
+
+    def __enter__(self):
+        self.log_entry.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.log_entry.__exit__(exc_type, exc_val, exc_tb)
+
+    def new_log_entry(self, monitored: Monitored) -> ExecutionLogEntry:
+        return self._execution_context.new_for(monitored).entry
 
 
 class AgentContext(ContextBase):
@@ -510,7 +508,7 @@ class ChainContext(ContextBase, MessageCollection):
 
         context = AgentContext.from_chat_history(history)
         context.new_iteration()
-        return ChainContext.from_agent_context(context, MockMonitored(), "mock chain", InfiniteBudget())
+        return ChainContext.from_agent_context(context, MockMonitored("mock chain"), "mock chain", InfiniteBudget())
 
     @staticmethod
     def from_user_message(message: str) -> "ChainContext":

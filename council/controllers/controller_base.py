@@ -36,7 +36,7 @@ class ControllerBase(Monitorable, ABC):
         Raises:
             None
         """
-        with context.log_entry:
+        with context:
             return self._execute(context, budget)
 
     @abstractmethod

@@ -52,13 +52,14 @@ class LLMEvaluator(EvaluatorBase):
 
         return scored_messages
 
-    def _call_llm(self, context: AgentContext, query: ChatMessage, chain_results: list[ChatMessage], budget: Budget) -> str:
+    def _call_llm(
+        self, context: AgentContext, query: ChatMessage, chain_results: list[ChatMessage], budget: Budget
+    ) -> str:
         messages = self._build_llm_messages(query, chain_results)
         if len(messages) <= 0:
             return ""
 
-        with context.new_agent_context_for(self._monitored_llm).log_entry as log_entry:
-            result = self._llm.monitored_post_chat_request(log_entry=log_entry, messages=messages)
+        result = self._llm.post_chat_request(log_entry=context.new_log_entry(self._monitored_llm), messages=messages)
         for c in result.consumptions:
             budget.add_consumption(c, self.__class__.__name__)
         llm_response = result.first_choice

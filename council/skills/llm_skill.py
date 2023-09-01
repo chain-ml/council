@@ -70,8 +70,7 @@ class LLMSkill(SkillBase):
         """
 
         super().__init__(name=name)
-        self._llm = llm
-        self.register_child("llm", self._llm)
+        self._llm = self.new_monitor("llm", llm)
         self._context_messages = context_messages
         self._builder = PromptBuilder(system_prompt)
 
@@ -81,7 +80,7 @@ class LLMSkill(SkillBase):
         history_messages = self._context_messages(context)
         system_prompt = LLMMessage.system_message(self._builder.apply(context))
         messages = [system_prompt, *history_messages]
-        llm_response = self._llm.post_chat_request(messages=messages)
+        llm_response = self._llm.inner.post_chat_request(log_entry=context.new_log_entry(self._llm), messages=messages)
         if len(llm_response.choices) < 1:
             return self.build_error_message(message="no response")
 

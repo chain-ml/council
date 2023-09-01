@@ -1,8 +1,8 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from council.chains import Chain
-from council.contexts import AgentContext, InfiniteBudget, ChainContext
+from council.contexts import AgentContext, ChainContext
 from council.controllers import ControllerBase, BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.runners import Budget, new_runner_executor
@@ -25,7 +25,9 @@ class Agent(Monitorable):
     """
 
     _controller: Monitored[ControllerBase]
+    _chains: List[Monitored[Chain]]
     _evaluator: Monitored[EvaluatorBase]
+    _filter: Monitored[FilterBase]
 
     def __init__(self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase) -> None:
         """
@@ -39,9 +41,9 @@ class Agent(Monitorable):
         super().__init__()
 
         self._controller = self.new_monitor("controller", controller)
-        self.register_children("chains", self.controller.chains)
+        self._chains = self.new_monitors("chains", self.controller.chains)
         self._evaluator = self.new_monitor("evaluator", evaluator)
-        self._filter = filter
+        self._filter = self.new_monitor("filter", filter)
 
     @property
     def controller(self) -> ControllerBase:
@@ -50,6 +52,10 @@ class Agent(Monitorable):
     @property
     def evaluator(self) -> EvaluatorBase:
         return self._evaluator.inner
+
+    @property
+    def filter(self) -> FilterBase:
+        return self._filter.inner
 
     def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         """
@@ -65,6 +71,10 @@ class Agent(Monitorable):
         Raises:
             None
         """
+        with context:
+            return self._execute(context, budget)
+
+    def _execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
         executor = new_runner_executor("agent")
         budget = budget or Budget.default()
         try:
@@ -83,7 +93,7 @@ class Agent(Monitorable):
                 result = self.evaluator.execute(context.new_agent_context_for(self._evaluator), budget)
                 context.set_evaluation(result)
 
-                result = self._filter.execute(context=context, budget=budget)
+                result = self.filter.execute(context=context.new_agent_context_for(self._filter), budget=budget)
                 logger.debug("controller selected %d responses", len(result))
                 if len(result) > 0:
                     return AgentResult(messages=result)

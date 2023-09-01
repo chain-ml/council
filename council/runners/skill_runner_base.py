@@ -43,9 +43,9 @@ class SkillRunnerBase(RunnerBase):
         Run the skill in the current thread
         """
         try:
-            skill_context = SkillContext.from_chain_context(context, iteration_context)
-            message = self.execute_skill(skill_context, context.budget.remaining())
-            context.append(message)
+            with SkillContext.from_chain_context(context, iteration_context) as skill_context:
+                message = self.execute_skill(skill_context, context.budget.remaining())
+                context.append(message)
         except Exception as e:
             logger.exception("unexpected error during execution of skill %s", self._name)
             context.append(self.from_exception(e))
