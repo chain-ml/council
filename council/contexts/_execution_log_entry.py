@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List, Sequence
 
-from .messages import ChatMessage
-from .budget import Consumption
+from ._budget import Consumption
+from ._chat_message import ChatMessage
 
 
 class ExecutionLogEntry:
@@ -35,4 +35,8 @@ class ExecutionLogEntry:
         self._error = exc_val
 
     def __repr__(self):
-        return f"ExecutionLogEntry(source={self._source}, start={self._start}, duration={self._duration}, error={self._error})"
+        return (
+            "ExecutionLogEntry("
+            f"source={self._source}, start={self._start}, duration={self._duration}, error={self._error}"
+            ")"
+        )
