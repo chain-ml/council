@@ -6,11 +6,10 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredChatMessage, ChatMessage, LLMContext
+from council.contexts import AgentContext, Budget, ScoredChatMessage, ChatMessage, LLMContext
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.monitors import Monitored
-from council.runners import Budget
 from council.utils import Option
 
 logger = logging.getLogger(__name__)

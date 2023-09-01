@@ -7,8 +7,7 @@ from . import LLMConfigurationBase
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from .llm_exception import LLMCallException
 from .llm_base import LLMBase, LLMResult
-from ..contexts import LLMContext
-from ..runners import Consumption
+from council.contexts import LLMContext, Consumption
 
 logger = logging.getLogger(__name__)
 

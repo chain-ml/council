@@ -2,9 +2,8 @@ import abc
 import logging
 from typing import Any, Dict
 
-from council.contexts import ChatMessage
+from council.contexts import Budget, ChatMessage
 from .scorer_exception import ScorerException
-from ..runners import Budget
 
 logger = logging.getLogger(__name__)
 

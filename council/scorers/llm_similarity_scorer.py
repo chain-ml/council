@@ -1,9 +1,8 @@
 from typing import List, Dict, Any
 
 from .scorer_base import ScorerBase
-from council.contexts import ChatMessage, LLMContext
+from council.contexts import Budget, ChatMessage, LLMContext
 from council.llm import LLMBase, LLMMessage
-from ..runners import Budget
 
 
 class LLMSimilarityScorer(ScorerBase):

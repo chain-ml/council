@@ -1,7 +1,6 @@
 import unittest
 
-from council.contexts import ChatMessage
-from council.runners.budget import InfiniteBudget
+from council.contexts import ChatMessage, InfiniteBudget
 from council.scorers import LLMSimilarityScorer, ScorerException
 from council.mocks import MockLLM
 

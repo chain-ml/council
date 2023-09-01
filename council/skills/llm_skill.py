@@ -1,11 +1,9 @@
 import logging
 from typing import List, Protocol
 
-from council.contexts import SkillContext, ChatMessage, LLMContext
+from council.contexts import Budget, Consumption, SkillContext, ChatMessage, LLMContext
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
-from council.runners import Budget
-from council.runners.budget import Consumption
 from council.skills import SkillBase
 
 

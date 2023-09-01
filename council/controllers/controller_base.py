@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Sequence
 
 from council.chains import Chain
-from council.contexts import AgentContext
-from council.runners import Budget
+from council.contexts import AgentContext, Budget
 from .execution_unit import ExecutionUnit
 from council.monitors import Monitorable
 

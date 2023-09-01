@@ -9,6 +9,3 @@ from .parallel import Parallel
 from .if_runner import If
 from .loop_runner_base import LoopRunnerBase
 from .parallel_for import ParallelFor
-
-# deprecated
-from council.contexts import Budget, Consumption, InfiniteBudget

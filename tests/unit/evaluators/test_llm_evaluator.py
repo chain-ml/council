@@ -4,12 +4,12 @@ from typing import List
 from council.evaluators import LLMEvaluator
 from council.contexts import (
     AgentContext,
+    Budget,
     ScoredChatMessage,
     ChatMessage,
     ChainContext,
 )
 from council.mocks import MockLLM, MockMonitored
-from council.runners import Budget
 
 
 class TestLLMEvaluator(unittest.TestCase):

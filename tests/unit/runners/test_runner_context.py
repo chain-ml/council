@@ -1,9 +1,8 @@
 import time
 import unittest
 
-from council.contexts import ChainContext, ChatMessage, AgentContext, InfiniteBudget
+from council.contexts import Budget, ChainContext, ChatMessage, AgentContext, InfiniteBudget
 from council.mocks import MockMonitored
-from council.runners import Budget
 
 
 class RunnerContextTests(unittest.TestCase):

@@ -6,10 +6,9 @@ import dotenv
 
 from council.agents import Agent
 from council.chains import Chain
-from council.contexts import ChainContext
+from council.contexts import ChainContext, Budget, Consumption
 from council.llm import AzureLLM
-from council.runners import Budget, ParallelFor
-from council.runners.budget import Consumption
+from council.runners import ParallelFor
 from council.skills import LLMSkill
 
 

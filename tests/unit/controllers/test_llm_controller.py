@@ -2,9 +2,8 @@ import unittest
 
 from council.chains import Chain
 from council.controllers import LLMController
-from council.contexts import AgentContext
+from council.contexts import AgentContext, Budget
 from council.mocks import MockLLM
-from council.runners import Budget
 
 
 class LLMControllerTest(unittest.TestCase):

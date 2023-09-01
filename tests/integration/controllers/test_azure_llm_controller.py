@@ -4,10 +4,9 @@ from unittest import TestCase
 import dotenv
 
 from council.chains import Chain
-from council.contexts import AgentContext
+from council.contexts import AgentContext, Budget
 from council.controllers import LLMController
 from council.llm import AzureLLM
-from council.runners import Budget
 
 
 class TestAzureLlmController(TestCase):

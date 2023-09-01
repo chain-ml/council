@@ -4,11 +4,11 @@ from typing import List, Dict, Any, Sequence, Optional
 import progressbar  # type: ignore
 
 from council.agents import Agent
-from council.runners import Budget
-from council.runners.budget import InfiniteBudget
 from council.scorers import ScorerBase, ScorerException
 from council.contexts import (
     AgentContext,
+    Budget,
+    InfiniteBudget,
 )
 
 

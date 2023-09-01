@@ -2,10 +2,10 @@ from typing import List
 
 from council.contexts import (
     AgentContext,
+    Budget,
     ScoredChatMessage,
     ChatMessage,
 )
-from council.runners.budget import Budget
 from .evaluator_base import EvaluatorBase
 
 

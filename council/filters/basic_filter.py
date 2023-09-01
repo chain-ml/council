@@ -1,8 +1,7 @@
 from typing import List, Optional
 
-from council.contexts import AgentContext, ScoredChatMessage
+from council.contexts import AgentContext, Budget, ScoredChatMessage
 from council.filters import FilterBase
-from council.runners import Budget
 
 
 class BasicFilter(FilterBase):

@@ -2,7 +2,7 @@ import os
 import time
 import unittest
 
-from council.runners import Budget, Consumption
+from council.contexts import Budget, Consumption
 
 
 class TestAgentResult(unittest.TestCase):

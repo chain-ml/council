@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from council.contexts import AgentContext, ScoredChatMessage
+from council.contexts import AgentContext, Budget, ScoredChatMessage
 from council.monitors import Monitorable
-from council.runners import Budget
 
 
 class FilterBase(Monitorable, ABC):
