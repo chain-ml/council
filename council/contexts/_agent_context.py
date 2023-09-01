@@ -26,8 +26,8 @@ class AgentContext(ContextBase):
     def from_user_message(message: str) -> "AgentContext":
         return AgentContext.from_chat_history(ChatHistory.from_user_message(message))
 
-    def new_agent_context_for(self, monitored: Monitored, method: str = "") -> "AgentContext":
-        return AgentContext(self._store, self._execution_context.new_for(monitored, method))
+    def new_agent_context_for(self, monitored: Monitored) -> "AgentContext":
+        return AgentContext(self._store, self._execution_context.new_for(monitored))
 
     def new_iteration(self):
         self._store.new_iteration()
