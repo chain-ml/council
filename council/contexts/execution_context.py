@@ -8,10 +8,12 @@ from typing_extensions import TypeGuard
 from more_itertools import first
 
 from .budget import Budget
+from ._execution_log import ExecutionLog
+from ._execution_log_entry import ExecutionLogEntry
 from .messages import ChatMessage, ScoredChatMessage, ChatMessageKind
 from .cancellation_token import CancellationToken
 from council.utils import Option
-from ..monitors import ExecutionLog, Monitored, ExecutionLogEntry
+from council.monitors import Monitored
 
 logger = logging.getLogger(__name__)
 

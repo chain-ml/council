@@ -57,49 +57,6 @@ class Monitorable:
             self.register_child(f"{relation}[{index}]", child)
 
 
-class ExecutionLogEntry:
-    def __init__(self, source: str):
-        self._source = source
-        self._start = datetime.utcnow()
-        self._duration = 0
-        self._error = None
-        self._consumptions: List[Any] = []
-        self._messages: List[Any] = []
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    def log_consumption(self, consumption: Any):
-        self._consumptions.append(consumption)
-
-    def log_consumptions(self, consumptions: Sequence[Any]):
-        [self.log_consumption(item) for item in consumptions]
-
-    def log_message(self, message: Any):
-        self._messages.append(message)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._duration = (datetime.utcnow() - self._start).total_seconds()
-        self._error = exc_val
-
-    def __repr__(self):
-        return f"ExecutionLogEntry(source={self._source}, start={self._start}, duration={self._duration}, error={self._error})"
-
-
-class ExecutionLog:
-    def __init__(self):
-        self._entries = []
-
-    def new_entry(self, name: str) -> ExecutionLogEntry:
-        result = ExecutionLogEntry(name)
-        self._entries.append(result)
-        return result
-
-
 def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_step: int = 2) -> List[str]:
     padding = "".join([" " * indent])
     properties = ", ".join([f"{name}: {value}" for name, value in monitor.properties.items()])
