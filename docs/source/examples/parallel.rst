@@ -15,4 +15,4 @@ Here is a simple example showing how to instantiate a chain with skills running 
    from council.runners import Parallel
    from council.mocks import MockSkill
 
-   chain = Chain(name="name", description="parallel", runners=[Parallel(MockSkill, MockSkill)])
+   chain = Chain(name="name", description="parallel", runners=[Parallel(MockSkill(), MockSkill())])

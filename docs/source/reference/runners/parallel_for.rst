@@ -12,8 +12,8 @@ The example below demonstrate how to use the parallel for in a chain.
 .. testcode::
 
     from council.chains import Chain
-    from council.contexts import ChainContext
-    from council.runners import Budget, ParallelFor
+    from council.contexts import Budget, ChainContext
+    from council.runners import ParallelFor
     from council.mocks import MockSkill
 
     def generator(context: ChainContext, budget: Budget):
@@ -50,7 +50,6 @@ This example builds on the previous one and shows how to consume the iteration i
 
     chain = Chain(name="name", description="parallel for", runners=[ParallelFor(generator, MySkill(), parallelism=5)])
     context = ChainContext.empty()
-    context.new_iteration()
     chain.execute(context, Budget(1))
 
 The output would looks like.
