@@ -11,4 +11,6 @@ from ._chat_message import ChatMessage, ChatMessageKind, ScoredChatMessage
 from ._execution_log import ExecutionLog
 from ._execution_log_entry import ExecutionLogEntry
 from ._llm_context import LLMContext
+from ._message_collection import MessageCollection
+from ._message_list import MessageList
 from ._skill_context import IterationContext, SkillContext

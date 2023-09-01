@@ -30,8 +30,8 @@ This example builds on the previous one and shows how to consume the iteration i
 .. testcode::
 
     from council.chains import Chain
-    from council.contexts import ChatMessage, ChainContext, SkillContext
-    from council.runners import Budget, ParallelFor
+    from council.contexts import Budget, ChatMessage, ChainContext, SkillContext
+    from council.runners import ParallelFor
     from council.skills import SkillBase
 
     def generator(context: ChainContext, budget: Budget):

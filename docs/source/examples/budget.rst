@@ -35,7 +35,7 @@ The example below demonstrates how to use the budget to limit the amount of reso
 
 .. testcode::
 
-    from council.runners import Budget, Consumption
+    from council.contexts import Budget, Consumption
 
     # Limit the agent's execution time
     maximum_time_execution = 100
@@ -52,6 +52,6 @@ The example below demonstrates how to use the budget to limit the amount of reso
 Classes
 =======
 
-.. autoclass:: council.runners.Budget
-.. autoclass:: council.runners.Consumption
-.. autoclass:: council.runners.ConsumptionEvent
+.. autoclass:: council.contexts.Budget
+.. autoclass:: council.contexts.Consumption
+.. autoclass:: council.contexts.ConsumptionEvent
