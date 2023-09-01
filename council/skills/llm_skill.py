@@ -1,7 +1,7 @@
 import logging
 from typing import List, Protocol
 
-from council.contexts import SkillContext, ChatMessage
+from council.contexts import SkillContext, ChatMessage, LLMContext
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.runners import Budget
@@ -74,13 +74,17 @@ class LLMSkill(SkillBase):
         self._context_messages = context_messages
         self._builder = PromptBuilder(system_prompt)
 
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm.inner
+
     def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
         """Execute `LLMSkill`."""
 
         history_messages = self._context_messages(context)
         system_prompt = LLMMessage.system_message(self._builder.apply(context))
         messages = [system_prompt, *history_messages]
-        llm_response = self._llm.inner.post_chat_request(log_entry=context.new_log_entry(self._llm), messages=messages)
+        llm_response = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages=messages)
         if len(llm_response.choices) < 1:
             return self.build_error_message(message="no response")
 

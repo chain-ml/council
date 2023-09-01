@@ -6,7 +6,7 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredChatMessage, ChatMessage
+from council.contexts import AgentContext, ScoredChatMessage, ChatMessage, LLMContext
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
 from council.monitors import Monitored
@@ -26,8 +26,11 @@ class LLMEvaluator(EvaluatorBase):
         :param llm: model to use for the evaluation.
         """
         super().__init__()
-        self._llm = llm
-        self._monitored_llm = Monitored("llm", self._llm)
+        self._llm = Monitored("llm", llm)
+
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm.inner
 
     def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         query = context.chatHistory.try_last_user_message.unwrap()
@@ -59,7 +62,7 @@ class LLMEvaluator(EvaluatorBase):
         if len(messages) <= 0:
             return ""
 
-        result = self._llm.post_chat_request(log_entry=context.new_log_entry(self._monitored_llm), messages=messages)
+        result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages=messages)
         for c in result.consumptions:
             budget.add_consumption(c, self.__class__.__name__)
         llm_response = result.first_choice

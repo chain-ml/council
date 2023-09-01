@@ -1,7 +1,7 @@
 import logging
 from typing import List, Tuple, Optional
 
-from council.contexts import AgentContext
+from council.contexts import AgentContext, LLMContext
 from council.chains import Chain
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
@@ -19,8 +19,7 @@ class LLMController(ControllerBase):
     A controller that uses an LLM to decide the execution plan
     """
 
-    _llm: LLMBase
-    _monitored_llm: Monitored[LLMBase]
+    _llm: Monitored[LLMBase]
 
     def __init__(self, chains: List[Chain], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None):
         """
@@ -32,11 +31,14 @@ class LLMController(ControllerBase):
             top_k (int): maximum number of execution plan returned
         """
         super().__init__(chains=chains)
-        self._llm = llm
-        self._monitored_llm = self.new_monitor("llm", self._llm)
+        self._llm = self.new_monitor("llm", llm)
         self._response_threshold = response_threshold
         self._top_k = top_k
         self._llm_system_message = self._build_system_message()
+
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm.inner
 
     def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
         response = self._call_llm(context, budget)
@@ -61,7 +63,7 @@ class LLMController(ControllerBase):
 
     def _call_llm(self, context: AgentContext, budget: Budget) -> str:
         messages = self._build_llm_messages(context)
-        llm_result = self._llm.post_chat_request(context.new_log_entry(self._monitored_llm), messages)
+        llm_result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages)
         for c in llm_result.consumptions:
             budget.add_consumption(c, self.__class__.__name__)
         response = llm_result.first_choice

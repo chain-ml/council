@@ -3,7 +3,8 @@ import logging
 
 from typing import List, Any, Optional, Sequence
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
-from ..monitors import Monitorable, ExecutionLogEntry
+from ..contexts import LLMContext
+from ..monitors import Monitorable
 from council.runners.budget import Consumption
 
 logger = logging.getLogger(__name__)
@@ -36,12 +37,12 @@ class LLMBase(Monitorable, abc.ABC):
         super().__init__()
         self._token_counter = token_counter
 
-    def post_chat_request(self, log_entry: ExecutionLogEntry, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         """
         Sends a chat request to the language model.
 
         Parameters:
-            log_entry (ExecutionLogEntry): a log entry to track execution metrics
+            context (LLMContext): a context to track execution metrics
             messages (List[LLMMessage]): A list of LLMMessage objects representing the chat messages.
             **kwargs: Additional keyword arguments for the chat request.
 
@@ -58,9 +59,9 @@ class LLMBase(Monitorable, abc.ABC):
 
         logger.debug('message="starting execution of llm request"')
         try:
-            with log_entry:
-                result = self._post_chat_request(messages, **kwargs)
-                log_entry.log_consumptions(result.consumptions)
+            with context:
+                result = self._post_chat_request(context, messages, **kwargs)
+                context.log_entry.log_consumptions(result.consumptions)
                 return result
         except Exception as e:
             logger.exception('message="failed execution of llm request"')
@@ -69,5 +70,5 @@ class LLMBase(Monitorable, abc.ABC):
             logger.debug('message="done execution of llm request"')
 
     @abc.abstractmethod
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         pass

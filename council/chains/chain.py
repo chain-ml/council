@@ -38,6 +38,10 @@ class Chain(Monitorable):
         self.monitor.properties["name"] = name
         self.description = description
 
+    @property
+    def runner(self) -> RunnerBase:
+        return self._runner.inner
+
     def get_description(self) -> str:
         """
         Retrieves the description of the chain.

@@ -3,7 +3,7 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage, Budget
+from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage, Budget, LLMContext
 from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult, LLMException
 from council.monitors import Monitored, Monitorable
 from council.scorers import ScorerBase
@@ -53,7 +53,7 @@ class MockLLM(LLMBase):
         super().__init__(token_counter=MockTokenCounter(token_limit))
         self._action = action
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         if self._action is not None:
             return LLMResult(choices=self._action(messages))
         return LLMResult(choices=[f"{self.__class__.__name__}"])
@@ -77,7 +77,7 @@ class MockErrorLLM(LLMBase):
         super().__init__()
         self.exception = exception
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         raise self.exception
 
 

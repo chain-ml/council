@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from .scorer_base import ScorerBase
-from council.contexts import ChatMessage
+from council.contexts import ChatMessage, LLMContext
 from council.llm import LLMBase, LLMMessage
 from ..runners import Budget
 
@@ -30,7 +30,7 @@ class LLMSimilarityScorer(ScorerBase):
 
     def _score(self, message: ChatMessage, budget: Budget) -> float:
         messages = self._build_messages(message)
-        llm_result = self._llm._post_chat_request(messages)
+        llm_result = self._llm.post_chat_request(LLMContext.new_fake(), messages)
         for c in llm_result.consumptions:
             budget.add_consumption(c, self.__class__.__name__)
 
