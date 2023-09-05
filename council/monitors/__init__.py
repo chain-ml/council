@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import List, Dict, Sequence, TypeVar, Any, Generic, Iterable
 
@@ -70,5 +71,18 @@ def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_
     return [current] + result
 
 
+def _render_as_json(monitor: Monitor) -> Dict[str, Any]:
+    result = {"properties": monitor.properties, "type": monitor.type}
+    children = {}
+    for name, child in monitor.children.items():
+        children[name] = _render_as_json(child)
+    result["children"] = children
+    return result
+
+
 def render_as_text(item: Monitorable) -> str:
     return "\n".join(_render_as_text(item.monitor))
+
+
+def render_as_json(item: Monitorable) -> str:
+    return json.dumps(_render_as_json(item.monitor), indent=2)
