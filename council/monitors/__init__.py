@@ -94,12 +94,10 @@ def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_
 
 
 def _render_as_json(monitor: Monitor) -> Dict[str, Any]:
-    result = {"properties": monitor.properties, "type": monitor.type, "baseType": monitor.base_type}
     children = []
     for name, child in monitor.children.items():
         children.append({"name": name, "value": _render_as_json(child)})
-    result["children"] = children
-    return result
+    return {"properties": monitor.properties, "type": monitor.type, "baseType": monitor.base_type, "children": children}
 
 
 def render_as_text(item: Monitorable) -> str:
