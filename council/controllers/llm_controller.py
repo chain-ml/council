@@ -65,8 +65,6 @@ class LLMController(ControllerBase):
     def _call_llm(self, context: AgentContext) -> str:
         messages = self._build_llm_messages(context)
         llm_result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages)
-        for c in llm_result.consumptions:
-            context.budget.add_consumption(c, self.__class__.__name__)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
         return response

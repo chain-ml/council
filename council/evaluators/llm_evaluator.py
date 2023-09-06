@@ -60,8 +60,6 @@ class LLMEvaluator(EvaluatorBase):
             return ""
 
         result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages=messages)
-        for c in result.consumptions:
-            context.budget.add_consumption(c, self.__class__.__name__)
         llm_response = result.first_choice
         logger.debug(f"llm response: {llm_response}")
         return llm_response

@@ -87,7 +87,5 @@ class LLMSkill(SkillBase):
             return self.build_error_message(message="no response")
 
         context.budget.add_consumption(consumption=Consumption(1, "call", "LLMSkill"), source=self.name)
-        for c in llm_response.consumptions:
-            context.budget.add_consumption(consumption=c, source=self.name)
 
         return self.build_success_message(message=llm_response.first_choice, data=llm_response)
