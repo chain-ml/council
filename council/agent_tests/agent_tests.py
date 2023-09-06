@@ -8,7 +8,7 @@ from council.scorers import ScorerBase, ScorerException
 from council.contexts import (
     AgentContext,
     Budget,
-    InfiniteBudget,
+    ScorerContext,
 )
 
 
@@ -148,7 +148,7 @@ class AgentTestCase:
             scores = []
             message = agent_result.try_best_message.unwrap()
             for scorer in self._scorers:
-                scores.append(scorer.score(message, budget=InfiniteBudget()))
+                scores.append(scorer.score(message, ScorerContext.new_empty()))
             case_result.set_success(message.message, duration, scores)
             return case_result
         except ScorerException:

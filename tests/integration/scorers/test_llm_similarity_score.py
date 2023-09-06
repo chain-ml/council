@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import ChatMessage, InfiniteBudget
+from council.contexts import ChatMessage, InfiniteBudget, ScorerContext
 from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 
@@ -19,7 +19,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             """
         instance = LLMSimilarityScorer(self.llm, expected)
 
-        score = instance.score(ChatMessage.agent(expected), InfiniteBudget())
+        score = instance.score(ChatMessage.agent(expected), ScorerContext.new_empty())
         self.assertAlmostEqual(1.0, score, delta=0.1)
 
     def test_similarity_wrong_assistant(self):
@@ -32,7 +32,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             I am an assistant expert in writing Python code.
             How can I help you today?
         """
-        score = instance.score(ChatMessage.agent(actual), InfiniteBudget())
+        score = instance.score(ChatMessage.agent(actual), ScorerContext.new_empty())
         self.assertAlmostEqual(0.5, score, delta=0.1)
 
     def test_similarity_support_agent(self):
@@ -45,7 +45,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             Hi, I'm here to assist you in your support case.
             How can I help you today?
         """
-        score = instance.score(ChatMessage.agent(actual), InfiniteBudget())
+        score = instance.score(ChatMessage.agent(actual), ScorerContext.new_empty())
         self.assertAlmostEqual(0.1, score, delta=0.1)
 
     def test_similarity_unrelated(self):
@@ -55,5 +55,5 @@ class TestLLMSimilarityScorer(unittest.TestCase):
         """
         instance = LLMSimilarityScorer(self.llm, expected)
 
-        score = instance.score(ChatMessage.agent("the capital of France is Paris"), InfiniteBudget())
+        score = instance.score(ChatMessage.agent("the capital of France is Paris"), ScorerContext.new_empty())
         self.assertAlmostEqual(0.0, score, delta=0.1)

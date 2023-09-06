@@ -14,3 +14,4 @@ from ._llm_context import LLMContext
 from ._message_collection import MessageCollection
 from ._message_list import MessageList
 from ._skill_context import IterationContext, SkillContext
+from ._scorer_context import ScorerContext

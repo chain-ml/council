@@ -3,7 +3,15 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage, Budget, LLMContext
+from council.contexts import (
+    AgentContext,
+    ScoredChatMessage,
+    ScorerContext,
+    SkillContext,
+    ChatMessage,
+    Budget,
+    LLMContext,
+)
 from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult, LLMException
 from council.monitors import Monitored, Monitorable
 from council.scorers import ScorerBase
@@ -83,9 +91,10 @@ class MockErrorLLM(LLMBase):
 
 class MockErrorSimilarityScorer(ScorerBase):
     def __init__(self, exception: Exception = Exception()):
+        super().__init__()
         self.exception = exception
 
-    def _score(self, message: ChatMessage, budget: Budget) -> float:
+    def _score(self, message: ChatMessage, context: ScorerContext) -> float:
         raise self.exception
 
 

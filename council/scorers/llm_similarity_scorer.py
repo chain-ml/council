@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from .scorer_base import ScorerBase
-from council.contexts import Budget, ChatMessage, LLMContext
+from council.contexts import ChatMessage, LLMContext, ScorerContext
 from council.llm import LLMBase, LLMMessage
 
 
@@ -18,7 +18,8 @@ class LLMSimilarityScorer(ScorerBase):
             llm (LLMBase): the LLM to be used
             expected (str): the expected text message
         """
-        self._llm = llm
+        super().__init__()
+        self._llm = self.new_monitor("llm", llm)
         self._expected = expected
         self._system_message = self._build_system_prompt()
 
@@ -27,11 +28,9 @@ class LLMSimilarityScorer(ScorerBase):
         result["expected"] = self._expected
         return result
 
-    def _score(self, message: ChatMessage, budget: Budget) -> float:
+    def _score(self, message: ChatMessage, context: ScorerContext) -> float:
         messages = self._build_messages(message)
-        llm_result = self._llm.post_chat_request(LLMContext.new_fake(), messages)
-        for c in llm_result.consumptions:
-            budget.add_consumption(c)
+        llm_result = self._llm.inner.post_chat_request(LLMContext.from_context(context, self._llm), messages)
 
         if len(llm_result.choices) < 1:
             return self._parse_line("")
