@@ -17,13 +17,13 @@ class ScorerBase(Monitorable, abc.ABC):
     def __init__(self):
         super().__init__("scorer")
 
-    def score(self, message: ChatMessage, context: ScorerContext) -> float:
+    def score(self, context: ScorerContext, message: ChatMessage) -> float:
         """
         Score the given message
 
         Parameters:
-            message (ChatMessage): the message to be scored
             context (ScorerContext): the context for scoring
+            message (ChatMessage): the message to be scored
 
         Returns:
             similarity score. The greater the value to higher the similarity
@@ -32,13 +32,13 @@ class ScorerBase(Monitorable, abc.ABC):
             ScorerException: an unexpected error occurs
         """
         try:
-            return self._score(message, context)
+            return self._score(context, message)
         except Exception:
             logging.exception('message="execution failed"')
             raise ScorerException
 
     @abc.abstractmethod
-    def _score(self, message: ChatMessage, context: ScorerContext) -> float:
+    def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         """
         To be implemented with in derived classes with actual scoring logic
         """

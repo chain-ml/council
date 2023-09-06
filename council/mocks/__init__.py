@@ -94,7 +94,7 @@ class MockErrorSimilarityScorer(ScorerBase):
         super().__init__()
         self.exception = exception
 
-    def _score(self, message: ChatMessage, context: ScorerContext) -> float:
+    def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         raise self.exception
 
 

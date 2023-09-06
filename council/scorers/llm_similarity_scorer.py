@@ -28,7 +28,7 @@ class LLMSimilarityScorer(ScorerBase):
         result["expected"] = self._expected
         return result
 
-    def _score(self, message: ChatMessage, context: ScorerContext) -> float:
+    def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         messages = self._build_messages(message)
         llm_result = self._llm.inner.post_chat_request(LLMContext.from_context(context, self._llm), messages)
 
