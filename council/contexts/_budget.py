@@ -161,15 +161,6 @@ class Budget:
     def remaining_duration(self) -> float:
         return self._deadline - time.monotonic()
 
-    def remaining(self) -> Budget:
-        """
-        Create a new instance with the remaining budget
-
-        Returns:
-            a new instance with the remaining budget
-        """
-        return Budget(self._deadline - time.monotonic(), limits=self._remaining, consumptions=self._consumptions)
-
     def is_expired(self) -> bool:
         """
         Check if the budget is expired

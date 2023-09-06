@@ -158,12 +158,12 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["third"])
 
     def test_if_runner_true(self):
-        instance = Sequential(If(lambda a, b: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
         self.assertSuccessMessages(["maybe", "always"])
 
     def test_if_runner_true_with_error(self):
-        instance = Sequential(If(lambda a, b: True, SkillTest("maybe", -0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: True, SkillTest("maybe", -0.1)), SkillTest("always", 0.2))
         with self.assertRaises(RunnerSkillError) as cm:
             self._execute(instance, Budget(1))
 
@@ -171,21 +171,21 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages([])
 
     def test_if_runner_predicate_throw(self):
-        def predicate_throw(a, b):
+        def predicate_throw(a):
             raise Exception("predicate")
 
-        instance = Sequential(If(lambda a, b: predicate_throw(a, b), SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: predicate_throw(a), SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         with self.assertRaises(RunnerPredicateError):
             self._execute(instance, Budget(1))
         self.assertSuccessMessages([])
 
     def test_if_runner_false(self):
-        instance = Sequential(If(lambda a, b: False, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: False, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
         self.assertSuccessMessages(["always"])
 
     def test_sequence_if_predicate_with_context_runner(self):
-        def predicate(chain_context: ChainContext, budget: Budget):
+        def predicate(chain_context: ChainContext):
             return chain_context.current.try_last_message.unwrap().message == "first"
 
         instance = Sequential(SkillTest("first", 0.1), If(predicate, SkillTest("maybe", 0.2)), SkillTest("always", 0.2))
@@ -195,7 +195,7 @@ class TestSkillRunners(unittest.TestCase):
     def test_parallel_for(self):
         count = 100
 
-        def generator(chain_context: ChainContext, budget: Budget) -> Any:
+        def generator(chain_context: ChainContext) -> Any:
             for i in range(count):
                 yield i
 
@@ -206,7 +206,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertEqual([i for i in range(count)], data)
 
     def test_parallel_for_last_throw(self):
-        def generator(chain_context: ChainContext, budget: Budget):
+        def generator(chain_context: ChainContext):
             for _ in [1, 2, 3, 4]:
                 yield 0.01
             yield -0.01
@@ -222,7 +222,7 @@ class TestSkillRunners(unittest.TestCase):
         class MyGeneratorError(Exception):
             pass
 
-        def generator(chain_context: ChainContext, budget: Budget):
+        def generator(chain_context: ChainContext):
             yield 1
             raise MyGeneratorError("my error")
 

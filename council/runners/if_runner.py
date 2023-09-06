@@ -22,7 +22,7 @@ class If(RunnerBase):
         executor: RunnerExecutor,
     ) -> None:
         try:
-            result = self.predicate(context, context.budget.remaining())
+            result = self.predicate(context)
         except Exception as e:
             context.append(ChatMessage.skill("IfRunner", f"predicate raised exception: {e}", is_error=True))
             raise RunnerPredicateError from e

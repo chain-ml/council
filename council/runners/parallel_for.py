@@ -4,7 +4,7 @@ from typing import Iterable
 
 from more_itertools import batched
 
-from council.contexts import IterationContext, ChainContext, Budget
+from council.contexts import IterationContext, ChainContext
 from council.utils import Option
 
 from .errrors import RunnerGeneratorError
@@ -50,7 +50,7 @@ class ParallelFor(LoopRunnerBase):
         inner_contexts = []
         all_fs = []
         try:
-            for batch in batched(self._generate(context, context.budget.remaining()), self._parallelism):
+            for batch in batched(self._generate(context), self._parallelism):
                 inner = [context.fork_for(self._skill) for _ in batch]
                 inner_contexts.extend(inner)
                 fs = [executor.submit(self._run_skill, inner, iteration) for (inner, iteration) in zip(inner, batch)]
@@ -69,9 +69,9 @@ class ParallelFor(LoopRunnerBase):
         finally:
             logger.debug(f'message="end iteration" index="{index}"')
 
-    def _generate(self, context: ChainContext, budget: Budget) -> Iterable[IterationContext]:
+    def _generate(self, context: ChainContext) -> Iterable[IterationContext]:
         try:
-            for index, item in enumerate(self._generator(context, budget.remaining())):
+            for index, item in enumerate(self._generator(context)):
                 yield IterationContext(index, item)
         except Exception as e:
             raise RunnerGeneratorError from e

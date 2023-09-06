@@ -93,7 +93,7 @@ class ChainContext(ContextBase, MessageCollection):
             self._store,
             self._execution_context.new_for(monitored),
             self._name,
-            budget or self._budget.remaining(),
+            budget or self._budget,
             more_itertools.flatten([self._previous_messages.messages, self._current_messages.messages]),
         )
 
