@@ -11,7 +11,7 @@ class Parallel(RunnerBase):
     """
 
     def __init__(self, *runners: RunnerBase):
-        super().__init__()
+        super().__init__("parallelRunner")
         self.runners = self.new_monitors("parallel", runners)
 
     def _run(

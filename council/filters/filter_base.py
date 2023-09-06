@@ -12,7 +12,7 @@ class FilterBase(Monitorable, ABC):
     """
 
     def __init__(self):
-        super().__init__()
+        super().__init__("filter")
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
         """

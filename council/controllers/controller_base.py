@@ -18,7 +18,7 @@ class ControllerBase(Monitorable, ABC):
         Args:
             chains (List[Chain]): The list of chains available for execution.
         """
-        super().__init__()
+        super().__init__("controller")
         self._chains = chains
 
     def execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:

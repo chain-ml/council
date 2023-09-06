@@ -33,7 +33,7 @@ class LLMBase(Monitorable, abc.ABC):
     """
 
     def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None):
-        super().__init__()
+        super().__init__("llm")
         self._token_counter = token_counter
 
     def post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:

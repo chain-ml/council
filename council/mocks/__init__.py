@@ -121,4 +121,4 @@ class MockErrorAgent(Agent):
 
 class MockMonitored(Monitored):
     def __init__(self, name: str = "mock"):
-        super().__init__(name, Monitorable())
+        super().__init__(name, Monitorable("mock"))

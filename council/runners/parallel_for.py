@@ -41,7 +41,7 @@ class ParallelFor(LoopRunnerBase):
             generator(RunnerGenerator): a generator function that yields results
 
         """
-        super().__init__()
+        super().__init__("parallelForRunner")
         self._generator = generator
         self._skill = self.new_monitor("skill", skill)
         self._parallelism = parallelism

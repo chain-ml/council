@@ -1,19 +1,41 @@
 import json
-from datetime import datetime
-from typing import List, Dict, Sequence, TypeVar, Any, Generic, Iterable
+from typing import List, Dict, Mapping, Sequence, TypeVar, Any, Generic, Iterable
 
 
 class Monitor:
-    children: Dict[str, "Monitor"]
-    properties: Dict[str, Any]
+    _children: Dict[str, "Monitor"]
+    _base_type: str
+    _properties: Dict[str, Any]
 
-    def __init__(self, inner: object, **kwargs):
+    def __init__(self, inner: object, base_type: str):
         self.type = inner.__class__.__name__
-        self.children = {}
-        self.properties = kwargs
+        self._children = {}
+        self._properties = {}
+        self._base_type = base_type
 
-    def register_child(self, relation: str, child: "Monitor"):
-        self.children[relation] = child
+    def register_child(self, relation: str, child: "Monitor") -> None:
+        self._children[relation] = child
+
+    def set(self, name: str, value: Any) -> None:
+        self._properties[name] = value
+
+    def set_name(self, value: str) -> None:
+        self._properties["name"] = value
+
+    def set_base_type(self, value: str) -> None:
+        self._base_type = value
+
+    @property
+    def children(self) -> Mapping[str, "Monitor"]:
+        return self._children
+
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        return self._properties
+
+    @property
+    def base_type(self) -> str:
+        return self._base_type
 
 
 T = TypeVar("T", bound="Monitorable")
@@ -34,8 +56,8 @@ class Monitored(Generic[T]):
 
 
 class Monitorable:
-    def __init__(self):
-        self._monitor = Monitor(self)
+    def __init__(self, base_type: str):
+        self._monitor = Monitor(self, base_type)
 
     @property
     def monitor(self) -> Monitor:
@@ -61,7 +83,7 @@ class Monitorable:
 def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_step: int = 2) -> List[str]:
     padding = "".join([" " * indent])
     properties = ", ".join([f"{name}: {value}" for name, value in monitor.properties.items()])
-    current = f"{padding}{prefix}{monitor.type} ({properties})"
+    current = f"{padding}{prefix}{monitor.type}({monitor.base_type}) {{{properties}}}"
     result = [
         item
         for name, child in monitor.children.items()
@@ -72,7 +94,7 @@ def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_
 
 
 def _render_as_json(monitor: Monitor) -> Dict[str, Any]:
-    result = {"properties": monitor.properties, "type": monitor.type}
+    result = {"properties": monitor.properties, "type": monitor.type, "baseType": monitor.base_type}
     children = []
     for name, child in monitor.children.items():
         children.append({"name": name, "value": _render_as_json(child)})

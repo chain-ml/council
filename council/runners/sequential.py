@@ -9,7 +9,7 @@ class Sequential(RunnerBase):
     """
 
     def __init__(self, *runners: RunnerBase):
-        super().__init__()
+        super().__init__("sequenceRunner")
         self.runners = self.new_monitors("sequence", runners)
 
     def _run(

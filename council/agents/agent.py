@@ -38,7 +38,7 @@ class Agent(Monitorable):
             evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
             filter (FilterBase): The filter responsible to filter responses.
         """
-        super().__init__()
+        super().__init__("agent")
 
         self._controller = self.new_monitor("controller", controller)
         self._chains = self.new_monitors("chains", self.controller.chains)

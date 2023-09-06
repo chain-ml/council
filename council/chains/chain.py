@@ -32,10 +32,10 @@ class Chain(Monitorable):
         Raises:
             None
         """
-        super().__init__()
+        super().__init__("chain")
         self.name = name
         self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
-        self.monitor.properties["name"] = name
+        self.monitor.set_name(name)
         self.description = description
 
     @property

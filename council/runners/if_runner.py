@@ -12,7 +12,7 @@ class If(RunnerBase):
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
-        super().__init__()
+        super().__init__("ifRunner")
         self.predicate = predicate
         self.runner = runner
 
