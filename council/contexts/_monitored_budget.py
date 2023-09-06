@@ -6,6 +6,7 @@ class MonitoredBudget(Budget):
     _log_entry: ExecutionLogEntry
 
     def __init__(self, log_entry: ExecutionLogEntry, budget: Budget):
+        super().__init__(budget.remaining_duration, budget._remaining)
         self._log_entry = log_entry
 
     def add_consumption(self, consumption: Consumption):
