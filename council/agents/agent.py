@@ -80,23 +80,31 @@ class Agent(Monitorable):
         try:
             logger.info('message="agent execution started"')
             while not budget.is_expired():
-                context.new_iteration()
-                logger.info(f'message="agent iteration started" iteration="{context.iteration_count}"')
-                plan = self.controller.execute(context=context.new_agent_context_for(self._controller), budget=budget)
-                logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
+                with context.new_agent_context_for_new_iteration() as iteration_context:
+                    logger.info(
+                        f'message="agent iteration started" iteration="{iteration_context.iteration_count - 1}"'
+                    )
+                    plan = self.controller.execute(
+                        context=iteration_context.new_agent_context_for(self._controller), budget=budget
+                    )
+                    logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
-                if len(plan) == 0:
-                    return AgentResult()
-                for unit in plan:
-                    budget = self._execute_unit(context, unit)
+                    if len(plan) == 0:
+                        return AgentResult()
 
-                result = self.evaluator.execute(context.new_agent_context_for(self._evaluator), budget)
-                context.set_evaluation(result)
+                    for unit in plan:
+                        with iteration_context.new_agent_context_for_execution_unit(unit.name) as unit_context:
+                            budget = self._execute_unit(unit_context, unit)
 
-                result = self.filter.execute(context=context.new_agent_context_for(self._filter), budget=budget)
-                logger.debug("controller selected %d responses", len(result))
-                if len(result) > 0:
-                    return AgentResult(messages=result)
+                    result = self.evaluator.execute(iteration_context.new_agent_context_for(self._evaluator), budget)
+                    iteration_context.set_evaluation(result)
+
+                    result = self.filter.execute(
+                        context=iteration_context.new_agent_context_for(self._filter), budget=budget
+                    )
+                    logger.debug("controller selected %d responses", len(result))
+                    if len(result) > 0:
+                        return AgentResult(messages=result)
 
             return AgentResult()
         finally:
@@ -108,7 +116,9 @@ class Agent(Monitorable):
         chain = unit.chain
         budget = unit.budget
         logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
-        chain_context = ChainContext.from_agent_context(context, Monitored(unit.name, chain), unit.name, unit.budget)
+        chain_context = ChainContext.from_agent_context(
+            context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
+        )
         if unit.initial_state is not None:
             chain_context.append(unit.initial_state)
         chain.execute(chain_context, budget)

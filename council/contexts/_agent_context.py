@@ -32,6 +32,15 @@ class AgentContext(ContextBase):
     def new_iteration(self):
         self._store.new_iteration()
 
+    def new_agent_context_for_new_iteration(self) -> "AgentContext":
+        self.new_iteration()
+        name = f"iterations[{len(self._store.iterations) - 1}]"
+        return AgentContext(self._store, self._execution_context.new_from_name(name))
+
+    def new_agent_context_for_execution_unit(self, name: str) -> "AgentContext":
+        name = f"execution({name})"
+        return AgentContext(self._store, self._execution_context.new_from_name(name))
+
     @property
     def chains(self) -> Iterable[MessageCollection]:
         return self._store.current_iteration.chains.values()

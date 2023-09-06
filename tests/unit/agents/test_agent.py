@@ -44,7 +44,7 @@ class TestAgent(TestCase):
         class TestController(BasicController):
             def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
                 return [
-                    ExecutionUnit(chain, budget, ChatMessage.chain(f"from {chain.name}", source=chain.name))
+                    ExecutionUnit(chain, budget, ChatMessage.chain(f"from {chain.name}", source="controller"))
                     for chain in self._chains
                 ]
 

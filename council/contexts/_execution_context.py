@@ -13,11 +13,14 @@ class ExecutionContext:
         self._executionLog = execution_log or ExecutionLog()
         self._entry = self._executionLog.new_entry(path)
 
-    def _new_path(self, monitored: Monitored):
-        return monitored.name if self._entry.source == "" else f"{self._entry.source}/{monitored.name}"
+    def _new_path(self, name: str):
+        return name if self._entry.source == "" else f"{self._entry.source}/{name}"
+
+    def new_from_name(self, name: str):
+        return ExecutionContext(self._executionLog, self._new_path(name))
 
     def new_for(self, monitored: Monitored) -> "ExecutionContext":
-        return ExecutionContext(self._executionLog, self._new_path(monitored))
+        return ExecutionContext(self._executionLog, self._new_path(monitored.name))
 
     @property
     def entry(self) -> ExecutionLogEntry:
