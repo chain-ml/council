@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from council.utils import read_env_int
 
@@ -65,6 +65,9 @@ class Consumption:
 
     def subtract_value(self, value: float) -> None:
         self._value -= value
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"kind": self.kind, "unit": self.unit, "value": self.value}
 
 
 class ConsumptionEvent:

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Dict
 
 
 class ChatMessageKind(str, Enum):
@@ -216,6 +216,14 @@ class ChatMessage:
         max_length = 50
         message = self.message[:max_length] + "..." if len(self.message) > max_length else self.message
         return f"Message of kind {self.kind}: {message}"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "is_error": self.is_error,
+            "kind": self.kind.value,
+            "message": self.message,
+            "source": self.source,
+        }
 
 
 class ScoredChatMessage:
