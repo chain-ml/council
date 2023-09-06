@@ -57,13 +57,12 @@ class Agent(Monitorable):
     def filter(self) -> FilterBase:
         return self._filter.inner
 
-    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
+    def execute(self, context: AgentContext) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
         Args:
             context (AgentContext): The context for executing the chains.
-            budget (Optional[Budget]): The budget for agent execution. Defaults to :meth:`Budget.default` if `None`
 
         Returns:
             AgentResult:
@@ -72,21 +71,18 @@ class Agent(Monitorable):
             None
         """
         with context:
-            return self._execute(context, budget)
+            return self._execute(context)
 
-    def _execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
+    def _execute(self, context: AgentContext) -> AgentResult:
         executor = new_runner_executor("agent")
-        budget = budget or Budget.default()
         try:
             logger.info('message="agent execution started"')
-            while not budget.is_expired():
+            while not context.budget.is_expired():
                 with context.new_agent_context_for_new_iteration() as iteration_context:
                     logger.info(
                         f'message="agent iteration started" iteration="{iteration_context.iteration_count - 1}"'
                     )
-                    plan = self.controller.execute(
-                        context=iteration_context.new_agent_context_for(self._controller), budget=budget
-                    )
+                    plan = self.controller.execute(context=iteration_context.new_agent_context_for(self._controller))
                     logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
                     if len(plan) == 0:
@@ -94,14 +90,12 @@ class Agent(Monitorable):
 
                     for unit in plan:
                         with iteration_context.new_agent_context_for_execution_unit(unit.name) as unit_context:
-                            budget = self._execute_unit(unit_context, unit)
+                            self._execute_unit(unit_context, unit)
 
-                    result = self.evaluator.execute(iteration_context.new_agent_context_for(self._evaluator), budget)
+                    result = self.evaluator.execute(iteration_context.new_agent_context_for(self._evaluator))
                     iteration_context.set_evaluation(result)
 
-                    result = self.filter.execute(
-                        context=iteration_context.new_agent_context_for(self._filter), budget=budget
-                    )
+                    result = self.filter.execute(context=iteration_context.new_agent_context_for(self._filter))
                     logger.debug("controller selected %d responses", len(result))
                     if len(result) > 0:
                         return AgentResult(messages=result)
@@ -112,18 +106,16 @@ class Agent(Monitorable):
             executor.shutdown(wait=False, cancel_futures=True)
 
     @staticmethod
-    def _execute_unit(context: AgentContext, unit: ExecutionUnit) -> Budget:
+    def _execute_unit(context: AgentContext, unit: ExecutionUnit):
         chain = unit.chain
-        budget = unit.budget
         logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
         chain_context = ChainContext.from_agent_context(
             context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
         )
         if unit.initial_state is not None:
             chain_context.append(unit.initial_state)
-        chain.execute(chain_context, budget)
+        chain.execute(chain_context)
         logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
-        return budget
 
     @staticmethod
     def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":
@@ -168,5 +160,5 @@ class Agent(Monitorable):
              AgentResult:
         """
         execution_budget = budget or InfiniteBudget()
-        context = AgentContext.from_user_message(message)
-        return self.execute(context, budget=execution_budget)
+        context = AgentContext.from_user_message(message, execution_budget)
+        return self.execute(context)

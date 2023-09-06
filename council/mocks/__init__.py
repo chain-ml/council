@@ -34,18 +34,18 @@ class MockTokenCounter(LLMessageTokenCounterBase):
 
 
 class MockSkill(SkillBase):
-    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], ChatMessage]] = None):
+    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext], ChatMessage]] = None):
         super().__init__(name)
         self._action = action if action is not None else self.empty_message
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        return self._action(context, budget)
+    def execute(self, context: SkillContext) -> ChatMessage:
+        return self._action(context)
 
-    def empty_message(self, context: SkillContext, budget: Budget):
+    def empty_message(self, context: SkillContext):
         return self.build_success_message("")
 
     def set_action_custom_message(self, message: str) -> None:
-        self._action = lambda context, budget: self.build_success_message(message)
+        self._action = lambda context: self.build_success_message(message)
 
 
 class MockLLM(LLMBase):

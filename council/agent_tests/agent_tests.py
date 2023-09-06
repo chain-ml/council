@@ -136,8 +136,8 @@ class AgentTestCase:
         case_result = AgentTestCaseResult(self._prompt, self._scorers)
         # noinspection PyBroadException
         try:
-            context = AgentContext.from_user_message(self._prompt)
-            agent_result = agent.execute(context, Budget(10))
+            context = AgentContext.from_user_message(self._prompt, Budget(10))
+            agent_result = agent.execute(context)
         except Exception as e:
             case_result.set_error(e, time.monotonic() - start_time)
             return case_result

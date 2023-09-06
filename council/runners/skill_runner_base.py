@@ -1,7 +1,7 @@
 import abc
 import logging
 
-from council.contexts import SkillContext, IterationContext, ChatMessage, Budget, ChainContext
+from council.contexts import SkillContext, IterationContext, ChatMessage, ChainContext
 from . import RunnerSkillError
 
 from .runner_base import RunnerBase
@@ -44,7 +44,7 @@ class SkillRunnerBase(RunnerBase):
         """
         try:
             with SkillContext.from_chain_context(context, iteration_context) as skill_context:
-                message = self.execute_skill(skill_context, context.budget.remaining())
+                message = self.execute_skill(skill_context)
                 context.append(message)
         except Exception as e:
             logger.exception("unexpected error during execution of skill %s", self._name)
@@ -52,7 +52,7 @@ class SkillRunnerBase(RunnerBase):
             raise RunnerSkillError(f"an unexpected error occurred in skill {self._name}") from e
 
     @abc.abstractmethod
-    def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute_skill(self, context: SkillContext) -> ChatMessage:
         """
         Skill execution
         """

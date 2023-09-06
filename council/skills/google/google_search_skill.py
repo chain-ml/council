@@ -1,6 +1,6 @@
 import json
 
-from council.contexts import Budget, ChatMessage, SkillContext
+from council.contexts import ChatMessage, SkillContext
 from .google_context import GoogleSearchEngine
 from .. import SkillBase
 
@@ -19,7 +19,7 @@ class GoogleSearchSkill(SkillBase):
         super().__init__("gsearch")
         self.gs = GoogleSearchEngine.from_env()
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         prompt = context.chat_history.try_last_user_message.unwrap("no user message")
         resp = self.gs.execute(query=prompt.message, nb_results=5)
         response_count = len(resp)

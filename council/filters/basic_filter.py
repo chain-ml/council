@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from council.contexts import AgentContext, Budget, ScoredChatMessage
+from council.contexts import AgentContext, ScoredChatMessage
 from council.filters import FilterBase
 
 
@@ -10,7 +10,7 @@ class BasicFilter(FilterBase):
         self._score_threshold = score_threshold
         self._top_k = top_k
 
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+    def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         filtered = self._filter(context)
         if self._top_k is not None and self._top_k > 0:
             return filtered[: self._top_k]

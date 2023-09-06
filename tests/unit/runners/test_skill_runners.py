@@ -36,7 +36,7 @@ class SkillTest(SkillBase):
         super().__init__(name)
         self.wait = wait
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         time.sleep(abs(self.wait))
         if self.wait < 0:
             raise MySkillException("invalid wait")
@@ -46,7 +46,7 @@ class SkillTest(SkillBase):
 
 
 class SkillTestAppend(SkillBase):
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         message = context.current.try_last_message.map_or(lambda m: m.message, "")
         return self.build_success_message(message + self.name)
 
@@ -56,7 +56,7 @@ class SkillTestMerge(SkillBase):
         super().__init__("merge")
         self.from_skills = from_skills
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         message = "".join([context.try_last_message_from_skill(name).unwrap().message for name in self.from_skills])
         return self.build_success_message(message)
 

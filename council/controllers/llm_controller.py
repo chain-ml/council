@@ -1,7 +1,7 @@
 import logging
 from typing import List, Tuple, Optional
 
-from council.contexts import AgentContext, Budget, LLMContext
+from council.contexts import AgentContext, LLMContext
 from council.chains import Chain
 from council.llm import LLMMessage, LLMBase
 from council.utils import Option
@@ -39,8 +39,8 @@ class LLMController(ControllerBase):
     def llm(self) -> LLMBase:
         return self._llm.inner
 
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
-        response = self._call_llm(context, budget)
+    def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
+        response = self._call_llm(context)
         parsed = [
             self._parse_line(line, self._chains)
             for line in response.strip().splitlines()
@@ -53,18 +53,20 @@ class LLMController(ControllerBase):
 
         filtered.sort(key=lambda item: item[1], reverse=True)
         result = [
-            ExecutionUnit(chain, budget, name=f"{chain.name};{score}") for chain, score in filtered if chain is not None
+            ExecutionUnit(chain, context.budget, name=f"{chain.name};{score}")
+            for chain, score in filtered
+            if chain is not None
         ]
 
         if self._top_k is not None and self._top_k > 0:
             return result[: self._top_k]
         return result
 
-    def _call_llm(self, context: AgentContext, budget: Budget) -> str:
+    def _call_llm(self, context: AgentContext) -> str:
         messages = self._build_llm_messages(context)
         llm_result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages)
         for c in llm_result.consumptions:
-            budget.add_consumption(c, self.__class__.__name__)
+            context.budget.add_consumption(c, self.__class__.__name__)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
         return response

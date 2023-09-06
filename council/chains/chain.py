@@ -3,7 +3,6 @@ from typing import List, Optional
 from council.contexts import ChainContext
 from council.monitors import Monitorable, Monitored
 from council.runners import RunnerBase, Sequential, RunnerExecutor
-from council.contexts import Budget
 
 
 class Chain(Monitorable):
@@ -54,14 +53,13 @@ class Chain(Monitorable):
         """
         return self.description
 
-    def execute(self, context: ChainContext, budget: Budget, executor: Optional[RunnerExecutor] = None) -> None:
+    def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         with context:
-            self._execute(context, budget, executor)
+            self._execute(context, executor)
 
     def _execute(
         self,
         context: ChainContext,
-        budget: Budget,
         executor: Optional[RunnerExecutor] = None,
     ) -> None:
         """
@@ -69,7 +67,6 @@ class Chain(Monitorable):
 
         Args:
             context (ChainContext): The context for executing the chain.
-            budget (Budget): The budget for chain execution.
             executor (Optional[RunnerExecutor]): The skill executor to use for executing the chain.
 
         Returns:
