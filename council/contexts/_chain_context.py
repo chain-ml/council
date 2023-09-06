@@ -120,17 +120,19 @@ class ChainContext(ContextBase, MessageCollection):
             self.append(message)
 
     @staticmethod
-    def from_chat_history(history: ChatHistory) -> "ChainContext":
+    def from_chat_history(history: ChatHistory, budget: Optional[Budget] = None) -> "ChainContext":
         from ._budget import InfiniteBudget
         from ..mocks import MockMonitored
 
         context = AgentContext.from_chat_history(history)
         context.new_iteration()
-        return ChainContext.from_agent_context(context, MockMonitored("mock chain"), "mock chain", InfiniteBudget())
+        return ChainContext.from_agent_context(
+            context, MockMonitored("mock chain"), "mock chain", budget or InfiniteBudget()
+        )
 
     @staticmethod
-    def from_user_message(message: str) -> "ChainContext":
-        return ChainContext.from_chat_history(ChatHistory.from_user_message(message))
+    def from_user_message(message: str, budget: Optional[Budget] = None) -> "ChainContext":
+        return ChainContext.from_chat_history(ChatHistory.from_user_message(message), budget)
 
     @staticmethod
     def empty() -> "ChainContext":

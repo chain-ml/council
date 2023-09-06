@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from council.utils import read_env_int
 
@@ -120,12 +120,7 @@ class Budget:
 
     """
 
-    def __init__(
-        self,
-        duration: float,
-        limits: Optional[List[Consumption]] = None,
-        consumptions: Optional[List[ConsumptionEvent]] = None,
-    ) -> None:
+    def __init__(self, duration: float, limits: Optional[List[Consumption]] = None) -> None:
         """
         Initialize the Budget object
 
@@ -133,10 +128,6 @@ class Budget:
             duration (float): The duration of the budget in some time unit (e.g., days, months, etc.).
             limits (List[Consumption]): Optional. A list of Consumption objects representing the budget limits.
                                         Each Consumption object contains a value, unit, and kind.
-            consumptions (List[ConsumptionEvent]): Optional. A list of ConsumptionEvent objects representing
-                                                   the consumption events within the budget duration.
-                                                   Each ConsumptionEvent object contains a consumption measurement,
-                                                   a source, and an optional timestamp.
 
         """
         self._duration = duration
@@ -147,7 +138,6 @@ class Budget:
                 self._limits.append(Consumption(limit.value, limit.unit, limit.kind))
 
         self._remaining = limits if limits is not None else []
-        self._consumptions = consumptions if consumptions is not None else []
 
     @property
     def duration(self) -> float:
@@ -172,11 +162,13 @@ class Budget:
 
         return any(limit.value <= 0 for limit in self._remaining)
 
-    def add_consumption(self, consumption: Consumption, source: str):
+    def add_consumption(self, consumption: Consumption):
         for limit in self._remaining:
             if limit.unit == consumption.unit and limit.kind == consumption.kind:
                 limit.subtract_value(consumption.value)
-        self._consumptions.append(ConsumptionEvent(consumption, source))
+
+    def add_consumptions(self, consumptions: Iterable[Consumption]) -> None:
+        [self.add_consumption(item) for item in consumptions]
 
     def __repr__(self):
         return f"Budget({self._duration})"

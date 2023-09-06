@@ -12,7 +12,7 @@ from council.runners import ParallelFor
 from council.skills import LLMSkill
 
 
-def book_title_generator(context: ChainContext, _b: Budget) -> Any:
+def book_title_generator(context: ChainContext) -> Any:
     result = context.try_last_message.map_or(lambda m: m.message, "")
     titles = result.split("\n")
     for t in titles:

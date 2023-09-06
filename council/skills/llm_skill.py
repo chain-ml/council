@@ -86,6 +86,6 @@ class LLMSkill(SkillBase):
         if len(llm_response.choices) < 1:
             return self.build_error_message(message="no response")
 
-        context.budget.add_consumption(consumption=Consumption(1, "call", "LLMSkill"), source=self.name)
+        context.budget.add_consumption(consumption=Consumption(1, "call", "LLMSkill"))
 
         return self.build_success_message(message=llm_response.first_choice, data=llm_response)
