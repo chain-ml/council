@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import ChatMessage, InfiniteBudget, ScorerContext
+from council.contexts import ChatMessage, ScorerContext
 from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 
