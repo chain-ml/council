@@ -28,9 +28,8 @@ class ChainContext(ContextBase, MessageCollection):
         budget: Budget,
         messages: Optional[Iterable[ChatMessage]] = None,
     ):
-        super().__init__(store, execution_context)
+        super().__init__(store, execution_context, budget)
         self._name = name
-        self._budget = budget
         self._current_messages = MessageList()
         self._previous_messages = MessageList(messages)
 

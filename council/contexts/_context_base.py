@@ -1,4 +1,5 @@
 from council.monitors import Monitored
+from ._budget import Budget
 from ._agent_context_store import AgentContextStore
 from ._chat_history import ChatHistory
 from ._execution_context import ExecutionContext
@@ -6,9 +7,10 @@ from ._execution_log_entry import ExecutionLogEntry
 
 
 class ContextBase:
-    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext):
+    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget):
         self._store = store
         self._execution_context = execution_context
+        self._budget = budget
 
     @property
     def iteration_count(self) -> int:
@@ -17,6 +19,10 @@ class ContextBase:
     @property
     def log_entry(self) -> ExecutionLogEntry:
         return self._execution_context.entry
+
+    @property
+    def budget(self) -> Budget:
+        return self._budget
 
     @property
     def chat_history(self) -> ChatHistory:
