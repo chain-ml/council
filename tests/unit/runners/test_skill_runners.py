@@ -1,10 +1,12 @@
+import json
 import time
 import unittest
-from typing import List, Any
+from typing import List, Any, Optional
 
 from council import monitors
 from council.contexts import (
     ChainContext,
+    Consumption,
     SkillContext,
     ChatMessage,
     Budget,
@@ -32,9 +34,10 @@ class MySkillException(Exception):
 
 
 class SkillTest(SkillBase):
-    def __init__(self, name: str, wait: float):
+    def __init__(self, name: str, wait: float, budget_kind: Optional[str] = None):
         super().__init__(name)
         self.wait = wait
+        self.budget_kind = budget_kind
 
     def execute(self, context: SkillContext) -> ChatMessage:
         time.sleep(abs(self.wait))
@@ -42,6 +45,8 @@ class SkillTest(SkillBase):
             raise MySkillException("invalid wait")
         if context.iteration.map_or(lambda i: i.value, 0.0) < 0:
             raise MySkillException("invalid iteration")
+        if self.budget_kind is not None:
+            context.budget.add_consumption(Consumption(1, "unit", self.budget_kind))
         return self.build_success_message(self._name, context.iteration.map_or(lambda i: i.value, -1))
 
 
@@ -74,6 +79,8 @@ class TestSkillRunners(unittest.TestCase):
             self.context = ChainContext.from_agent_context(context, MockMonitored("test"), "chain", budget)
             with self.context:
                 runner.run(self.context, self.executor)
+
+            print(f"\n{json.dumps(context._execution_context._executionLog.to_dict(), indent=2)}")
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -130,6 +137,18 @@ class TestSkillRunners(unittest.TestCase):
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
+    def test_parallel_sequence_with_budget(self):
+        consumption = Consumption(1, "unit", "budget")
+        parallel = Parallel(
+            Sequential(SkillTest("first", 0.1, consumption.kind), SkillTest("second", 0.2, consumption.kind)),
+            SkillTest("third", 0.15, consumption.kind),
+            SkillTest("fourth", 0.4, consumption.kind),
+        )
+        self._execute(parallel, Budget(1, limits=[Consumption(5, "unit", "budget")]))
+        self.assertFalse(self.context.cancellation_token.cancelled)
+        self.assertSuccessMessages(["first", "second", "third", "fourth"])
+        self.assertEqual(self.context.budget._remaining[0].value, 1)
+
     def test_parallel_many_sequences(self):
         instance = Sequential(
             SkillTestAppend("a"),
@@ -183,6 +202,16 @@ class TestSkillRunners(unittest.TestCase):
         instance = Sequential(If(lambda a: False, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
         self.assertSuccessMessages(["always"])
+
+    def test_if_runner_consume_budget(self):
+        def predicate(chain_context: ChainContext) -> bool:
+            chain_context.budget.add_consumption(Consumption(0.5, "unit", "budget"))
+            return True
+
+        instance = If(predicate, SkillTest("maybe", 0.1, "budget"))
+        self._execute(instance, Budget(1, limits=[Consumption(2, "unit", "budget")]))
+        self.assertSuccessMessages(["maybe"])
+        self.assertEqual(self.context.budget._remaining[0].value, 0.5)
 
     def test_sequence_if_predicate_with_context_runner(self):
         def predicate(chain_context: ChainContext):
