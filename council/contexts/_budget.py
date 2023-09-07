@@ -70,50 +70,6 @@ class Consumption:
         return {"kind": self.kind, "unit": self.unit, "value": self.value}
 
 
-class ConsumptionEvent:
-    """
-    A class representing an event related to consumption, along with the source and timestamp information.
-
-    Attributes:
-        _consumption (Consumption): An instance of the Consumption class representing the consumption measurement.
-        _source (str): The source of the consumption event (e.g., sensor name, device, etc.).
-        _timestamp (float): The timestamp of the consumption event.
-
-    Methods:
-        __init__(consumption: Consumption, source: str):
-            Initializes a ConsumptionEvent instance with the provided consumption, source, and timestamp.
-
-    """
-
-    def __init__(self, consumption: Consumption, source: str):
-        """
-        Initializes a ConsumptionEvent instance.
-
-        Args:
-            consumption (Consumption): An instance of the Consumption class representing the consumption measurement.
-            source (str): The source of the consumption event (e.g., sensor name, device, etc.).
-
-        """
-        self._consumption = consumption
-        self._source = source
-        self._timestamp = time.monotonic()
-
-    def __str__(self):
-        return f"{self._consumption} at {self._timestamp} from {self._source}"
-
-    @property
-    def consumption(self) -> Consumption:
-        return self._consumption.add(0)
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    @property
-    def timestamp(self) -> float:
-        return self._timestamp
-
-
 class Budget:
     """
     A class representing a budget with duration, limits, and consumption events.
