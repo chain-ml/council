@@ -86,9 +86,7 @@ class TestAgent(TestCase):
         chain_two = Chain("chain two", description="", runners=[skill])
 
         agent = Agent(TestController([chain_one, chain_two]), BasicEvaluator(), BasicFilter())
-        context = AgentContext.from_user_message("run", Budget.default())
-        result = agent.execute(context)
-        print(context._store.execution_log.to_json())
+        result = agent.execute_from_user_message("run")
         self.assertEqual(
             [
                 "from chain one 0",
