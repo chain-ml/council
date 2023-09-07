@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from council.agents import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChatMessage, SkillContext, Budget
+from council.contexts import AgentContext, ChatMessage, SkillContext
 from council.controllers import BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
@@ -58,9 +58,7 @@ class TestAgent(TestCase):
             TestController([Chain("a chain", description="", runners=[skill])]), BasicEvaluator(), BasicFilter()
         )
 
-        context = AgentContext.from_user_message("run", Budget.default())
-        result = agent.execute(context)
-        print(context._store.execution_log.to_json())
+        result = agent.execute_from_user_message("run")
         self.assertEqual(result.best_message.message, "from a chain")
 
     def test_run_multiple_instances_of_a_chain(self):
