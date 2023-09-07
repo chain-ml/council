@@ -2,24 +2,28 @@ import abc
 import logging
 from typing import Any, Dict
 
-from council.contexts import Budget, ChatMessage
+from council.contexts import ChatMessage, ScorerContext
 from .scorer_exception import ScorerException
+from ..monitors import Monitorable
 
 logger = logging.getLogger(__name__)
 
 
-class ScorerBase(abc.ABC):
+class ScorerBase(Monitorable, abc.ABC):
     """
     Base class for implementing a Scorer
     """
 
-    def score(self, message: ChatMessage, budget: Budget) -> float:
+    def __init__(self):
+        super().__init__("scorer")
+
+    def score(self, context: ScorerContext, message: ChatMessage) -> float:
         """
         Score the given message
 
         Parameters:
+            context (ScorerContext): the context for scoring
             message (ChatMessage): the message to be scored
-            budget (Budget): the budget for scoring
 
         Returns:
             similarity score. The greater the value to higher the similarity
@@ -28,13 +32,13 @@ class ScorerBase(abc.ABC):
             ScorerException: an unexpected error occurs
         """
         try:
-            return self._score(message, budget)
+            return self._score(context, message)
         except Exception:
             logging.exception('message="execution failed"')
             raise ScorerException
 
     @abc.abstractmethod
-    def _score(self, message: ChatMessage, budget: Budget) -> float:
+    def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         """
         To be implemented with in derived classes with actual scoring logic
         """

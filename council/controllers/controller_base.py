@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Sequence
 
 from council.chains import Chain
-from council.contexts import AgentContext, Budget
+from council.contexts import AgentContext
 from .execution_unit import ExecutionUnit
 from council.monitors import Monitorable
 
@@ -21,13 +21,12 @@ class ControllerBase(Monitorable, ABC):
         super().__init__("controller")
         self._chains = chains
 
-    def execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
+    def execute(self, context: AgentContext) -> List[ExecutionUnit]:
         """
         Generates an execution plan for the agent based on the provided context, chains, and budget.
 
         Args:
             context (AgentContext): The context for generating the execution plan.
-            budget (Budget): The budget for agent execution.
 
         Returns:
             List[ExecutionUnit]: A list of execution units representing the execution plan.
@@ -36,10 +35,10 @@ class ControllerBase(Monitorable, ABC):
             None
         """
         with context:
-            return self._execute(context, budget)
+            return self._execute(context)
 
     @abstractmethod
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
+    def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
         pass
 
     @property

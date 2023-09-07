@@ -2,7 +2,7 @@ from typing import Optional, Any
 
 from .agent import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, Budget, ChainContext, ChatMessage
+from council.contexts import AgentContext, ChainContext, ChatMessage
 from council.runners import RunnerExecutor
 from ..monitors import Monitored
 
@@ -21,10 +21,9 @@ class AgentChain(Chain):
     def _execute(
         self,
         context: ChainContext,
-        budget: Budget,
         executor: Optional[RunnerExecutor] = None,
     ) -> Any:
-        result = self.agent.execute(AgentContext.from_chat_history(context.chat_history), budget)
+        result = self.agent.execute(AgentContext.from_chat_history(context.chat_history))
         maybe_message = result.try_best_message
         if maybe_message.is_some():
             message = maybe_message.unwrap()

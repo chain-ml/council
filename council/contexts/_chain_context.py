@@ -28,9 +28,8 @@ class ChainContext(ContextBase, MessageCollection):
         budget: Budget,
         messages: Optional[Iterable[ChatMessage]] = None,
     ):
-        super().__init__(store, execution_context)
+        super().__init__(store, execution_context, budget)
         self._name = name
-        self._budget = budget
         self._current_messages = MessageList()
         self._previous_messages = MessageList(messages)
 
@@ -94,7 +93,7 @@ class ChainContext(ContextBase, MessageCollection):
             self._store,
             self._execution_context.new_for(monitored),
             self._name,
-            budget or self._budget.remaining(),
+            budget or self._budget,
             more_itertools.flatten([self._previous_messages.messages, self._current_messages.messages]),
         )
 
@@ -121,17 +120,19 @@ class ChainContext(ContextBase, MessageCollection):
             self.append(message)
 
     @staticmethod
-    def from_chat_history(history: ChatHistory) -> "ChainContext":
+    def from_chat_history(history: ChatHistory, budget: Optional[Budget] = None) -> "ChainContext":
         from ._budget import InfiniteBudget
         from ..mocks import MockMonitored
 
         context = AgentContext.from_chat_history(history)
         context.new_iteration()
-        return ChainContext.from_agent_context(context, MockMonitored("mock chain"), "mock chain", InfiniteBudget())
+        return ChainContext.from_agent_context(
+            context, MockMonitored("mock chain"), "mock chain", budget or InfiniteBudget()
+        )
 
     @staticmethod
-    def from_user_message(message: str) -> "ChainContext":
-        return ChainContext.from_chat_history(ChatHistory.from_user_message(message))
+    def from_user_message(message: str, budget: Optional[Budget] = None) -> "ChainContext":
+        return ChainContext.from_chat_history(ChatHistory.from_user_message(message), budget)
 
     @staticmethod
     def empty() -> "ChainContext":

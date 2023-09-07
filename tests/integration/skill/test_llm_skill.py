@@ -26,8 +26,8 @@ class TestLlmSkill(unittest.TestCase):
         self.agent = Agent.from_skill(llm_skill, "Answer to an user prompt about finance using gpt4")
 
     def test_basic_prompt(self):
-        run_context = AgentContext.from_user_message("Hello, who are you?")
-        result = self.agent.execute(run_context, Budget(10))
+        run_context = AgentContext.from_user_message("Hello, who are you?", Budget(10))
+        result = self.agent.execute(run_context)
 
         self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)

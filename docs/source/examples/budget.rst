@@ -54,4 +54,3 @@ Classes
 
 .. autoclass:: council.contexts.Budget
 .. autoclass:: council.contexts.Consumption
-.. autoclass:: council.contexts.ConsumptionEvent

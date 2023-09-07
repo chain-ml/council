@@ -60,7 +60,7 @@ class LLMBase(Monitorable, abc.ABC):
         try:
             with context:
                 result = self._post_chat_request(context, messages, **kwargs)
-                context.log_entry.log_consumptions(result.consumptions)
+                context.budget.add_consumptions(result.consumptions)
                 return result
         except Exception as e:
             logger.exception('message="failed execution of llm request"')

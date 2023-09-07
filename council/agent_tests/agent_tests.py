@@ -8,7 +8,7 @@ from council.scorers import ScorerBase, ScorerException
 from council.contexts import (
     AgentContext,
     Budget,
-    InfiniteBudget,
+    ScorerContext,
 )
 
 
@@ -136,8 +136,8 @@ class AgentTestCase:
         case_result = AgentTestCaseResult(self._prompt, self._scorers)
         # noinspection PyBroadException
         try:
-            context = AgentContext.from_user_message(self._prompt)
-            agent_result = agent.execute(context, Budget(10))
+            context = AgentContext.from_user_message(self._prompt, Budget(10))
+            agent_result = agent.execute(context)
         except Exception as e:
             case_result.set_error(e, time.monotonic() - start_time)
             return case_result
@@ -148,7 +148,7 @@ class AgentTestCase:
             scores = []
             message = agent_result.try_best_message.unwrap()
             for scorer in self._scorers:
-                scores.append(scorer.score(message, budget=InfiniteBudget()))
+                scores.append(scorer.score(ScorerContext.new_empty(), message))
             case_result.set_success(message.message, duration, scores)
             return case_result
         except ScorerException:

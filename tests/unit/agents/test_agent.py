@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from council.agents import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChatMessage, SkillContext, Budget
+from council.contexts import AgentContext, ChatMessage, SkillContext
 from council.controllers import BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
@@ -30,8 +30,8 @@ class TestAgent(TestCase):
         self.assertIsInstance(agent.controller.chains[0].runner, MockSkill)
 
     def test_default_budget(self):
-        def action(_: SkillContext, budget: Budget) -> ChatMessage:
-            return ChatMessage.skill(f"budget.deadline={budget.deadline}")
+        def action(context: SkillContext) -> ChatMessage:
+            return ChatMessage.skill(f"budget.deadline={context.budget.deadline}")
 
         agent = Agent.from_skill(MockSkill(action=action))
         first = agent.execute_from_user_message("first")
@@ -42,13 +42,13 @@ class TestAgent(TestCase):
 
     def test_initial_state(self):
         class TestController(BasicController):
-            def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
+            def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
                 return [
-                    ExecutionUnit(chain, budget, ChatMessage.chain(f"from {chain.name}", source="controller"))
+                    ExecutionUnit(chain, context.budget, ChatMessage.chain(f"from {chain.name}", source="controller"))
                     for chain in self._chains
                 ]
 
-        def skill_action(context: SkillContext, budget: Budget) -> ChatMessage:
+        def skill_action(context: SkillContext) -> ChatMessage:
             message = context.try_last_message.unwrap()
             return ChatMessage.skill(message.message)
 
@@ -57,16 +57,17 @@ class TestAgent(TestCase):
         agent = Agent(
             TestController([Chain("a chain", description="", runners=[skill])]), BasicEvaluator(), BasicFilter()
         )
+
         result = agent.execute_from_user_message("run")
         self.assertEqual(result.best_message.message, "from a chain")
 
     def test_run_multiple_instances_of_a_chain(self):
         class TestController(BasicController):
-            def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
+            def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
                 return [
                     ExecutionUnit(
                         chain,
-                        budget,
+                        context.budget,
                         ChatMessage.chain(f"from {chain.name} {index}", source=chain.name),
                         name=f"{chain.name}[{index}]",
                     )
@@ -74,7 +75,7 @@ class TestAgent(TestCase):
                     for index in [0, 1, 2]
                 ]
 
-        def skill_action(context: SkillContext, budget: Budget) -> ChatMessage:
+        def skill_action(context: SkillContext) -> ChatMessage:
             message = context.try_last_message.unwrap()
             return ChatMessage.skill(message.message)
 

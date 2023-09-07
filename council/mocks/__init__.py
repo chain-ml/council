@@ -3,7 +3,15 @@ import random
 from typing import List, Any, Callable, Optional, Protocol
 
 from council.agents import Agent, AgentResult
-from council.contexts import AgentContext, ScoredChatMessage, SkillContext, ChatMessage, Budget, LLMContext
+from council.contexts import (
+    AgentContext,
+    ScoredChatMessage,
+    ScorerContext,
+    SkillContext,
+    ChatMessage,
+    Budget,
+    LLMContext,
+)
 from council.llm import LLMBase, LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException, LLMResult, LLMException
 from council.monitors import Monitored, Monitorable
 from council.scorers import ScorerBase
@@ -34,18 +42,18 @@ class MockTokenCounter(LLMessageTokenCounterBase):
 
 
 class MockSkill(SkillBase):
-    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext, Budget], ChatMessage]] = None):
+    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext], ChatMessage]] = None):
         super().__init__(name)
         self._action = action if action is not None else self.empty_message
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        return self._action(context, budget)
+    def execute(self, context: SkillContext) -> ChatMessage:
+        return self._action(context)
 
-    def empty_message(self, context: SkillContext, budget: Budget):
+    def empty_message(self, context: SkillContext):
         return self.build_success_message("")
 
     def set_action_custom_message(self, message: str) -> None:
-        self._action = lambda context, budget: self.build_success_message(message)
+        self._action = lambda context: self.build_success_message(message)
 
 
 class MockLLM(LLMBase):
@@ -83,9 +91,10 @@ class MockErrorLLM(LLMBase):
 
 class MockErrorSimilarityScorer(ScorerBase):
     def __init__(self, exception: Exception = Exception()):
+        super().__init__()
         self.exception = exception
 
-    def _score(self, message: ChatMessage, budget: Budget) -> float:
+    def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         raise self.exception
 
 

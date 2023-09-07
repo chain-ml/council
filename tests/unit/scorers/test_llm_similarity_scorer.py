@@ -1,6 +1,6 @@
 import unittest
 
-from council.contexts import ChatMessage, InfiniteBudget
+from council.contexts import ChatMessage, ScorerContext
 from council.scorers import LLMSimilarityScorer, ScorerException
 from council.mocks import MockLLM
 
@@ -22,4 +22,4 @@ class TestLLMSimilarityScorer(unittest.TestCase):
     def _test_parse(message: str) -> float:
         llm = MockLLM.from_response(message)
         instance = LLMSimilarityScorer(llm, "whatever")
-        return instance.score(ChatMessage.agent("does not matter"), budget=InfiniteBudget())
+        return instance.score(ScorerContext.new_empty(), ChatMessage.agent("does not matter"))

@@ -32,7 +32,7 @@ class TestLlmEvaluator(unittest.TestCase):
             chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
-        result = evaluator.execute(context, Budget(10))
+        result = evaluator.execute(context)
 
         self.assertGreater(result[1], result[0])
         self.assertGreater(result[1], result[2])
@@ -48,7 +48,7 @@ class TestLlmEvaluator(unittest.TestCase):
             chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
-        result = evaluator.execute(context, Budget(10))
+        result = evaluator.execute(context)
 
         for i in [0, 1, 3, 4, 5]:
             self.assertGreater(result[2], result[i])
@@ -66,7 +66,7 @@ class TestLlmEvaluator(unittest.TestCase):
         chain_context = ChainContext.from_agent_context(context, MockMonitored(), "test", Budget(10))
         chain_context.append(ChatMessage.skill(agent_message, None, "a skill"))
 
-        result = evaluator.execute(context, Budget(10))
+        result = evaluator.execute(context)
 
         self.assertGreater(result[0].score, 5.0)
 
@@ -81,7 +81,7 @@ class TestLlmEvaluator(unittest.TestCase):
             chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
-        result = evaluator.execute(context, Budget(10))
+        result = evaluator.execute(context)
         for i in range(0, 3):
             self.assertLessEqual(result[i].score, 2)
 
@@ -96,7 +96,7 @@ class TestLlmEvaluator(unittest.TestCase):
             chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
-        result = evaluator.execute(context, Budget(10))
+        result = evaluator.execute(context)
         first_score = result[0].score
         for i in range(1, 3):
             self.assertEqual(result[i].score, first_score)

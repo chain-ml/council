@@ -64,8 +64,8 @@ class TestAzureLlmController(TestCase):
         print("*******")
         print(prompt)
         controller = LLMController(chains=self.chains, llm=AzureLLM.from_env())
-        execution_context = AgentContext.from_user_message(prompt)
-        result = controller.execute(execution_context, Budget(10))
+        execution_context = AgentContext.from_user_message(prompt, Budget(10))
+        result = controller.execute(execution_context)
 
         self.assertLessEqual(len(expected), len(result), "result length")
         self.assertEqual(expected, [item.chain for item in result[: len(expected)]])
