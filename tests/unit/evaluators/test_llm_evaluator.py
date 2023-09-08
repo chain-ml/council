@@ -18,12 +18,8 @@ class TestLLMEvaluator(unittest.TestCase):
 
     def add_one_iteration_result(self):
         self.context.new_iteration()
-        self.first_context = ChainContext.from_agent_context(
-            self.context, MockMonitored(), "a chain", self.context.budget
-        )
-        self.second_context = ChainContext.from_agent_context(
-            self.context, MockMonitored(), "another chain", self.context.budget
-        )
+        self.first_context = ChainContext.from_agent_context(self.context, MockMonitored(), "a chain")
+        self.second_context = ChainContext.from_agent_context(self.context, MockMonitored(), "another chain")
         self.first_context.append(ChatMessage.skill("result of a chain", source="first skill"))
         self.second_context.append(ChatMessage.skill("result of another chain", source="another skill"))
 
@@ -51,9 +47,7 @@ class TestLLMEvaluator(unittest.TestCase):
         ]
 
         self.add_one_iteration_result()
-        ChainContext.from_agent_context(
-            self.context, MockMonitored(), "this chain does not provide any message", Budget.default()
-        )
+        ChainContext.from_agent_context(self.context, MockMonitored(), "this chain does not provide any message")
 
         result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context)
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))

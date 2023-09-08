@@ -18,7 +18,7 @@ class LLMContext(ContextBase):
         return LLMContext(context._store, context._execution_context.new_for(monitored), budget or context._budget)
 
     @staticmethod
-    def new_empty() -> "LLMContext":
+    def empty() -> "LLMContext":
         return LLMContext(AgentContextStore(ChatHistory()), ExecutionContext(), InfiniteBudget())
 
     def new_for(self, monitored: Monitored) -> "LLMContext":

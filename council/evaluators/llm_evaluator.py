@@ -32,7 +32,7 @@ class LLMEvaluator(EvaluatorBase):
         return self._llm.inner
 
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
-        query = context.chatHistory.try_last_user_message.unwrap()
+        query = context.chat_history.try_last_user_message.unwrap()
         chain_results = [
             chain_messages.try_last_message.unwrap()
             for chain_messages in context.chains

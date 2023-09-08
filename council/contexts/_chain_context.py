@@ -66,27 +66,21 @@ class ChainContext(ContextBase, MessageCollection):
                 yield chain
 
     @property
-    def previous_messages(self) -> Iterable[ChatMessage]:
-        return self._previous_messages.messages
-
-    @property
-    def current_messages(self) -> Iterable[ChatMessage]:
-        return self._current_messages.messages
-
-    @property
     def current(self) -> MessageCollection:
         """
-        Returns the :class:`ChainHistory` to be used for the current execution of a :class:`.Chain`
+        Returns the :class:`MessageCollection` for the current execution of a :class:`.Chain`
 
         Returns:
-            ChainHistory: the chain history
+            MessageCollection: a collection of messages
         """
         return self._current_iteration_messages
 
     @staticmethod
-    def from_agent_context(context: AgentContext, monitored: Monitored, name: str, budget: Budget):
+    def from_agent_context(context: AgentContext, monitored: Monitored, name: str, budget: Optional[Budget] = None):
         context._store.current_iteration.ensure_chain_exists(name)
-        return ChainContext(context._store, context._execution_context.new_for(monitored), name, budget)
+        return ChainContext(
+            context._store, context._execution_context.new_for(monitored), name, budget or Budget.default()
+        )
 
     def fork_for(self, monitored: Monitored, budget: Optional[Budget] = None) -> "ChainContext":
         return ChainContext(
@@ -121,14 +115,11 @@ class ChainContext(ContextBase, MessageCollection):
 
     @staticmethod
     def from_chat_history(history: ChatHistory, budget: Optional[Budget] = None) -> "ChainContext":
-        from ._budget import InfiniteBudget
         from ..mocks import MockMonitored
 
         context = AgentContext.from_chat_history(history)
         context.new_iteration()
-        return ChainContext.from_agent_context(
-            context, MockMonitored("mock chain"), "mock chain", budget or InfiniteBudget()
-        )
+        return ChainContext.from_agent_context(context, MockMonitored("mock chain"), "mock chain", budget)
 
     @staticmethod
     def from_user_message(message: str, budget: Optional[Budget] = None) -> "ChainContext":

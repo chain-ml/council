@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Mapping, Sequence, TypeVar, Any, Generic, Iterable
+from typing import List, Dict, Mapping, TypeVar, Any, Generic, Iterable
 
 
 class Monitor:
@@ -8,7 +8,7 @@ class Monitor:
     _properties: Dict[str, Any]
 
     def __init__(self, inner: object, base_type: str):
-        self.type = inner.__class__.__name__
+        self._type = inner.__class__.__name__
         self._children = {}
         self._properties = {}
         self._base_type = base_type
@@ -19,11 +19,17 @@ class Monitor:
     def set(self, name: str, value: Any) -> None:
         self._properties[name] = value
 
-    def set_name(self, value: str) -> None:
-        self._properties["name"] = value
+    @property
+    def type(self) -> str:
+        return self._type
 
-    def set_base_type(self, value: str) -> None:
-        self._base_type = value
+    @property
+    def name(self) -> str:
+        return self._properties["name"]
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._properties["name"] = value
 
     @property
     def children(self) -> Mapping[str, "Monitor"]:
@@ -64,24 +70,20 @@ class Monitorable:
         return self._monitor
 
     def new_monitor(self, name: str, item: T) -> Monitored[T]:
-        self.register_child(name, item)
+        self._register_child(name, item)
         return Monitored(name, item)
 
     def new_monitors(self, name: str, items: Iterable[T]) -> List[Monitored[T]]:
         result = [Monitored(f"{name}[{index}]", item) for index, item in enumerate(items)]
-        [self.register_child(item.name, item.inner) for item in result]
+        [self._register_child(item.name, item.inner) for item in result]
         return result
 
-    def register_child(self, relation: str, child: "Monitorable"):
+    def _register_child(self, relation: str, child: "Monitorable"):
         self._monitor.register_child(relation, child._monitor)
-
-    def register_children(self, relation: str, children: Sequence[T]) -> None:
-        for index, child in enumerate(children):
-            self.register_child(f"{relation}[{index}]", child)
 
 
 def _render_as_text(monitor: Monitor, prefix: str = "", indent: int = 0, indent_step: int = 2) -> List[str]:
-    padding = "".join([" " * indent])
+    padding = " " * indent
     properties = ", ".join([f"{name}: {value}" for name, value in monitor.properties.items()])
     current = f"{padding}{prefix}{monitor.type}({monitor.base_type}) {{{properties}}}"
     result = [

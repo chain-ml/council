@@ -12,11 +12,11 @@ The example below demonstrate how to use the parallel for in a chain.
 .. testcode::
 
     from council.chains import Chain
-    from council.contexts import Budget, ChainContext
+    from council.contexts import ChainContext
     from council.runners import ParallelFor
     from council.mocks import MockSkill
 
-    def generator(context: ChainContext, budget: Budget):
+    def generator(context: ChainContext):
         for i in range(0, 5):
             yield "hi"
 
@@ -30,7 +30,7 @@ This example builds on the previous one and shows how to consume the iteration i
 .. testcode::
 
     from council.chains import Chain
-    from council.contexts import Budget, ChatMessage, ChainContext, SkillContext
+    from council.contexts import ChatMessage, ChainContext, SkillContext
     from council.runners import ParallelFor
     from council.skills import SkillBase
 

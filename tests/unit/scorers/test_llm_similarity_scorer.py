@@ -22,4 +22,4 @@ class TestLLMSimilarityScorer(unittest.TestCase):
     def _test_parse(message: str) -> float:
         llm = MockLLM.from_response(message)
         instance = LLMSimilarityScorer(llm, "whatever")
-        return instance.score(ScorerContext.new_empty(), ChatMessage.agent("does not matter"))
+        return instance.score(ScorerContext.empty(), ChatMessage.agent("does not matter"))

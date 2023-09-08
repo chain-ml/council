@@ -148,7 +148,7 @@ class AgentTestCase:
             scores = []
             message = agent_result.try_best_message.unwrap()
             for scorer in self._scorers:
-                scores.append(scorer.score(ScorerContext.new_empty(), message))
+                scores.append(scorer.score(ScorerContext.empty(), message))
             case_result.set_success(message.message, duration, scores)
             return case_result
         except ScorerException:

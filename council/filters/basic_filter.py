@@ -17,11 +17,11 @@ class BasicFilter(FilterBase):
 
         return filtered
 
-    def _filter(self, context: AgentContext):
+    def _filter(self, context: AgentContext) -> List[ScoredChatMessage]:
         all_eval_results = context.evaluation
         if all_eval_results is None:
             return []
         if self._score_threshold is not None:
             filtered = [x for x in all_eval_results if x.score >= self._score_threshold]
             return list(filtered)
-        return all_eval_results
+        return list(all_eval_results)

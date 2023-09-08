@@ -18,7 +18,7 @@ class ScorerContext(ContextBase):
         return ScorerContext(context._store, context._execution_context.new_for(monitored), budget or context._budget)
 
     @staticmethod
-    def new_empty() -> "ScorerContext":
+    def empty() -> "ScorerContext":
         return ScorerContext(AgentContextStore(ChatHistory()), ExecutionContext(), InfiniteBudget())
 
     def new_for(self, monitored: Monitored) -> "ScorerContext":

@@ -34,7 +34,7 @@ class Chain(Monitorable):
         super().__init__("chain")
         self.name = name
         self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
-        self.monitor.set_name(name)
+        self.monitor.name = name
         self.description = description
 
     @property

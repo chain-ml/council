@@ -6,7 +6,7 @@ from ._message_collection import MessageCollection
 
 class MessageList(MessageCollection):
     """
-    represents the history of messages exchanged between the user and the :class:`.Agent`
+    represents an appendable list of :class:`.ChatMessage`
     """
 
     _messages: List[ChatMessage] = []

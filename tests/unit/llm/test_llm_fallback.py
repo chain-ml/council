@@ -12,7 +12,7 @@ class TestPrompt(unittest.TestCase):
 
         fb_llm = LLMFallback(m, fb)
 
-        r = fb_llm.post_chat_request(LLMContext.new_empty(), [])
+        r = fb_llm.post_chat_request(LLMContext.empty(), [])
         self.assertEqual("Test", r.first_choice)
 
     def test_no_fallback_retry_negative(self):
@@ -21,7 +21,7 @@ class TestPrompt(unittest.TestCase):
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=-1)
 
-        r = fb_llm.post_chat_request(LLMContext.new_empty(), [])
+        r = fb_llm.post_chat_request(LLMContext.empty(), [])
         self.assertEqual("Test", r.first_choice)
 
     def test_fallback_with_retryable_error(self):
@@ -30,7 +30,7 @@ class TestPrompt(unittest.TestCase):
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=3)
 
-        r = fb_llm.post_chat_request(LLMContext.new_empty(), [])
+        r = fb_llm.post_chat_request(LLMContext.empty(), [])
         self.assertEqual("FallBack", r.first_choice)
 
     def test_fallback_with_non_retryable_error(self):
@@ -39,7 +39,7 @@ class TestPrompt(unittest.TestCase):
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=1000)
 
-        r = fb_llm.post_chat_request(LLMContext.new_empty(), [])
+        r = fb_llm.post_chat_request(LLMContext.empty(), [])
         self.assertEqual("FallBack", r.first_choice)
 
     def test_error(self):
@@ -49,7 +49,7 @@ class TestPrompt(unittest.TestCase):
         fb_llm = LLMFallback(m, fb, retry_before_fallback=1000)
 
         with self.assertRaises(LLMCallException) as e:
-            _r = fb_llm.post_chat_request(LLMContext.new_empty(), [])
+            _r = fb_llm.post_chat_request(LLMContext.empty(), [])
 
         self.assertEqual(e.exception.code, 403)
         self.assertEqual(e.exception.__cause__.code, 401)

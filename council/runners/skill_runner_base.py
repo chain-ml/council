@@ -18,7 +18,7 @@ class SkillRunnerBase(RunnerBase):
 
     def __init__(self, name):
         super().__init__("skill")
-        self.monitor.set_name(name)
+        self.monitor.name = name
         self._name = name
 
     def _run(

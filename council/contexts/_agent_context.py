@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 from council.monitors import Monitored
 from ._budget import Budget
@@ -47,12 +47,8 @@ class AgentContext(ContextBase):
         return self._store.current_iteration.chains.values()
 
     @property
-    def evaluation(self) -> List[ScoredChatMessage]:
+    def evaluation(self) -> Sequence[ScoredChatMessage]:
         return self._store.current_iteration.evaluator
 
-    @property
-    def evaluationHistory(self) -> Sequence[List[ScoredChatMessage]]:
-        return self._store.evaluation_history
-
-    def set_evaluation(self, messages: List[ScoredChatMessage]):
-        self._store.current_iteration.evaluator.extend(messages)
+    def set_evaluation(self, messages: Iterable[ScoredChatMessage]):
+        self._store.current_iteration.set_evaluator(messages)

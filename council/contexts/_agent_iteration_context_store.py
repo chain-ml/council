@@ -1,4 +1,4 @@
-from typing import Dict, List, Mapping
+from typing import Dict, Iterable, List, Mapping, Sequence
 
 from ._chat_message import ChatMessage, ScoredChatMessage
 from ._execution_log_entry import ExecutionLogEntry
@@ -20,8 +20,12 @@ class AgentIterationContextStore:
         return self._chains
 
     @property
-    def evaluator(self) -> List[ScoredChatMessage]:
+    def evaluator(self) -> Sequence[ScoredChatMessage]:
         return self._evaluator
+
+    def set_evaluator(self, value: Iterable[ScoredChatMessage]):
+        self._evaluator.clear()
+        self._evaluator.extend(value)
 
     def ensure_chain_exists(self, name: str):
         self._chains[name] = MonitoredMessageList(MessageList())

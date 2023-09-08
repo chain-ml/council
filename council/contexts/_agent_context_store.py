@@ -16,9 +16,6 @@ class AgentContextStore:
         self._iterations: List[AgentIterationContextStore] = []
         self._log = ExecutionLog()
 
-        # to be deprecated
-        self._evaluation_history: List[List[ScoredChatMessage]] = []
-
     @property
     def cancellation_token(self) -> CancellationToken:
         return self._cancellation_token
@@ -42,7 +39,6 @@ class AgentContextStore:
     def new_iteration(self):
         iteration = AgentIterationContextStore()
         self._iterations.append(iteration)
-        self._evaluation_history.append(iteration.evaluator)
 
     def chain_iterations(self, name: str) -> Iterable[MessageCollection]:
         default = MessageList()
@@ -50,5 +46,6 @@ class AgentContextStore:
             yield iteration.chains.get(name, default)
 
     @property
-    def evaluation_history(self) -> Sequence[List[ScoredChatMessage]]:
-        return self._evaluation_history
+    def evaluation_history(self) -> Iterable[Sequence[ScoredChatMessage]]:
+        for iteration in self._iterations:
+            yield iteration.evaluator

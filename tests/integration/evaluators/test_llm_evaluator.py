@@ -2,7 +2,7 @@ import unittest
 
 import dotenv
 
-from council.contexts import AgentContext, Budget, ChatMessage, ChainContext
+from council.contexts import AgentContext, ChatMessage, ChainContext
 from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
 from council.mocks import MockMonitored
@@ -29,7 +29,7 @@ class TestLlmEvaluator(unittest.TestCase):
         messages = [empty_message, agent_message, rose_message]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
-            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
+            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name)
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
         result = evaluator.execute(context)
@@ -45,7 +45,7 @@ class TestLlmEvaluator(unittest.TestCase):
         messages = ["x=70", "x=71", "x=75", "x=72", "x=73", "x=78"]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
-            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
+            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name)
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
         result = evaluator.execute(context)
@@ -63,7 +63,7 @@ class TestLlmEvaluator(unittest.TestCase):
             How can I help you today?
             """
 
-        chain_context = ChainContext.from_agent_context(context, MockMonitored(), "test", Budget(10))
+        chain_context = ChainContext.from_agent_context(context, MockMonitored(), "test")
         chain_context.append(ChatMessage.skill(agent_message, None, "a skill"))
 
         result = evaluator.execute(context)
@@ -78,7 +78,7 @@ class TestLlmEvaluator(unittest.TestCase):
         messages = ["", "", "", ""]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
-            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
+            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name)
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
         result = evaluator.execute(context)
@@ -93,7 +93,7 @@ class TestLlmEvaluator(unittest.TestCase):
         messages = ["I am council", "I am council", "I am council", "I am council"]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
-            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name, Budget(10))
+            chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name)
             chain_context.append(ChatMessage.skill(message, None, "a skill"))
 
         result = evaluator.execute(context)

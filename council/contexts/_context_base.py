@@ -29,10 +29,6 @@ class ContextBase:
     def chat_history(self) -> ChatHistory:
         return self._store.chat_history
 
-    @property
-    def chatHistory(self) -> ChatHistory:
-        return self.chat_history
-
     def __enter__(self):
         self.log_entry.__enter__()
         return self

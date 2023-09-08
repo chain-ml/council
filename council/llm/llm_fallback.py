@@ -24,7 +24,7 @@ class LLMFallback(LLMBase):
 
     def __init__(self, llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2):
         super().__init__()
-        self._llm = self.new_monitor("llm", llm)
+        self._llm = self.new_monitor("primary", llm)
         self._fallback = self.new_monitor("fallback", fallback)
         self._retry_before_fallback = retry_before_fallback
 
