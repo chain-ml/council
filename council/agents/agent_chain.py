@@ -1,10 +1,9 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
-from .agent import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChainContext, ChatMessage
+from council.contexts import AgentContext, ChainContext, ChatMessage, Monitored
 from council.runners import RunnerExecutor
-from ..monitors import Monitored
+from .agent import Agent
 
 
 class AgentChain(Chain):

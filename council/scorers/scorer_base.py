@@ -2,9 +2,8 @@ import abc
 import logging
 from typing import Any, Dict
 
-from council.contexts import ChatMessage, ScorerContext
+from council.contexts import ChatMessage, Monitorable, ScorerContext
 from .scorer_exception import ScorerException
-from ..monitors import Monitorable
 
 logger = logging.getLogger(__name__)
 

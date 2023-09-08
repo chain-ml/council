@@ -3,7 +3,6 @@ import time
 import unittest
 from typing import List, Any, Optional
 
-from council import monitors
 from council.contexts import (
     ChainContext,
     Consumption,
@@ -71,8 +70,8 @@ class TestSkillRunners(unittest.TestCase):
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        # print(f"\n{monitors.render_as_text(runner)}")
-        print(f"\n{monitors.render_as_json(runner)}")
+        # print(f"\n{runner.render_as_text()}")
+        print(f"\n{runner.render_as_json()}")
         context = AgentContext.empty()
         context.new_iteration()
         with context.log_entry:

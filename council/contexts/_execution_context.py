@@ -1,8 +1,8 @@
 from typing import Optional
 
-from council.monitors import Monitored
 from ._execution_log import ExecutionLog
 from ._execution_log_entry import ExecutionLogEntry
+from ._monitored import Monitored
 
 
 class ExecutionContext:

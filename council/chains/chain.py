@@ -1,8 +1,7 @@
 from typing import List, Optional
 
-from council.contexts import ChainContext
-from council.monitors import Monitorable, Monitored
-from council.runners import RunnerBase, Sequential, RunnerExecutor
+from council.contexts import ChainContext, Monitorable, Monitored
+from council.runners import RunnerBase, RunnerExecutor, Sequential
 
 
 class Chain(Monitorable):

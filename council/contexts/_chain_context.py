@@ -3,7 +3,6 @@ from typing import Iterable, List, Optional
 
 import more_itertools
 
-from council.monitors import Monitored
 from ._agent_context import AgentContext
 from ._agent_context_store import AgentContextStore
 from ._budget import Budget
@@ -15,6 +14,7 @@ from ._context_base import ContextBase
 from ._execution_context import ExecutionContext
 from ._message_collection import MessageCollection
 from ._message_list import MessageList
+from ._monitored import Monitored
 
 logger = logging.getLogger(__name__)
 

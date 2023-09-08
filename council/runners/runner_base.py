@@ -1,12 +1,11 @@
 import abc
+import logging
 from collections.abc import Set
 from concurrent import futures
-import logging
 
-from council.contexts import ChainContext
-from .errrors import RunnerTimeoutError, RunnerError
+from council.contexts import ChainContext, Monitorable, Monitored
+from .errrors import RunnerError, RunnerTimeoutError
 from .runner_executor import RunnerExecutor
-from ..monitors import Monitorable, Monitored
 
 logger = logging.getLogger(__name__)
 
