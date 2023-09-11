@@ -74,6 +74,9 @@ class LLMSkill(SkillBase):
 
     @property
     def llm(self) -> LLMBase:
+        """
+        the LLM used by the skill
+        """
         return self._llm.inner
 
     def execute(self, context: SkillContext) -> ChatMessage:
