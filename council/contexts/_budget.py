@@ -143,7 +143,8 @@ class Budget:
         """
         adds/registers many consumptions into the budget
         """
-        [self.add_consumption(item) for item in consumptions]
+        for consumption in consumptions:
+            self.add_consumption(consumption)
 
     def __repr__(self):
         return f"Budget({self._duration})"

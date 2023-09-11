@@ -35,7 +35,8 @@ class ExecutionLogEntry:
         """
         logs multiple budget's :class:`Consumption`
         """
-        [self.log_consumption(item) for item in consumptions]
+        for consumption in consumptions:
+            self.log_consumption(consumption)
 
     def log_message(self, message: ChatMessage) -> None:
         """
