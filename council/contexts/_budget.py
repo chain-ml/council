@@ -97,14 +97,27 @@ class Budget:
 
     @property
     def duration(self) -> float:
+        """
+        the initial duration of the budget
+        """
         return self._duration
 
     @property
     def deadline(self) -> float:
+        """
+        the deadline of the budget, which when the budget expires
+        Returns:
+
+        """
         return self._deadline
 
     @property
     def remaining_duration(self) -> float:
+        """
+        the remaining duration in the budget
+        Returns:
+
+        """
         return self._deadline - time.monotonic()
 
     def is_expired(self) -> bool:
@@ -118,12 +131,18 @@ class Budget:
 
         return any(limit.value <= 0 for limit in self._remaining)
 
-    def add_consumption(self, consumption: Consumption):
+    def add_consumption(self, consumption: Consumption) -> None:
+        """
+        adds/registers a consumption into the budget
+        """
         for limit in self._remaining:
             if limit.unit == consumption.unit and limit.kind == consumption.kind:
                 limit.subtract_value(consumption.value)
 
     def add_consumptions(self, consumptions: Iterable[Consumption]) -> None:
+        """
+        adds/registers many consumptions into the budget
+        """
         [self.add_consumption(item) for item in consumptions]
 
     def __repr__(self):
@@ -142,11 +161,12 @@ class Budget:
 
 
 class InfiniteBudget(Budget):
+    """
+    Helper class representing a budget with no duration and no limits
+    """
+
     def __init__(self):
         super().__init__(10000)
-
-    def remaining(self) -> Budget:
-        return Budget(10000)
 
     def is_expired(self) -> bool:
         return False
