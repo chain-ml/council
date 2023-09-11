@@ -6,6 +6,10 @@ from ._chat_message import ChatMessage
 
 
 class ExecutionLogEntry:
+    """
+    represents one entry in the :class:`ExecutionLog`
+    """
+
     def __init__(self, source: str):
         self._source = source
         self._start = datetime.now(timezone.utc)
@@ -16,15 +20,27 @@ class ExecutionLogEntry:
 
     @property
     def source(self) -> str:
+        """
+        the source/name of the entry
+        """
         return self._source
 
-    def log_consumption(self, consumption: Consumption):
+    def log_consumption(self, consumption: Consumption) -> None:
+        """
+        logs a budget's :class:`Consumption`
+        """
         self._consumptions.append(consumption)
 
-    def log_consumptions(self, consumptions: Sequence[Consumption]):
+    def log_consumptions(self, consumptions: Sequence[Consumption]) -> None:
+        """
+        logs multiple budget's :class:`Consumption`
+        """
         [self.log_consumption(item) for item in consumptions]
 
-    def log_message(self, message: ChatMessage):
+    def log_message(self, message: ChatMessage) -> None:
+        """
+        logs a :class:`ChatMessage`
+        """
         self._messages.append(message)
 
     def __enter__(self):
@@ -42,6 +58,9 @@ class ExecutionLogEntry:
         )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        convert into a dictionary
+        """
         result = {
             "source": self._source,
             "start": self._start.isoformat(),
