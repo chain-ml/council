@@ -7,15 +7,10 @@ from council.runners import RunnerBase, RunnerExecutor, Sequential
 class Chain(Monitorable):
     """
     Represents a chain of skills that can be executed in a specific order.
-
-    Attributes:
-        name (str): The name of the chain.
-        description (str): The description of the chain.
-        runner (RunnerBase): The runner responsible for executing the chain.
     """
 
-    name: str
-    description: str
+    _name: str
+    _description: str
     _runner: Monitored[RunnerBase]
 
     def __init__(self, name: str, description: str, runners: List[RunnerBase]):
@@ -31,36 +26,33 @@ class Chain(Monitorable):
             None
         """
         super().__init__("chain")
-        self.name = name
+        self._name = name
         self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
         self.monitor.name = name
-        self.description = description
+        self._description = description
 
     @property
     def runner(self) -> RunnerBase:
+        """
+        the runner of the chain
+        """
         return self._runner.inner
 
-    def get_description(self) -> str:
+    @property
+    def name(self) -> str:
         """
-        Retrieves the description of the chain.
+        the name of the chain
+        """
+        return self._name
 
-        Returns:
-            str: The description of the chain.
-
-        Raises:
-            None
+    @property
+    def description(self) -> str:
+        """
+        the description of the chain.
         """
         return self.description
 
     def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
-        with context:
-            self._execute(context, executor)
-
-    def _execute(
-        self,
-        context: ChainContext,
-        executor: Optional[RunnerExecutor] = None,
-    ) -> None:
         """
         Executes the chain of skills based on the provided context, budget, and optional executor.
 
@@ -74,6 +66,14 @@ class Chain(Monitorable):
         Raises:
             None
         """
+        with context:
+            self._execute(context, executor)
+
+    def _execute(
+        self,
+        context: ChainContext,
+        executor: Optional[RunnerExecutor] = None,
+    ) -> None:
         executor = (
             RunnerExecutor(max_workers=10, thread_name_prefix=f"chain_{self.name}") if executor is None else executor
         )
