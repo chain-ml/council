@@ -45,8 +45,6 @@ class AgentContextStore:
     def current_iteration(self) -> AgentIterationContextStore:
         """
         the current iteration in the context
-        Returns:
-
         """
         return self._iterations[-1]
 

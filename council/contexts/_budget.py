@@ -106,8 +106,6 @@ class Budget:
     def deadline(self) -> float:
         """
         the deadline of the budget, which when the budget expires
-        Returns:
-
         """
         return self._deadline
 
