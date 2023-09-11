@@ -12,6 +12,7 @@ from ._context_base import ContextBase
 from ._chain_context import ChainContext
 from ._chat_history import ChatHistory
 from ._chat_message import ChatMessage, ChatMessageKind, ScoredChatMessage
+from ._execution_context import ExecutionContext
 from ._execution_log import ExecutionLog
 from ._execution_log_entry import ExecutionLogEntry
 from ._llm_context import LLMContext
