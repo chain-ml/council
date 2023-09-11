@@ -9,7 +9,6 @@ from .execution_unit import ExecutionUnit
 class ControllerBase(Monitorable, ABC):
     """
     Abstract base class for an agent controller.
-
     """
 
     def __init__(self, chains: List[Chain]):
@@ -42,4 +41,7 @@ class ControllerBase(Monitorable, ABC):
 
     @property
     def chains(self) -> Sequence[Chain]:
+        """
+        the chains of the controller
+        """
         return self._chains
