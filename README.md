@@ -50,6 +50,9 @@ Chains are directed graphs of Skills that are co-located and expose a single ent
 ## Evaluator 
 Evaluators are responsible for assessing the quality of one or multiple Skills / Chains at runtime for example by ranking and selecting the best response or responses that meet a given quality threshold. This can happen in multiple ways and is dependent on the implementation chosen. Users can extend standard Evaluators to achieve custom behavior that best matches their requirements. 
 
+## Filter 
+Filters are responsible for filtering responses given back to the controller. 
+
 ## State Management
 Council provides native objects to facilitate management of Agent, Chain and Skill context. These objects make it easy to keep track of message history and intermediate results.
 
@@ -117,7 +120,7 @@ Create a Controller to route prompts to chains. Here we use the straight-forward
 ```python
 from council.controllers import LLMController
 
-controller = LLMController(llm=openai_llm, response_threshold=5)
+controller = LLMController(llm=openai_llm, chains=[hw_chain, em_chain], response_threshold=5)
 ```
 
 Create an Evaluator. Here, we use an LLMEvaluator in which an LLM is tasked to evaluate each response received.
@@ -133,8 +136,9 @@ Finalize setup of the Hello World first Agent by combining all components create
 
 ```python
 from council.agents import Agent
+from council.filters import BasicFilter
 
-agent = Agent(controller=controller, chains=[hw_chain, em_chain], evaluator=evaluator)
+agent = Agent(controller=controller, evaluator=evaluator, filter=BasicFilter())
 ```
 
 Now, we are ready to invoke the agent.
