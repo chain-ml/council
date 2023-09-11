@@ -50,7 +50,7 @@ class Chain(Monitorable):
         """
         the description of the chain.
         """
-        return self.description
+        return self._description
 
     def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         """
