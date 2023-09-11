@@ -16,10 +16,6 @@ logger = logging.getLogger(__name__)
 class Agent(Monitorable):
     """
     Represents an agent that executes a set of chains to interact with the environment.
-
-    Attributes:
-        controller (ControllerBase): The controller responsible for generating execution plans.
-        evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
     """
 
     _controller: Monitored[ControllerBase]
@@ -27,7 +23,9 @@ class Agent(Monitorable):
     _evaluator: Monitored[EvaluatorBase]
     _filter: Monitored[FilterBase]
 
-    def __init__(self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase) -> None:
+    def __init__(
+        self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase, name: str = "agent"
+    ) -> None:
         """
         Initializes the Agent object.
 
@@ -35,8 +33,10 @@ class Agent(Monitorable):
             controller (ControllerBase): The controller responsible for generating execution plans.
             evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
             filter (FilterBase): The filter responsible to filter responses.
+            name (str): name of the agent
         """
-        super().__init__("agent")
+        super().__init__(base_type="agent")
+        self.monitor.name = name
 
         self._controller = self.new_monitor("controller", controller)
         self._chains = self.new_monitors("chains", self.controller.chains)
@@ -44,15 +44,31 @@ class Agent(Monitorable):
         self._filter = self.new_monitor("filter", filter)
 
     @property
+    def name(self) -> str:
+        """
+        the name of the agent
+        """
+        return self.monitor.name
+
+    @property
     def controller(self) -> ControllerBase:
+        """
+        the controller of the agent
+        """
         return self._controller.inner
 
     @property
     def evaluator(self) -> EvaluatorBase:
+        """
+        the evaluator of the agent
+        """
         return self._evaluator.inner
 
     @property
     def filter(self) -> FilterBase:
+        """
+        the filter of the agent
+        """
         return self._filter.inner
 
     def execute(self, context: AgentContext) -> AgentResult:
