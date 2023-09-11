@@ -135,6 +135,9 @@ class ChainContext(ContextBase, MessageCollection):
         return False
 
     def merge(self, contexts: List["ChainContext"]) -> None:
+        """
+        merge the given context to the context
+        """
         for context in contexts:
             self._current_messages.add_messages(context._current_messages.messages)
 
