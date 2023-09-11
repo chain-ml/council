@@ -1,32 +1,33 @@
 import abc
+import logging
 from collections.abc import Set
 from concurrent import futures
-import logging
 
-from council.contexts import ChainContext
-from .runner_context import RunnerContext
-from .budget import Budget
-from .errrors import RunnerTimeoutError, RunnerError
+from council.contexts import ChainContext, Monitorable, Monitored
+from .errrors import RunnerError, RunnerTimeoutError
 from .runner_executor import RunnerExecutor
 
 logger = logging.getLogger(__name__)
 
 
-class RunnerBase(abc.ABC):
-    def run_from_chain_context(self, chain_context: ChainContext, budget: Budget, executor: RunnerExecutor):
-        context = RunnerContext(chain_context, budget)
-        try:
-            self.run(context, executor)
-        finally:
-            chain_context.current.extend(context.messages)
+class RunnerBase(Monitorable, abc.ABC):
+    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor):
+        self.run(context, executor)
 
     """
     Base runner class that handles common execution logic, including error management and timeout
     """
 
+    def fork_run_merge(self, runner: Monitored["RunnerBase"], context: ChainContext, executor: RunnerExecutor):
+        inner = context.fork_for(runner)
+        try:
+            runner.inner.run(inner, executor)
+        finally:
+            context.merge([inner])
+
     def run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         if context.should_stop():
@@ -34,7 +35,8 @@ class RunnerBase(abc.ABC):
 
         logger.debug("start running %s", self.__class__.__name__)
         try:
-            self._run(context, executor)
+            with context:
+                self._run(context, executor)
         except futures.TimeoutError as e:
             logger.debug("timeout running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
@@ -57,7 +59,7 @@ class RunnerBase(abc.ABC):
     @abc.abstractmethod
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         pass

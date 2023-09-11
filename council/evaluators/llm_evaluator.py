@@ -6,10 +6,9 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 import logging
 from typing import List
 
-from council.contexts import AgentContext, ScoredChatMessage, ChatMessage
+from council.contexts import AgentContext, ChatMessage, LLMContext, Monitored, ScoredChatMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage
-from council.runners import Budget
 from council.utils import Option
 
 logger = logging.getLogger(__name__)
@@ -25,18 +24,22 @@ class LLMEvaluator(EvaluatorBase):
         :param llm: model to use for the evaluation.
         """
         super().__init__()
-        self._llm = llm
+        self._llm = Monitored("llm", llm)
 
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
-        query = context.chatHistory.try_last_user_message.unwrap()
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm.inner
+
+    def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
+        query = context.chat_history.try_last_user_message.unwrap()
         chain_results = [
-            chain_history[-1].try_last_message.unwrap()
-            for chain_history in context.chainHistory.values()
-            if chain_history[-1].try_last_message.is_some()
+            chain_messages.try_last_message.unwrap()
+            for chain_messages in context.chains
+            if chain_messages.try_last_message.is_some()
         ]
 
         # Build prompt to send to the inner LLM
-        llm_response = self._call_llm(query, chain_results, budget)
+        llm_response = self._call_llm(context, query, chain_results)
 
         # Parse LLM response with the score for each message we want to score
         scores = [self._parse_eval(line) for line in llm_response.split("\n") if line.lower().startswith("grade")]
@@ -50,14 +53,12 @@ class LLMEvaluator(EvaluatorBase):
 
         return scored_messages
 
-    def _call_llm(self, query: ChatMessage, chain_results: list[ChatMessage], budget: Budget) -> str:
+    def _call_llm(self, context: AgentContext, query: ChatMessage, chain_results: list[ChatMessage]) -> str:
         messages = self._build_llm_messages(query, chain_results)
         if len(messages) <= 0:
             return ""
 
-        result = self._llm.post_chat_request(messages=messages)
-        for c in result.consumptions:
-            budget.add_consumption(c, self.__class__.__name__)
+        result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages=messages)
         llm_response = result.first_choice
         logger.debug(f"llm response: {llm_response}")
         return llm_response

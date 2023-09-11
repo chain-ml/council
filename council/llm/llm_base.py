@@ -1,9 +1,9 @@
 import abc
 import logging
+from typing import Any, List, Optional, Sequence
 
-from typing import List, Any, Optional, Sequence
+from council.contexts import Consumption, LLMContext, Monitorable
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
-from ..runners.budget import Consumption
 
 logger = logging.getLogger(__name__)
 
@@ -26,19 +26,21 @@ class LLMResult:
         return self._consumptions
 
 
-class LLMBase(abc.ABC):
+class LLMBase(Monitorable, abc.ABC):
     """
     Abstract base class representing a language model.
     """
 
     def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None):
+        super().__init__("llm")
         self._token_counter = token_counter
 
-    def post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         """
         Sends a chat request to the language model.
 
         Parameters:
+            context (LLMContext): a context to track execution metrics
             messages (List[LLMMessage]): A list of LLMMessage objects representing the chat messages.
             **kwargs: Additional keyword arguments for the chat request.
 
@@ -55,7 +57,10 @@ class LLMBase(abc.ABC):
 
         logger.debug('message="starting execution of llm request"')
         try:
-            return self._post_chat_request(messages, **kwargs)
+            with context:
+                result = self._post_chat_request(context, messages, **kwargs)
+                context.budget.add_consumptions(result.consumptions)
+                return result
         except Exception as e:
             logger.exception('message="failed execution of llm request"')
             raise e
@@ -63,5 +68,5 @@ class LLMBase(abc.ABC):
             logger.debug('message="done execution of llm request"')
 
     @abc.abstractmethod
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         pass

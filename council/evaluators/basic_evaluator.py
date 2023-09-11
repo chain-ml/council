@@ -5,7 +5,6 @@ from council.contexts import (
     ScoredChatMessage,
     ChatMessage,
 )
-from council.runners.budget import Budget
 from .evaluator_base import EvaluatorBase
 
 
@@ -14,10 +13,12 @@ class BasicEvaluator(EvaluatorBase):
     A BasicEvaluator that carries along the last Skill source of each Chain ExecutionUnit.
     """
 
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+    def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         result: List[ScoredChatMessage] = []
-        for chain_history in context.chainHistory.values():
-            chain_result = chain_history[-1].messages[-1]
+        for chain_messages in context.chains:
+            chain_result = chain_messages.last_message
+            if chain_result is None:
+                continue
             score = 1.0 if chain_result.is_kind_skill and chain_result.is_ok else 0.0
             result.append(
                 ScoredChatMessage(

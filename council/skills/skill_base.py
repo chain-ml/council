@@ -5,7 +5,7 @@ from typing import Any
 from abc import abstractmethod
 
 from council.contexts import SkillContext, ChatMessage
-from council.runners import SkillRunnerBase, Budget
+from council.runners import SkillRunnerBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +43,12 @@ class SkillBase(SkillRunnerBase):
         return self._name
 
     @abstractmethod
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         """
         Executes the skill on the provided chain context and budget.
 
         Args:
             context (SkillContext): The context for executing the skill.
-            budget (Budget): The budget for skill execution.
 
         Returns:
             ChatMessage: The result of skill execution.
@@ -78,9 +77,9 @@ class SkillBase(SkillRunnerBase):
     def build_error_message(self, message: str, data: Any = None) -> ChatMessage:
         return ChatMessage.skill(message, data, source=self._name, is_error=True)
 
-    def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute_skill(self, context: SkillContext) -> ChatMessage:
         logger.info(f'message="skill execution started" skill="{self.name}"')
-        skill_message = self.execute(context, budget)
+        skill_message = self.execute(context)
         if skill_message.is_ok:
             logger.info(f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"')
         else:

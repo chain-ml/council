@@ -3,6 +3,7 @@ import unittest
 
 import dotenv
 
+from council.contexts import LLMContext
 from council.llm import AzureLLM, LLMMessage, LLMException
 from council.utils import ParameterValueException
 
@@ -17,12 +18,12 @@ class TestLlmAzure(unittest.TestCase):
     def test_basic_prompt(self):
         messages = [LLMMessage.user_message("Give me an example of a currency")]
 
-        llm_result = self.llm.post_chat_request(messages)
+        llm_result = self.llm.post_chat_request(LLMContext.empty(), messages)
         result = llm_result.first_choice
         print(result)
         messages.append(LLMMessage.system_message(result))
         messages.append(LLMMessage.user_message("give me another example"))
-        results = self.llm.post_chat_request(messages)
+        results = self.llm.post_chat_request(LLMContext.empty(), messages)
         [print(choice) for choice in results.choices]
 
     def test_censored_prompt(self):
@@ -33,7 +34,7 @@ class TestLlmAzure(unittest.TestCase):
         ]
 
         with self.assertRaises(LLMException) as e:
-            self.llm.post_chat_request(messages)
+            self.llm.post_chat_request(LLMContext.empty(), messages)
             self.assertIn("censored", str(e))
 
     def test_max_token(self):
@@ -42,7 +43,7 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            result = llm.post_chat_request(messages)
+            result = llm.post_chat_request(LLMContext.empty(), messages)
             self.assertTrue(len(result.first_choice.replace(" ", "")) <= 5 * 5)
         finally:
             del os.environ["AZURE_LLM_MAX_TOKENS"]
@@ -56,7 +57,7 @@ class TestLlmAzure(unittest.TestCase):
         try:
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
-            result = llm.post_chat_request(messages)
+            result = llm.post_chat_request(LLMContext.empty(), messages)
             self.assertEquals(3, len(result.choices))
             [print("\n- Choice:" + choice) for choice in result.choices]
         finally:

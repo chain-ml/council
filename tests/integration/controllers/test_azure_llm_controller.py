@@ -4,10 +4,9 @@ from unittest import TestCase
 import dotenv
 
 from council.chains import Chain
-from council.contexts import ChatHistory, AgentContext
+from council.contexts import AgentContext, Budget
 from council.controllers import LLMController
 from council.llm import AzureLLM
-from council.runners import Budget
 
 
 class TestAzureLlmController(TestCase):
@@ -65,9 +64,8 @@ class TestAzureLlmController(TestCase):
         print("*******")
         print(prompt)
         controller = LLMController(chains=self.chains, llm=AzureLLM.from_env())
-        chat_history = ChatHistory.from_user_message(prompt)
-        execution_context = AgentContext(chat_history)
-        result = controller.execute(execution_context, Budget(10))
+        execution_context = AgentContext.from_user_message(prompt, Budget(10))
+        result = controller.execute(execution_context)
 
         self.assertLessEqual(len(expected), len(result), "result length")
         self.assertEqual(expected, [item.chain for item in result[: len(expected)]])

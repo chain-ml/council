@@ -1,14 +1,17 @@
+import json
 import time
 import unittest
-from typing import List, Any
+from typing import List, Any, Optional
 
 from council.contexts import (
-    ChatHistory,
     ChainContext,
-    ChainHistory,
+    Consumption,
     SkillContext,
     ChatMessage,
+    Budget,
+    AgentContext,
 )
+from council.mocks import MockMonitored
 
 from council.skills.skill_base import SkillBase
 from council.runners import (
@@ -22,7 +25,6 @@ from council.runners import (
     RunnerPredicateError,
     RunnerGeneratorError,
     RunnerSkillError,
-    Budget,
 )
 
 
@@ -31,22 +33,25 @@ class MySkillException(Exception):
 
 
 class SkillTest(SkillBase):
-    def __init__(self, name: str, wait: float):
+    def __init__(self, name: str, wait: float, budget_kind: Optional[str] = None):
         super().__init__(name)
         self.wait = wait
+        self.budget_kind = budget_kind
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         time.sleep(abs(self.wait))
         if self.wait < 0:
             raise MySkillException("invalid wait")
         if context.iteration.map_or(lambda i: i.value, 0.0) < 0:
             raise MySkillException("invalid iteration")
+        if self.budget_kind is not None:
+            context.budget.add_consumption(Consumption(1, "unit", self.budget_kind))
         return self.build_success_message(self._name, context.iteration.map_or(lambda i: i.value, -1))
 
 
 class SkillTestAppend(SkillBase):
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        message = context.try_last_message.map_or(lambda m: m.message, "")
+    def execute(self, context: SkillContext) -> ChatMessage:
+        message = context.current.try_last_message.map_or(lambda m: m.message, "")
         return self.build_success_message(message + self.name)
 
 
@@ -55,19 +60,26 @@ class SkillTestMerge(SkillBase):
         super().__init__("merge")
         self.from_skills = from_skills
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         message = "".join([context.try_last_message_from_skill(name).unwrap().message for name in self.from_skills])
         return self.build_success_message(message)
 
 
 class TestSkillRunners(unittest.TestCase):
     def setUp(self) -> None:
-        self.history = ChatHistory()
-        self.context = ChainContext(ChatHistory(), [ChainHistory()])
         self.executor = new_runner_executor(name="test_skill_runner")
 
     def _execute(self, runner: RunnerBase, budget: Budget) -> None:
-        runner.run_from_chain_context(self.context, budget, self.executor)
+        # print(f"\n{runner.render_as_text()}")
+        print(f"\n{runner.render_as_json()}")
+        context = AgentContext.empty()
+        context.new_iteration()
+        with context.log_entry:
+            self.context = ChainContext.from_agent_context(context, MockMonitored("test"), "chain", budget)
+            with self.context:
+                runner.run(self.context, self.executor)
+
+            print(f"\n{json.dumps(context._execution_context._executionLog.to_dict(), indent=2)}")
 
     def assertSuccessMessages(self, expected: List[str]):
         self.assertEqual(
@@ -124,6 +136,18 @@ class TestSkillRunners(unittest.TestCase):
         self.assertFalse(self.context.cancellation_token.cancelled)
         self.assertSuccessMessages(["first", "second", "third", "fourth"])
 
+    def test_parallel_sequence_with_budget(self):
+        consumption = Consumption(1, "unit", "budget")
+        parallel = Parallel(
+            Sequential(SkillTest("first", 0.1, consumption.kind), SkillTest("second", 0.2, consumption.kind)),
+            SkillTest("third", 0.15, consumption.kind),
+            SkillTest("fourth", 0.4, consumption.kind),
+        )
+        self._execute(parallel, Budget(1, limits=[Consumption(5, "unit", "budget")]))
+        self.assertFalse(self.context.cancellation_token.cancelled)
+        self.assertSuccessMessages(["first", "second", "third", "fourth"])
+        self.assertEqual(self.context.budget._remaining[0].value, 1)
+
     def test_parallel_many_sequences(self):
         instance = Sequential(
             SkillTestAppend("a"),
@@ -152,12 +176,12 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages(["third"])
 
     def test_if_runner_true(self):
-        instance = Sequential(If(lambda a, b: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
         self.assertSuccessMessages(["maybe", "always"])
 
     def test_if_runner_true_with_error(self):
-        instance = Sequential(If(lambda a, b: True, SkillTest("maybe", -0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: True, SkillTest("maybe", -0.1)), SkillTest("always", 0.2))
         with self.assertRaises(RunnerSkillError) as cm:
             self._execute(instance, Budget(1))
 
@@ -165,22 +189,32 @@ class TestSkillRunners(unittest.TestCase):
         self.assertSuccessMessages([])
 
     def test_if_runner_predicate_throw(self):
-        def predicate_throw(a, b):
+        def predicate_throw(a):
             raise Exception("predicate")
 
-        instance = Sequential(If(lambda a, b: predicate_throw(a, b), SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: predicate_throw(a), SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         with self.assertRaises(RunnerPredicateError):
             self._execute(instance, Budget(1))
         self.assertSuccessMessages([])
 
     def test_if_runner_false(self):
-        instance = Sequential(If(lambda a, b: False, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(If(lambda a: False, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
         self.assertSuccessMessages(["always"])
 
+    def test_if_runner_consume_budget(self):
+        def predicate(chain_context: ChainContext) -> bool:
+            chain_context.budget.add_consumption(Consumption(0.5, "unit", "budget"))
+            return True
+
+        instance = If(predicate, SkillTest("maybe", 0.1, "budget"))
+        self._execute(instance, Budget(1, limits=[Consumption(2, "unit", "budget")]))
+        self.assertSuccessMessages(["maybe"])
+        self.assertEqual(self.context.budget._remaining[0].value, 0.5)
+
     def test_sequence_if_predicate_with_context_runner(self):
-        def predicate(chain_context: ChainContext, budget: Budget):
-            return chain_context.current.messages[-1].message == "first"
+        def predicate(chain_context: ChainContext):
+            return chain_context.current.try_last_message.unwrap().message == "first"
 
         instance = Sequential(SkillTest("first", 0.1), If(predicate, SkillTest("maybe", 0.2)), SkillTest("always", 0.2))
         self._execute(instance, Budget(1))
@@ -189,7 +223,7 @@ class TestSkillRunners(unittest.TestCase):
     def test_parallel_for(self):
         count = 100
 
-        def generator(chain_context: ChainContext, budget: Budget) -> Any:
+        def generator(chain_context: ChainContext) -> Any:
             for i in range(count):
                 yield i
 
@@ -200,7 +234,7 @@ class TestSkillRunners(unittest.TestCase):
         self.assertEqual([i for i in range(count)], data)
 
     def test_parallel_for_last_throw(self):
-        def generator(chain_context: ChainContext, budget: Budget):
+        def generator(chain_context: ChainContext):
             for _ in [1, 2, 3, 4]:
                 yield 0.01
             yield -0.01
@@ -216,7 +250,7 @@ class TestSkillRunners(unittest.TestCase):
         class MyGeneratorError(Exception):
             pass
 
-        def generator(chain_context: ChainContext, budget: Budget):
+        def generator(chain_context: ChainContext):
             yield 1
             raise MyGeneratorError("my error")
 
@@ -225,3 +259,18 @@ class TestSkillRunners(unittest.TestCase):
             self._execute(instance, Budget(0.5))
 
         self.assertIsInstance(cm.exception.__cause__, MyGeneratorError)
+
+    def test_parallel_for_generator_consume_budget(self):
+        count = 10
+
+        def generator(chain_context: ChainContext) -> Any:
+            for i in range(count):
+                chain_context.budget.add_consumption(Consumption(1, "unit", "budget"))
+                yield i
+
+        instance = ParallelFor(generator, SkillTest("for each", 0.01))
+        self._execute(instance, Budget(2, limits=[Consumption(20, "unit", "budget")]))
+        self.assertSuccessMessages(["for each" for i in range(count)])
+        data = [m.data for m in self.context.current.messages if m.is_ok]
+        self.assertEqual([i for i in range(count)], data)
+        self.assertEqual(self.context.budget._remaining[0].value, 10)

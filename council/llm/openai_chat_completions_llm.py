@@ -7,7 +7,7 @@ from . import LLMConfigurationBase
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from .llm_exception import LLMCallException
 from .llm_base import LLMBase, LLMResult
-from ..runners import Consumption
+from council.contexts import LLMContext, Consumption
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +140,7 @@ class OpenAIChatCompletionsModel(LLMBase):
         self.config = config
         self._provider = provider
 
-    def _post_chat_request(self, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
         payload = self.config.build_default_payload()
         payload["messages"] = [message.dict() for message in messages]
         for key, value in kwargs.items():

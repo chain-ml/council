@@ -1,6 +1,5 @@
-from council.contexts import ChatMessage
+from council.contexts import ChatMessage, ChainContext
 
-from .runner_context import RunnerContext
 from .errrors import RunnerPredicateError
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
@@ -13,16 +12,17 @@ class If(RunnerBase):
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
+        super().__init__("ifRunner")
         self.predicate = predicate
         self.runner = runner
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         try:
-            result = self.predicate(context.make_chain_context(), context.budget.remaining())
+            result = self.predicate(context)
         except Exception as e:
             context.append(ChatMessage.skill("IfRunner", f"predicate raised exception: {e}", is_error=True))
             raise RunnerPredicateError from e

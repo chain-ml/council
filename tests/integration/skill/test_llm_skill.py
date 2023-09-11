@@ -5,10 +5,9 @@ from typing import List
 import dotenv
 
 from council.agents import Agent
-from council.contexts import ChatHistory, AgentContext
+from council.contexts import AgentContext, Budget
 from council.llm import AzureLLM, LLMMessage
 from council.mocks import MockLLM
-from council.runners import Budget
 from council.skills.llm_skill import LLMSkill
 
 
@@ -27,9 +26,8 @@ class TestLlmSkill(unittest.TestCase):
         self.agent = Agent.from_skill(llm_skill, "Answer to an user prompt about finance using gpt4")
 
     def test_basic_prompt(self):
-        chat_history = ChatHistory.from_user_message(message="Hello, who are you?")
-        run_context = AgentContext(chat_history)
-        result = self.agent.execute(run_context, Budget(10))
+        run_context = AgentContext.from_user_message("Hello, who are you?", Budget(10))
+        result = self.agent.execute(run_context)
 
         self.assertTrue(result.try_best_message.is_some())
         print(result.best_message)

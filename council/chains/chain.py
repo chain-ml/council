@@ -1,10 +1,10 @@
-from typing import List, Any, Optional
+from typing import List, Optional
 
-from council.contexts import ChainContext
-from council.runners import Budget, RunnerBase, Sequential, RunnerExecutor
+from council.contexts import ChainContext, Monitorable, Monitored
+from council.runners import RunnerBase, RunnerExecutor, Sequential
 
 
-class Chain:
+class Chain(Monitorable):
     """
     Represents a chain of skills that can be executed in a specific order.
 
@@ -16,7 +16,7 @@ class Chain:
 
     name: str
     description: str
-    runner: RunnerBase
+    _runner: Monitored[RunnerBase]
 
     def __init__(self, name: str, description: str, runners: List[RunnerBase]):
         """
@@ -30,9 +30,15 @@ class Chain:
         Raises:
             None
         """
+        super().__init__("chain")
         self.name = name
-        self.runner = Sequential.from_list(*runners)
+        self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
+        self.monitor.name = name
         self.description = description
+
+    @property
+    def runner(self) -> RunnerBase:
+        return self._runner.inner
 
     def get_description(self) -> str:
         """
@@ -46,18 +52,20 @@ class Chain:
         """
         return self.description
 
-    def execute(
+    def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
+        with context:
+            self._execute(context, executor)
+
+    def _execute(
         self,
         context: ChainContext,
-        budget: Budget,
         executor: Optional[RunnerExecutor] = None,
-    ) -> Any:
+    ) -> None:
         """
         Executes the chain of skills based on the provided context, budget, and optional executor.
 
         Args:
             context (ChainContext): The context for executing the chain.
-            budget (Budget): The budget for chain execution.
             executor (Optional[RunnerExecutor]): The skill executor to use for executing the chain.
 
         Returns:
@@ -69,7 +77,8 @@ class Chain:
         executor = (
             RunnerExecutor(max_workers=10, thread_name_prefix=f"chain_{self.name}") if executor is None else executor
         )
-        self.runner.run_from_chain_context(context, budget, executor)
+
+        self._runner.inner.fork_run_merge(self._runner, context, executor)
 
     def __repr__(self):
         return f"Chain({self.name}, {self.description})"

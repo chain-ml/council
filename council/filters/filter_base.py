@@ -1,23 +1,24 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from council.contexts import AgentContext, ScoredChatMessage
-from council.runners import Budget
+from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 
-class FilterBase(ABC):
+class FilterBase(Monitorable, ABC):
     """
     Abstract base class for an agent controller.
 
     """
 
-    def execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+    def __init__(self):
+        super().__init__("filter")
+
+    def execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         """
         Selects responses from the agent's context.
 
         Args:
             context (AgentContext): The context for selecting responses.
-            budget (Budget): The budget for selecting responses.
 
         Returns:
             List[ScoredChatMessage]: A list of scored agent messages representing the selected responses.
@@ -25,8 +26,9 @@ class FilterBase(ABC):
         Raises:
             None
         """
-        return self._execute(context=context, budget=budget)
+        with context:
+            return self._execute(context=context)
 
     @abstractmethod
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ScoredChatMessage]:
+    def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         pass

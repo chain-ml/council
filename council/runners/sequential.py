@@ -1,4 +1,4 @@
-from .runner_context import RunnerContext
+from council.contexts import ChainContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 
@@ -9,17 +9,19 @@ class Sequential(RunnerBase):
     """
 
     def __init__(self, *runners: RunnerBase):
-        self.runners = runners
+        super().__init__("sequenceRunner")
+        self.runners = self.new_monitors("sequence", runners)
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         for runner in self.runners:
             if context.should_stop():
                 return
-            runner.run(context, executor)
+
+            self.fork_run_merge(runner, context, executor)
 
     @staticmethod
     def from_list(*runners: RunnerBase) -> RunnerBase:

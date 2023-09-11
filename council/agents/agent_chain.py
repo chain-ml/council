@@ -1,25 +1,29 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
-from .agent import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChainContext, ChatMessage
-from council.runners import Budget, RunnerExecutor
+from council.contexts import AgentContext, ChainContext, ChatMessage, Monitored
+from council.runners import RunnerExecutor
+from .agent import Agent
 
 
 class AgentChain(Chain):
+    _agent: Monitored[Agent]
+
     def __init__(self, name: str, description: str, agent: Agent):
         super().__init__(name, description, [])
-        self.agent = agent
+        self._agent = self.new_monitor("agent", agent)
 
-    def execute(
+    @property
+    def agent(self) -> Agent:
+        return self._agent.inner
+
+    def _execute(
         self,
         context: ChainContext,
-        budget: Budget,
         executor: Optional[RunnerExecutor] = None,
     ) -> Any:
-        agent_context = AgentContext(context.chat_history)
-        result = self.agent.execute(agent_context, budget)
+        result = self.agent.execute(AgentContext.from_chat_history(context.chat_history))
         maybe_message = result.try_best_message
         if maybe_message.is_some():
             message = maybe_message.unwrap()
-            context.current.append(ChatMessage.skill(message.message, message.data, message.source, message.is_error))
+            context.append(ChatMessage.skill(message.message, message.data, message.source, message.is_error))

@@ -1,20 +1,19 @@
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from council.chains import Chain
-from council.contexts import AgentContext, ChatHistory
-from council.controllers import ControllerBase, BasicController, ExecutionUnit
+from council.contexts import AgentContext, Budget, ChainContext, InfiniteBudget, Monitorable, Monitored
+from council.controllers import BasicController, ControllerBase, ExecutionUnit
 from council.evaluators import BasicEvaluator, EvaluatorBase
-from council.runners import Budget, new_runner_executor
+from council.filters import BasicFilter, FilterBase
+from council.runners import new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
-from ..filters import FilterBase, BasicFilter
-from ..runners.budget import InfiniteBudget
 
 logger = logging.getLogger(__name__)
 
 
-class Agent:
+class Agent(Monitorable):
     """
     Represents an agent that executes a set of chains to interact with the environment.
 
@@ -23,8 +22,10 @@ class Agent:
         evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
     """
 
-    controller: ControllerBase
-    evaluator: EvaluatorBase
+    _controller: Monitored[ControllerBase]
+    _chains: List[Monitored[Chain]]
+    _evaluator: Monitored[EvaluatorBase]
+    _filter: Monitored[FilterBase]
 
     def __init__(self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase) -> None:
         """
@@ -35,17 +36,31 @@ class Agent:
             evaluator (EvaluatorBase): The evaluator responsible for evaluating the agent's performance.
             filter (FilterBase): The filter responsible to filter responses.
         """
-        self.controller = controller
-        self.evaluator = evaluator
-        self._filter = filter
+        super().__init__("agent")
 
-    def execute(self, context: AgentContext, budget: Optional[Budget] = None) -> AgentResult:
+        self._controller = self.new_monitor("controller", controller)
+        self._chains = self.new_monitors("chains", self.controller.chains)
+        self._evaluator = self.new_monitor("evaluator", evaluator)
+        self._filter = self.new_monitor("filter", filter)
+
+    @property
+    def controller(self) -> ControllerBase:
+        return self._controller.inner
+
+    @property
+    def evaluator(self) -> EvaluatorBase:
+        return self._evaluator.inner
+
+    @property
+    def filter(self) -> FilterBase:
+        return self._filter.inner
+
+    def execute(self, context: AgentContext) -> AgentResult:
         """
         Executes the agent's chains based on the provided context and budget.
 
         Args:
             context (AgentContext): The context for executing the chains.
-            budget (Optional[Budget]): The budget for agent execution. Defaults to :meth:`Budget.default` if `None`
 
         Returns:
             AgentResult:
@@ -53,27 +68,35 @@ class Agent:
         Raises:
             None
         """
+        with context:
+            return self._execute(context)
+
+    def _execute(self, context: AgentContext) -> AgentResult:
         executor = new_runner_executor("agent")
-        budget = budget or Budget.default()
         try:
             logger.info('message="agent execution started"')
-            while not budget.is_expired():
-                logger.info(f'message="agent iteration started" iteration="{len(context.evaluationHistory)+1}"')
-                plan = self.controller.execute(context=context, budget=budget)
-                logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
+            while not context.budget.is_expired():
+                with context.new_agent_context_for_new_iteration() as iteration_context:
+                    logger.info(
+                        f'message="agent iteration started" iteration="{iteration_context.iteration_count - 1}"'
+                    )
+                    plan = self.controller.execute(context=iteration_context.new_agent_context_for(self._controller))
+                    logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
-                if len(plan) == 0:
-                    return AgentResult()
-                for unit in plan:
-                    budget = self._execute_unit(context, unit)
+                    if len(plan) == 0:
+                        return AgentResult()
 
-                result = self.evaluator.execute(context, budget)
-                context.evaluationHistory.append(result)
+                    for unit in plan:
+                        with iteration_context.new_agent_context_for_execution_unit(unit.name) as unit_context:
+                            self._execute_unit(unit_context, unit)
 
-                result = self._filter.execute(context=context, budget=budget)
-                logger.debug("controller selected %d responses", len(result))
-                if len(result) > 0:
-                    return AgentResult(messages=result)
+                    result = self.evaluator.execute(iteration_context.new_agent_context_for(self._evaluator))
+                    iteration_context.set_evaluation(result)
+
+                    result = self.filter.execute(context=iteration_context.new_agent_context_for(self._filter))
+                    logger.debug("controller selected %d responses", len(result))
+                    if len(result) > 0:
+                        return AgentResult(messages=result)
 
             return AgentResult()
         finally:
@@ -81,16 +104,16 @@ class Agent:
             executor.shutdown(wait=False, cancel_futures=True)
 
     @staticmethod
-    def _execute_unit(context: AgentContext, unit: ExecutionUnit) -> Budget:
+    def _execute_unit(context: AgentContext, unit: ExecutionUnit):
         chain = unit.chain
-        budget = unit.budget
         logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
-        chain_context = context.new_chain_context(unit.name)
+        chain_context = ChainContext.from_agent_context(
+            context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
+        )
         if unit.initial_state is not None:
-            chain_context.current.append(unit.initial_state)
-        chain.execute(chain_context, budget)
+            chain_context.append(unit.initial_state)
+        chain.execute(chain_context)
         logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
-        return budget
 
     @staticmethod
     def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":
@@ -135,5 +158,5 @@ class Agent:
              AgentResult:
         """
         execution_budget = budget or InfiniteBudget()
-        context = AgentContext(ChatHistory.from_user_message(message))
-        return self.execute(context, budget=execution_budget)
+        context = AgentContext.from_user_message(message, execution_budget)
+        return self.execute(context)

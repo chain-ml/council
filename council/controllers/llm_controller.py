@@ -1,12 +1,10 @@
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
-from council.contexts import AgentContext
 from council.chains import Chain
-from council.llm import LLMMessage, LLMBase
+from council.contexts import AgentContext, LLMContext, Monitored
+from council.llm import LLMBase, LLMMessage
 from council.utils import Option
-from council.runners import Budget
-
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
 
@@ -18,7 +16,7 @@ class LLMController(ControllerBase):
     A controller that uses an LLM to decide the execution plan
     """
 
-    _llm: LLMBase
+    _llm: Monitored[LLMBase]
 
     def __init__(self, chains: List[Chain], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None):
         """
@@ -30,13 +28,17 @@ class LLMController(ControllerBase):
             top_k (int): maximum number of execution plan returned
         """
         super().__init__(chains=chains)
-        self._llm = llm
+        self._llm = self.new_monitor("llm", llm)
         self._response_threshold = response_threshold
         self._top_k = top_k
         self._llm_system_message = self._build_system_message()
 
-    def _execute(self, context: AgentContext, budget: Budget) -> List[ExecutionUnit]:
-        response = self._call_llm(context, budget)
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm.inner
+
+    def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
+        response = self._call_llm(context)
         parsed = [
             self._parse_line(line, self._chains)
             for line in response.strip().splitlines()
@@ -49,18 +51,18 @@ class LLMController(ControllerBase):
 
         filtered.sort(key=lambda item: item[1], reverse=True)
         result = [
-            ExecutionUnit(chain, budget, name=f"{chain.name};{score}") for chain, score in filtered if chain is not None
+            ExecutionUnit(chain, context.budget, name=f"{chain.name};{score}")
+            for chain, score in filtered
+            if chain is not None
         ]
 
         if self._top_k is not None and self._top_k > 0:
             return result[: self._top_k]
         return result
 
-    def _call_llm(self, context: AgentContext, budget: Budget) -> str:
+    def _call_llm(self, context: AgentContext) -> str:
         messages = self._build_llm_messages(context)
-        llm_result = self._llm.post_chat_request(messages)
-        for c in llm_result.consumptions:
-            budget.add_consumption(c, self.__class__.__name__)
+        llm_result = self.llm.post_chat_request(LLMContext.from_context(context, self._llm), messages)
         response = llm_result.first_choice
         logger.debug(f"llm response: {response}")
         return response
@@ -69,7 +71,8 @@ class LLMController(ControllerBase):
         messages = [
             self._llm_system_message,
             LLMMessage.user_message(
-                f"What are most relevant categories for:\n {context.chatHistory.try_last_user_message.unwrap().message}"
+                "What are most relevant categories"
+                f"for:\n {context.chat_history.try_last_user_message.unwrap().message}"
             ),
         ]
         return messages

@@ -1,10 +1,9 @@
 import abc
 import logging
 
-from council.contexts import SkillContext, IterationContext, ChatMessage
-from . import RunnerContext, RunnerSkillError
+from council.contexts import SkillContext, IterationContext, ChatMessage, ChainContext
+from . import RunnerSkillError
 
-from .budget import Budget
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 from ..utils import Option
@@ -18,16 +17,18 @@ class SkillRunnerBase(RunnerBase):
     """
 
     def __init__(self, name):
+        super().__init__("skill")
+        self.monitor.name = name
         self._name = name
 
     def _run(
         self,
-        context: RunnerContext,
+        context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
         self.run_skill(context, executor)
 
-    def run_skill(self, context: RunnerContext, executor: RunnerExecutor) -> None:
+    def run_skill(self, context: ChainContext, executor: RunnerExecutor) -> None:
         """
         Run the skill in a different thread, and await for completion
         """
@@ -37,21 +38,21 @@ class SkillRunnerBase(RunnerBase):
         finally:
             future.cancel()
 
-    def run_in_current_thread(self, context: RunnerContext, iteration_context: Option[IterationContext]) -> None:
+    def run_in_current_thread(self, context: ChainContext, iteration_context: Option[IterationContext]) -> None:
         """
         Run the skill in the current thread
         """
         try:
-            skill_context = SkillContext(context.make_chain_context(), iteration_context)
-            message = self.execute_skill(skill_context, context.budget.remaining())
-            context.append(message)
+            with SkillContext.from_chain_context(context, iteration_context) as skill_context:
+                message = self.execute_skill(skill_context)
+                context.append(message)
         except Exception as e:
             logger.exception("unexpected error during execution of skill %s", self._name)
             context.append(self.from_exception(e))
             raise RunnerSkillError(f"an unexpected error occurred in skill {self._name}") from e
 
     @abc.abstractmethod
-    def execute_skill(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute_skill(self, context: SkillContext) -> ChatMessage:
         """
         Skill execution
         """
