@@ -1,7 +1,7 @@
 import logging
 from typing import List, Protocol
 
-from council.contexts import Consumption, SkillContext, ChatMessage, LLMContext
+from council.contexts import SkillContext, ChatMessage, LLMContext
 from council.llm import LLMBase, LLMMessage
 from council.prompt import PromptBuilder
 from council.skills import SkillBase
@@ -86,6 +86,6 @@ class LLMSkill(SkillBase):
         if len(llm_response.choices) < 1:
             return self.build_error_message(message="no response")
 
-        context.budget.add_consumption(consumption=Consumption(1, "call", "LLMSkill"))
+        context.budget.add_consumption(1, "call", "LLMSkill")
 
         return self.build_success_message(message=llm_response.first_choice, data=llm_response)
