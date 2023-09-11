@@ -6,4 +6,7 @@ mypy==1.5.1
 ruff==0.0.285
 
 # Test
+ipykernel==6.24.0
+nbconvert==7.6.0
+nbformat==5.9.1
 pytest==7.4.0
