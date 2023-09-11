@@ -24,7 +24,7 @@ class AgentContext(ContextBase):
         creates a new instance with no data
 
         Args:
-            budget (Budget): Optional, budget allocated for the agent execution 
+            budget (Budget): Optional, budget allocated for the agent execution
         """
         return AgentContext.from_chat_history(ChatHistory(), budget)
 
@@ -78,6 +78,7 @@ class AgentContext(ContextBase):
     def new_agent_context_for_execution_unit(self, name: str) -> "AgentContext":
         """
         creates a new instance, adjusting the execution context for the given name
+
         Args:
             name: name used in the :class:`ExecutionContext`
         """

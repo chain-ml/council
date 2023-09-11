@@ -113,8 +113,6 @@ class Budget:
     def remaining_duration(self) -> float:
         """
         the remaining duration in the budget
-        Returns:
-
         """
         return self._deadline - time.monotonic()
 
