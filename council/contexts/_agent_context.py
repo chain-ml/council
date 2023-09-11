@@ -34,7 +34,7 @@ class AgentContext(ContextBase):
         creates a new instance from a :class:`ChatHistory`
 
         Args:
-            chat_history:
+            chat_history (ChatHistory): The chat history to initialize the new agent context
             budget (Budget): Optional, budget allocated for the agent execution
         """
         store = AgentContextStore(chat_history)
@@ -47,7 +47,7 @@ class AgentContext(ContextBase):
         The :class:`ChatHistory` contains only the given message
 
         Args:
-            message:
+            message: the user message to start with
             budget (Budget): Optional, budget allocated for the agent execution
         """
         return AgentContext.from_chat_history(ChatHistory.from_user_message(message), budget)
