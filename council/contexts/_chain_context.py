@@ -110,6 +110,9 @@ class ChainContext(ContextBase, MessageCollection):
         )
 
     def fork_for(self, monitored: Monitored, budget: Optional[Budget] = None) -> "ChainContext":
+        """
+        forks the context for the given object, adjust the execution context appropriately
+        """
         return ChainContext(
             self._store,
             self._execution_context.new_for(monitored),
