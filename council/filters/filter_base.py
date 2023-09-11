@@ -6,8 +6,7 @@ from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 class FilterBase(Monitorable, ABC):
     """
-    Abstract base class for an agent controller.
-
+    Abstract base class for an agent filter.
     """
 
     def __init__(self):

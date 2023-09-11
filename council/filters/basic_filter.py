@@ -5,7 +5,16 @@ from council.filters import FilterBase
 
 
 class BasicFilter(FilterBase):
+    """
+    a basic filter that filters messages based on a score threshold.
+    """
+
     def __init__(self, score_threshold: Optional[float] = None, top_k: Optional[int] = None):
+        """
+        Args:
+            score_threshold: minimum score value for a message to be kept
+            top_k: maximum number of messages to be kept
+        """
         super().__init__()
         self._score_threshold = score_threshold
         self._top_k = top_k
