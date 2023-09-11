@@ -24,7 +24,7 @@ class AgentContext(ContextBase):
         creates a new instance with no data
 
         Args:
-            budget:
+            budget (Budget): Optional, budget allocated for the agent execution 
         """
         return AgentContext.from_chat_history(ChatHistory(), budget)
 
@@ -35,7 +35,7 @@ class AgentContext(ContextBase):
 
         Args:
             chat_history:
-            budget:
+            budget (Budget): Optional, budget allocated for the agent execution
         """
         store = AgentContextStore(chat_history)
         return AgentContext(store, ExecutionContext(store.execution_log, "agent"), budget or Budget.default())
@@ -48,7 +48,7 @@ class AgentContext(ContextBase):
 
         Args:
             message:
-            budget:
+            budget (Budget): Optional, budget allocated for the agent execution
         """
         return AgentContext.from_chat_history(ChatHistory.from_user_message(message), budget)
 

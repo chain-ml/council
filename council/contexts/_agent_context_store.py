@@ -46,7 +46,7 @@ class AgentContextStore:
         """
         the current iteration in the context
         Returns:
-
+    AgentIterationContextStore: Data storage for the execution of iteration
         """
         return self._iterations[-1]
 
