@@ -12,14 +12,14 @@ class Parallel(RunnerBase):
 
     def __init__(self, *runners: RunnerBase):
         super().__init__("parallelRunner")
-        self.runners = self.new_monitors("parallel", runners)
+        self._runners = self.new_monitors("parallel", runners)
 
     def _run(
         self,
         context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
-        contexts = [(runner.inner, context.fork_for(runner)) for runner in self.runners]
+        contexts = [(runner.inner, context.fork_for(runner)) for runner in self._runners]
 
         # Seems like it is a bad idea using lambda as the function in submit,
         # which results into inconsistent invocation (wrong arguments)
