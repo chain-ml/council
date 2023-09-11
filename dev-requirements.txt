@@ -1,9 +1,9 @@
 hatch==1.7.0
 
 # Lint
-black == 23.7.0
+black == 23.9.1
 mypy==1.5.1
-ruff==0.0.285
+ruff==0.0.288
 
 # Test
-pytest==7.4.0
+pytest==7.4.2
