@@ -45,7 +45,7 @@ class SkillTest(SkillBase):
         if context.iteration.map_or(lambda i: i.value, 0.0) < 0:
             raise MySkillException("invalid iteration")
         if self.budget_kind is not None:
-            context.budget.add_consumption(Consumption(1, "unit", self.budget_kind))
+            context.budget.add_consumption(1, "unit", self.budget_kind)
         return self.build_success_message(self._name, context.iteration.map_or(lambda i: i.value, -1))
 
 
@@ -204,7 +204,7 @@ class TestSkillRunners(unittest.TestCase):
 
     def test_if_runner_consume_budget(self):
         def predicate(chain_context: ChainContext) -> bool:
-            chain_context.budget.add_consumption(Consumption(0.5, "unit", "budget"))
+            chain_context.budget.add_consumption(0.5, "unit", "budget")
             return True
 
         instance = If(predicate, SkillTest("maybe", 0.1, "budget"))
@@ -265,7 +265,7 @@ class TestSkillRunners(unittest.TestCase):
 
         def generator(chain_context: ChainContext) -> Any:
             for i in range(count):
-                chain_context.budget.add_consumption(Consumption(1, "unit", "budget"))
+                chain_context.budget.add_consumption(1, "unit", "budget")
                 yield i
 
         instance = ParallelFor(generator, SkillTest("for each", 0.01))

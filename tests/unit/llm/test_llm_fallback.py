@@ -5,7 +5,7 @@ from council.llm import LLMFallback, LLMCallException
 from council.mocks import MockLLM, MockErrorLLM
 
 
-class TestPrompt(unittest.TestCase):
+class TestLLMFallBack(unittest.TestCase):
     def test_no_fallback(self):
         m = MockLLM.from_response("Test")
         fb = MockLLM.from_response("FallBack")

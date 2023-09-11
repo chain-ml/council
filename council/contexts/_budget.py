@@ -129,22 +129,37 @@ class Budget:
         if self._deadline < time.monotonic():
             return True
 
-        return any(limit.value <= 0 for limit in self._remaining)
+        return any(limit.value < 0.0 for limit in self._remaining)
 
-    def add_consumption(self, consumption: Consumption) -> None:
+    def can_consume(self, value: float, unit: str, kind: str) -> bool:
+        """
+        returns `True` if the given consumption is allowed (will not exhaust the budget).
+        `False` otherwise
+        """
+        for limit in self._remaining:
+            if limit.unit == unit and limit.kind == kind:
+                c = limit.subtract(value)
+                return c.value >= 0.0
+        return True
+
+    def add_consumption(self, value: float, unit: str, kind: str):
         """
         adds/registers a consumption into the budget
         """
+        self._add_consumption(Consumption(value=value, unit=unit, kind=kind))
+
+    def _add_consumption(self, consumption: Consumption):
         for limit in self._remaining:
             if limit.unit == consumption.unit and limit.kind == consumption.kind:
                 limit.subtract_value(consumption.value)
 
     def add_consumptions(self, consumptions: Iterable[Consumption]) -> None:
+        [self._add_consumption(item) for item in consumptions]
         """
         adds/registers many consumptions into the budget
         """
         for consumption in consumptions:
-            self.add_consumption(consumption)
+            self._add_consumption(consumption)
 
     def __repr__(self):
         return f"Budget({self._duration})"
