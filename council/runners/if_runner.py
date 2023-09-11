@@ -12,9 +12,14 @@ class If(RunnerBase):
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
+        """
+        Args:
+            predicate: a predicate function
+            runner: a runner to be executed only if the predicate returns `True`
+        """
         super().__init__("ifRunner")
-        self.predicate = predicate
-        self.runner = runner
+        self._predicate = predicate
+        self._runner = runner
 
     def _run(
         self,
@@ -22,10 +27,10 @@ class If(RunnerBase):
         executor: RunnerExecutor,
     ) -> None:
         try:
-            result = self.predicate(context)
+            result = self._predicate(context)
         except Exception as e:
             context.append(ChatMessage.skill("IfRunner", f"predicate raised exception: {e}", is_error=True))
             raise RunnerPredicateError from e
 
         if result:
-            self.runner.run(context, executor)
+            self._runner.run(context, executor)

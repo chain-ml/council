@@ -5,6 +5,10 @@ from ._message_collection import MessageCollection
 
 
 class CompositeMessageCollection(MessageCollection):
+    """
+    Wraps multiple :class:`MessageCollection` as one.
+    """
+
     _collections: List[MessageCollection]
 
     def __init__(self, collections: List[MessageCollection]):

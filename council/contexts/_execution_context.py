@@ -6,6 +6,10 @@ from ._monitored import Monitored
 
 
 class ExecutionContext:
+    """
+    context storing the execution information
+    """
+
     _executionLog: ExecutionLog
     _entry: ExecutionLogEntry
 
@@ -17,11 +21,20 @@ class ExecutionContext:
         return name if self._entry.source == "" else f"{self._entry.source}/{name}"
 
     def new_from_name(self, name: str):
+        """
+        returns a new instance for the given name
+        """
         return ExecutionContext(self._executionLog, self._new_path(name))
 
     def new_for(self, monitored: Monitored) -> "ExecutionContext":
+        """
+        returns a new instance for the given object
+        """
         return ExecutionContext(self._executionLog, self._new_path(monitored.name))
 
     @property
     def entry(self) -> ExecutionLogEntry:
+        """
+        the current log entry
+        """
         return self._entry

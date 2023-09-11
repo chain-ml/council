@@ -52,5 +52,8 @@ The example below demonstrates how to use the budget to limit the amount of reso
 Classes
 =======
 
-.. autoclass:: council.contexts.Budget
-.. autoclass:: council.contexts.Consumption
+:ref:`budget-ref-label`
+
+:ref:`budgetConsumption-ref-label`
+
+:ref:`infiniteBudget-ref-label`

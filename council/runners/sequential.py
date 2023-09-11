@@ -10,14 +10,14 @@ class Sequential(RunnerBase):
 
     def __init__(self, *runners: RunnerBase):
         super().__init__("sequenceRunner")
-        self.runners = self.new_monitors("sequence", runners)
+        self._runners = self.new_monitors("sequence", runners)
 
     def _run(
         self,
         context: ChainContext,
         executor: RunnerExecutor,
     ) -> None:
-        for runner in self.runners:
+        for runner in self._runners:
             if context.should_stop():
                 return
 

@@ -8,6 +8,13 @@ from ._monitored_budget import MonitoredBudget
 
 
 class ContextBase:
+    """
+    base class for context.
+
+    It provides a secured and monitored access to the data generated during the execution.
+    The actual data are stored in the underlying `class`:AgentContextStore`.
+    """
+
     def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget):
         self._store = store
         self._execution_context = execution_context
@@ -15,18 +22,30 @@ class ContextBase:
 
     @property
     def iteration_count(self) -> int:
+        """
+        the number of iteration for this execution
+        """
         return len(self._store.iterations)
 
     @property
     def log_entry(self) -> ExecutionLogEntry:
+        """
+        the log entry
+        """
         return self._execution_context.entry
 
     @property
     def budget(self) -> Budget:
+        """
+        the budget
+        """
         return self._budget
 
     @property
     def chat_history(self) -> ChatHistory:
+        """
+        the chat history
+        """
         return self._store.chat_history
 
     def __enter__(self):
@@ -37,4 +56,7 @@ class ContextBase:
         self.log_entry.__exit__(exc_type, exc_val, exc_tb)
 
     def new_log_entry(self, monitored: Monitored) -> ExecutionLogEntry:
+        """
+        creates a new log entry from this context
+        """
         return self._execution_context.new_for(monitored).entry

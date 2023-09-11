@@ -35,6 +35,9 @@ class LLMController(ControllerBase):
 
     @property
     def llm(self) -> LLMBase:
+        """
+        the LLM used by the controller
+        """
         return self._llm.inner
 
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:

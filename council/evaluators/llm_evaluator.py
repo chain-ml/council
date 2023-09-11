@@ -28,6 +28,9 @@ class LLMEvaluator(EvaluatorBase):
 
     @property
     def llm(self) -> LLMBase:
+        """
+        the LLM used by the evaluator
+        """
         return self._llm.inner
 
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:

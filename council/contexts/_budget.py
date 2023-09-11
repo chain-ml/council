@@ -97,14 +97,23 @@ class Budget:
 
     @property
     def duration(self) -> float:
+        """
+        the initial duration of the budget
+        """
         return self._duration
 
     @property
     def deadline(self) -> float:
+        """
+        the deadline of the budget, which when the budget expires
+        """
         return self._deadline
 
     @property
     def remaining_duration(self) -> float:
+        """
+        the remaining duration in the budget
+        """
         return self._deadline - time.monotonic()
 
     def is_expired(self) -> bool:
@@ -119,6 +128,10 @@ class Budget:
         return any(limit.value < 0.0 for limit in self._remaining)
 
     def can_consume(self, value: float, unit: str, kind: str) -> bool:
+        """
+        returns `True` if the given consumption is allowed (will not exhaust the budget).
+        `False` otherwise
+        """
         for limit in self._remaining:
             if limit.unit == unit and limit.kind == kind:
                 c = limit.subtract(value)
@@ -126,6 +139,9 @@ class Budget:
         return True
 
     def add_consumption(self, value: float, unit: str, kind: str):
+        """
+        adds/registers a consumption into the budget
+        """
         self._add_consumption(Consumption(value=value, unit=unit, kind=kind))
 
     def _add_consumption(self, consumption: Consumption):
@@ -135,6 +151,11 @@ class Budget:
 
     def add_consumptions(self, consumptions: Iterable[Consumption]) -> None:
         [self._add_consumption(item) for item in consumptions]
+        """
+        adds/registers many consumptions into the budget
+        """
+        for consumption in consumptions:
+            self._add_consumption(consumption)
 
     def __repr__(self):
         return f"Budget({self._duration})"
@@ -152,11 +173,12 @@ class Budget:
 
 
 class InfiniteBudget(Budget):
+    """
+    Helper class representing a budget with no duration and no limits
+    """
+
     def __init__(self):
         super().__init__(10000)
-
-    def remaining(self) -> Budget:
-        return Budget(10000)
 
     def is_expired(self) -> bool:
         return False
