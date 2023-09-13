@@ -1,6 +1,13 @@
-Agent Execution Log
----------------------
+# Agent Execution Log
 
+The execution log is record of many activities that happened during the execution of an agent.
+It includes:
+- the start time and the duration of each activity
+- the list of messages they published into the context
+- the budget consumption used
+
+The code below creates and executes and simple agent and illustrate how to export its execution log into JSON.
+```{eval-rst}
 ..  testcode::
 
     from council.agents import Agent
@@ -17,8 +24,10 @@ Agent Execution Log
     context = AgentContext.from_user_message("run")
     agent.execute(context)
     print(context.execution_log_to_json())
+```
 
-
+Result of the agent execution:
+```{eval-rst}
 .. Skip test output as output contains duration which may vary and actual execution date
 .. testoutput::
     :options: +SKIP
@@ -90,3 +99,4 @@ Agent Execution Log
         }
       ]
     }
+```
