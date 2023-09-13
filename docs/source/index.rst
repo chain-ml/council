@@ -27,6 +27,8 @@
     examples/budget.rst
     examples/parallel.rst
     examples/integrations/index
+    examples/agent_execution_graph.rst
+    examples/agent_execution_log.rst
 
 .. toctree::
     :maxdepth: 2
