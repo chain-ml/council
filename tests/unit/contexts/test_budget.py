@@ -58,3 +58,16 @@ class TestBudget(unittest.TestCase):
             del os.environ["COUNCIL_DEFAULT_BUDGET"]
 
         self.assertEquals(None, os.getenv("COUNCIL_DEFAULT_BUDGET", None))
+
+    def test_add_consumptions(self):
+        first = Consumption(10, "first", "count")
+        second = Consumption(20, "second", "count")
+        budget = Budget(duration=10, limits=[first, second])
+        self.assertFalse(budget.is_expired())
+
+        consumptions = [Consumption(6, "first", "count"), Consumption(2, "second", "count")]
+        budget.add_consumptions(consumptions)
+
+        self.assertFalse(budget.is_expired())
+        self.assertEqual(budget._remaining[0].value, 4)
+        self.assertEqual(budget._remaining[1].value, 18)

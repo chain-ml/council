@@ -150,7 +150,6 @@ class Budget:
                 limit.subtract_value(consumption.value)
 
     def add_consumptions(self, consumptions: Iterable[Consumption]) -> None:
-        [self._add_consumption(item) for item in consumptions]
         """
         adds/registers many consumptions into the budget
         """
