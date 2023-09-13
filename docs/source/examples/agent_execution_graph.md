@@ -1,6 +1,9 @@
-Agent Execution Graph
----------------------
+# Agent Execution Graph
 
+An Agent graph is the representation of its parts and how they related with each other.
+The code sample build a simple agent and export its graph into JSON:
+
+```{eval-rst}
 ..  testcode::
 
     from council.agents import Agent
@@ -13,8 +16,17 @@ Agent Execution Graph
     chains = [Chain("a chain", "do something", [MockSkill("a skill")])]
     agent = Agent(BasicController(chains), BasicEvaluator(), BasicFilter(), name="an agent")
     print(agent.render_as_json())
+```
 
+The output below can be read as:
+- the top level entity is of `type` `Agent` (actual type)
+- its own name is `an agent` (from `properties["name"]`)
+- it has many children
+- its first child is of `type` `BasicController`
+- its relationship from `agent` is `controller` (from `children[0].name`)
+and so on.
 
+```{eval-rst}
 .. testoutput::
 
     {
@@ -76,3 +88,4 @@ Agent Execution Graph
         }
       ]
     }
+```
