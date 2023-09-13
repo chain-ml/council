@@ -96,3 +96,25 @@ class TestAgent(TestCase):
             ],
             [item.message.message for item in result.messages],
         )
+
+    def test_agent_log(self):
+        chains = [Chain("a chain", "do something", [MockSkill("a skill")])]
+        agent = Agent(BasicController(chains), BasicEvaluator(), BasicFilter(), name="an agent")
+
+        context = AgentContext.from_user_message("run")
+        agent.execute(context)
+        result = context.execution_log_to_dict()
+
+        self.assertIsNotNone(result)
+        expected_sources = [
+            "agent",
+            "agent/iterations[0]",
+            "agent/iterations[0]/controller",
+            "agent/iterations[0]/execution(a chain)",
+            "agent/iterations[0]/execution(a chain)/chain(a chain)",
+            "agent/iterations[0]/execution(a chain)/chain(a chain)/runner",
+            "agent/iterations[0]/evaluator",
+            "agent/iterations[0]/filter",
+        ]
+
+        self.assertEqual(expected_sources, [item["source"] for item in result["entries"]])
