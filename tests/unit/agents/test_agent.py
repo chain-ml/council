@@ -97,6 +97,21 @@ class TestAgent(TestCase):
             [item.message.message for item in result.messages],
         )
 
+    def test_agent_graph(self):
+        chains = [Chain("a chain", "do something", [MockSkill("a skill")])]
+        agent = Agent(BasicController(chains), BasicEvaluator(), BasicFilter(), name="an agent")
+        result = agent.render_as_dict()
+        self.assertIsNotNone(result)
+        self.assertEqual(result["type"], "Agent")
+        self.assertEqual(result["properties"]["name"], "an agent")
+        self.assertEqual(result["children"][0]["value"]["type"], "BasicController")
+        self.assertEqual(result["children"][1]["value"]["type"], "Chain")
+        self.assertEqual(result["children"][1]["value"]["children"][0]["value"]["type"], "MockSkill")
+        self.assertEqual(result["children"][2]["value"]["type"], "BasicEvaluator")
+        self.assertEqual(result["children"][3]["value"]["type"], "BasicFilter")
+
+        print(agent.render_as_json())
+
     def test_agent_log(self):
         chains = [Chain("a chain", "do something", [MockSkill("a skill")])]
         agent = Agent(BasicController(chains), BasicEvaluator(), BasicFilter(), name="an agent")
