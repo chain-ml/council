@@ -21,5 +21,6 @@ from ._message_list import MessageList
 from ._monitor import Monitor
 from ._monitorable import Monitorable
 from ._monitored import Monitored
+from ._monitored_budget import MonitoredBudget
 from ._scorer_context import ScorerContext
 from ._skill_context import IterationContext, SkillContext
