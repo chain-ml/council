@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from council.chains.chain_base import ChainBase
 from council.contexts import ChainContext, Monitored
@@ -12,7 +12,7 @@ class Chain(ChainBase):
 
     _runner: Monitored[RunnerBase]
 
-    def __init__(self, name: str, description: str, runners: List[RunnerBase]):
+    def __init__(self, name: str, description: str, runners: Sequence[RunnerBase]):
         """
         Initializes the Chain object.
 
@@ -25,7 +25,7 @@ class Chain(ChainBase):
             None
         """
         super().__init__(name, description)
-        self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
+        self._runner = self.new_monitor("runner", Sequential.from_list(runners))
 
     @property
     def runner(self) -> RunnerBase:
