@@ -13,7 +13,7 @@ class Chain(Monitorable):
     _description: str
     _runner: Monitored[RunnerBase]
 
-    def __init__(self, name: str, description: str, runners: List[RunnerBase]):
+    def __init__(self, name: str, description: str, runners: List[RunnerBase], support_instructions: bool = False):
         """
         Initializes the Chain object.
 
@@ -30,6 +30,7 @@ class Chain(Monitorable):
         self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
         self.monitor.name = name
         self._description = description
+        self._instructions = support_instructions
 
     @property
     def runner(self) -> RunnerBase:
@@ -51,6 +52,10 @@ class Chain(Monitorable):
         the description of the chain.
         """
         return self._description
+
+    @property
+    def has_instructions(self) -> bool:
+        return self._instructions
 
     def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         """
