@@ -1,5 +1,5 @@
 import json
-from typing import Iterable, List, TypeVar
+from typing import Any, Dict, Iterable, List, TypeVar
 
 from ._monitor import Monitor
 from ._monitored import Monitored
@@ -30,5 +30,14 @@ class Monitorable:
     def render_as_text(self) -> str:
         return "\n".join(self.monitor.render_as_text())
 
+    def render_as_dict(self) -> Dict[str, Any]:
+        """
+        returns the graph of operation as a dictionary
+        """
+        return self.monitor.render_as_dict()
+
     def render_as_json(self) -> str:
+        """
+        returns the graph of operation as a JSON string
+        """
         return json.dumps(self.monitor.render_as_dict(), indent=2)

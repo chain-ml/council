@@ -38,3 +38,10 @@ class ExecutionContext:
         the current log entry
         """
         return self._entry
+
+    @property
+    def execution_log(self) -> ExecutionLog:
+        """
+        the execution log
+        """
+        return self._executionLog

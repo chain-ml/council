@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from ._agent_context_store import AgentContextStore
 from ._budget import Budget
 from ._chat_history import ChatHistory
@@ -60,3 +62,15 @@ class ContextBase:
         creates a new log entry from this context
         """
         return self._execution_context.new_for(monitored).entry
+
+    def execution_log_to_dict(self) -> Dict[str, Any]:
+        """
+        returns the execution log as a dictionary
+        """
+        return self._execution_context.execution_log.to_dict()
+
+    def execution_log_to_json(self) -> str:
+        """
+        returns the execution as a JSON string
+        """
+        return self._execution_context.execution_log.to_json()
