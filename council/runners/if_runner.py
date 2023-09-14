@@ -19,7 +19,7 @@ class If(RunnerBase):
         """
         super().__init__("ifRunner")
         self._predicate = predicate
-        self._runner = runner
+        self._then = self.new_monitor("then", runner)
 
     def _run(
         self,
@@ -33,4 +33,4 @@ class If(RunnerBase):
             raise RunnerPredicateError from e
 
         if result:
-            self._runner.run(context, executor)
+            self._then.inner.run(context, executor)

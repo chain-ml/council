@@ -4,6 +4,11 @@ from .helpers import MySkillException, RunnerTestCase, SkillTest
 
 
 class TestIf(RunnerTestCase):
+    def test_monitors(self):
+        then_skill = SkillTest("maybe", 0.1)
+        instance = If(lambda a: True, then_skill)
+        self.assertEqual(instance.monitor.children["then"].name, then_skill.name)
+
     def test_if_runner_true(self):
         instance = Sequential(If(lambda a: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
         self.execute(instance, Budget(1))
