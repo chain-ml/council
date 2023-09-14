@@ -95,6 +95,5 @@ html_theme_options = {
     "sidebar_hide_name": False,
 }
 # fmt: on
-html_theme_options[
-    "announcement"
-] = f"This is a preview of the upcoming release. version_name {os.environ.get('READTHEDOCS_VERSION_NAME', '')}"
+if os.environ.get("READTHEDOCS_VERSION_NAME", "") == "latest":
+    html_theme_options["announcement"] = "This is a preview of the upcoming release."
