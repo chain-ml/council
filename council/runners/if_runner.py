@@ -18,6 +18,7 @@ class If(RunnerBase):
         Args:
             predicate: a predicate function
             runner: a runner to be executed only if the predicate returns `True`
+            else_runner: an optional runner to be executed only if the predicate returns `False`
         """
         super().__init__("ifRunner")
         self._predicate = predicate
