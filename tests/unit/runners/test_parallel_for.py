@@ -9,7 +9,7 @@ from council.runners import (
 from .helpers import MySkillException, RunnerTestCase, SkillTest
 
 
-class TestSkillRunners(RunnerTestCase):
+class TestParallelFor(RunnerTestCase):
     def test_parallel_for(self):
         count = 100
 

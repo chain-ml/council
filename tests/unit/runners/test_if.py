@@ -4,10 +4,39 @@ from .helpers import MySkillException, RunnerTestCase, SkillTest
 
 
 class TestIf(RunnerTestCase):
+    def test_monitors(self):
+        then_skill = SkillTest("maybe", 0.1)
+        instance = If(lambda a: True, then_skill)
+
+        self.assertEqual(instance.monitor.children["then"].name, then_skill.name)
+        self.assertIsNone(instance.monitor.children.get("else"))
+
+    def test_monitors_with_else(self):
+        then_skill = SkillTest("then skill", 0.1)
+        else_skill = SkillTest("else skill", 0.1)
+        instance = If(lambda a: True, then_skill, else_skill)
+
+        self.assertEqual(instance.monitor.children["then"].name, then_skill.name)
+        self.assertEqual(instance.monitor.children["else"].name, else_skill.name)
+
     def test_if_runner_true(self):
-        instance = Sequential(If(lambda a: True, SkillTest("maybe", 0.1)), SkillTest("always", 0.2))
+        instance = Sequential(
+            If(lambda a: True, SkillTest("then", 0.1), SkillTest("else", 0.1)), SkillTest("always", 0.2)
+        )
         self.execute(instance, Budget(1))
-        self.assertSuccessMessages(["maybe", "always"])
+        self.assertSuccessMessages(["then", "always"])
+
+    def test_if_runner_false_with_else(self):
+        instance = Sequential(
+            If(lambda a: False, SkillTest("then", 0.1), SkillTest("else", 0.1)), SkillTest("always", 0.2)
+        )
+        self.execute(instance, Budget(1))
+        self.assertSuccessMessages(["else", "always"])
+
+    def test_if_runner_false_without_else(self):
+        instance = Sequential(If(lambda a: False, SkillTest("then", 0.1)), SkillTest("always", 0.2))
+        self.execute(instance, Budget(1))
+        self.assertSuccessMessages(["always"])
 
     def test_if_runner_true_with_error(self):
         instance = Sequential(If(lambda a: True, SkillTest("maybe", -0.1)), SkillTest("always", 0.2))
