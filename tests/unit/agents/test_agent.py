@@ -27,7 +27,9 @@ class TestAgent(TestCase):
 
         self.assertIsInstance(agent.controller, BasicController)
         self.assertIsInstance(agent.evaluator, BasicEvaluator)
-        self.assertIsInstance(agent.controller.chains[0].runner, MockSkill)
+        chain = agent.controller.chains[0]
+        self.assertIsInstance(chain, Chain)
+        self.assertIsInstance(chain.runner, MockSkill)
 
     def test_default_budget(self):
         def action(context: SkillContext) -> ChatMessage:

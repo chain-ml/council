@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from council.chains import Chain
+from council.chains import ChainBase
 from council.contexts import Budget, ChatMessage
 
 
@@ -11,14 +11,14 @@ class ExecutionUnit:
     Represents an execution unit to be executed by an Agent
 
     Parameters:
-        chain(Chain): the chain to be executed
+        chain(ChainBase): the chain to be executed
         budget(Budget): the budget granted for this execution
         initial_state(Optional[ChatMessage]): an optional message that will be injected in the chain context
         name(Optional[str]): a unique name for the execution. Defaults to :attr:`Chain.name`
     """
 
     def __init__(
-        self, chain: Chain, budget: Budget, initial_state: Optional[ChatMessage] = None, name: Optional[str] = None
+        self, chain: ChainBase, budget: Budget, initial_state: Optional[ChatMessage] = None, name: Optional[str] = None
     ):
         self._chain = chain
         self._budget = budget
@@ -26,7 +26,7 @@ class ExecutionUnit:
         self._name = name or chain.name
 
     @property
-    def chain(self) -> Chain:
+    def chain(self) -> ChainBase:
         """
         The chain to be executed
 

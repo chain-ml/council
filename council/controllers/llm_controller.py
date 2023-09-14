@@ -1,7 +1,7 @@
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
-from council.chains import Chain
+from council.chains import ChainBase
 from council.contexts import AgentContext, LLMContext, Monitored
 from council.llm import LLMBase, LLMMessage
 from council.utils import Option
@@ -18,7 +18,9 @@ class LLMController(ControllerBase):
 
     _llm: Monitored[LLMBase]
 
-    def __init__(self, chains: List[Chain], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None):
+    def __init__(
+        self, chains: Sequence[ChainBase], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None
+    ):
         """
         Initialize a new instance of an LLMController
 
@@ -97,8 +99,8 @@ class LLMController(ControllerBase):
         return LLMMessage.system_message("\n".join(task_description))
 
     @staticmethod
-    def _parse_line(line: str, chains: List[Chain]) -> Option[Tuple[Chain, int]]:
-        result: Option[Tuple[Chain, int]] = Option.none()
+    def _parse_line(line: str, chains: Sequence[ChainBase]) -> Option[Tuple[ChainBase, int]]:
+        result: Option[Tuple[ChainBase, int]] = Option.none()
         name: str = ""
         score: str = ""
         line = line.lower().removeprefix("name:")

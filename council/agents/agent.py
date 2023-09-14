@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from council.chains import Chain
+from council.chains import Chain, ChainBase
 from council.contexts import AgentContext, Budget, ChainContext, InfiniteBudget, Monitorable, Monitored
 from council.controllers import BasicController, ControllerBase, ExecutionUnit
 from council.evaluators import BasicEvaluator, EvaluatorBase
@@ -19,7 +19,7 @@ class Agent(Monitorable):
     """
 
     _controller: Monitored[ControllerBase]
-    _chains: List[Monitored[Chain]]
+    _chains: List[Monitored[ChainBase]]
     _evaluator: Monitored[EvaluatorBase]
     _filter: Monitored[FilterBase]
 
@@ -148,14 +148,14 @@ class Agent(Monitorable):
 
     @staticmethod
     def from_chain(
-        chain: Chain, evaluator: EvaluatorBase = BasicEvaluator(), filter: FilterBase = BasicFilter()
+        chain: ChainBase, evaluator: EvaluatorBase = BasicEvaluator(), filter: FilterBase = BasicFilter()
     ) -> "Agent":
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
             :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
 
         Parameters:
-            chain(Chain): a chain
+            chain(ChainBase): a chain
             evaluator(EvaluatorBase): the Agent evaluator
             filter(FilterBase): the Agent response filter
         Returns:

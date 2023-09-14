@@ -66,5 +66,6 @@ class MyTestCase(unittest.TestCase):
 
         self.assertTrue(result.try_best_message.is_some())
         self.assertLess(limit_tokens.value, 1500.0)
-        self.assertTrue(budget.is_expired())
+        self.assertFalse(budget.is_expired())
+        self.assertFalse(budget.can_consume(1, "call", "LLMSkill"))
         print(result.best_message)
