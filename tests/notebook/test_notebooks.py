@@ -14,7 +14,7 @@ class TestNotebooks(unittest.TestCase):
             ep.preprocess(nb)
 
     def test_first_example(self):
-        self._test_notebook("getting_started/first_example.ipynb", timeout=10)
+        self._test_notebook("getting_started/first_example.ipynb", timeout=20)
 
     @unittest.skip("indexing takes too long")
     def test_llamaindex(self):

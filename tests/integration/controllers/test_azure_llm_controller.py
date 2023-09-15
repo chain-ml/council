@@ -1,4 +1,4 @@
-from typing import List
+from typing import Sequence
 from unittest import TestCase
 
 import dotenv
@@ -60,7 +60,7 @@ class TestAzureLlmController(TestCase):
             [self.chain_forecast],
         )
 
-    def _test_prompt(self, prompt: str, expected: List[Chain]):
+    def _test_prompt(self, prompt: str, expected: Sequence[Chain]):
         print("*******")
         print(prompt)
         controller = LLMController(chains=self.chains, llm=AzureLLM.from_env())
