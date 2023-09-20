@@ -1,8 +1,8 @@
 from typing import List, Dict, Any
 
 from .scorer_base import ScorerBase
-from council.contexts import ChatMessage, LLMContext, ScorerContext
-from council.llm import LLMBase, LLMMessage
+from council.contexts import ChatMessage, ScorerContext
+from council.llm import LLMBase, LLMMessage, MonitoredLLM
 
 
 class LLMSimilarityScorer(ScorerBase):
@@ -19,7 +19,7 @@ class LLMSimilarityScorer(ScorerBase):
             expected (str): the expected text message
         """
         super().__init__()
-        self._llm = self.new_monitor("llm", llm)
+        self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._expected = expected
         self._system_message = self._build_system_prompt()
 
@@ -30,7 +30,7 @@ class LLMSimilarityScorer(ScorerBase):
 
     def _score(self, context: ScorerContext, message: ChatMessage) -> float:
         messages = self._build_messages(message)
-        llm_result = self._llm.inner.post_chat_request(LLMContext.from_context(context, self._llm), messages)
+        llm_result = self._llm.post_chat_request(context, messages)
 
         if len(llm_result.choices) < 1:
             return self._parse_line("")
