@@ -3,6 +3,7 @@
 from .llm_exception import LLMException, LLMCallException, LLMTokenLimitException
 from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
 from .llm_base import LLMBase, LLMResult
+from .monitored_llm import MonitoredLLM
 from .llm_configuration_base import LLMConfigurationBase
 from .llm_fallback import LLMFallback
 
