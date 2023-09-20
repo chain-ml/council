@@ -22,12 +22,6 @@ include = [
     "council/**/*.py",
     "council/py.typed",
 ]
-exclude = [
-    ".github",
-    "*-requirements.txt",
-    "tests",
-    "venv",
-]
 
 package = ['council_ai']
 
