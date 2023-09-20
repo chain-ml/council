@@ -78,14 +78,32 @@ class ContextBase:
         return self._execution_context.execution_log.to_json()
 
     def log_debug(self, message: str) -> None:
+        """
+        Logs a debug message using `logging` and keeps track of it into the context
+
+        Args:
+            message (str): a message
+        """
         if self._logger_log(logging.DEBUG, message):
             self.log_entry.log_debug(message)
 
     def log_error(self, message: str) -> None:
+        """
+        Logs an error message using `logging` and keeps track of it into the context
+
+        Args:
+            message (str): a message
+        """
         if self._logger_log(logging.ERROR, message):
             self.log_entry.log_error(message)
 
     def log_info(self, message: str) -> None:
+        """
+        Logs an info message using `logging` and keeps track of it into the context
+
+        Args:
+            message (str): a message
+        """
         if self._logger_log(logging.INFO, message):
             self.log_entry.log_info(message)
 
