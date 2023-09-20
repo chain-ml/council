@@ -70,3 +70,9 @@ class TestLLMEvaluator(unittest.TestCase):
         self.add_one_iteration_result()
         result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context)
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
+
+    def test_monitors(self):
+        llm = MockLLM()
+        instance = LLMEvaluator(llm)
+
+        self.assertEqual(instance.monitor.children["llm"].type, "MockLLM")

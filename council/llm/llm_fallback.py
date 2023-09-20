@@ -1,5 +1,5 @@
 import time
-from typing import Any, List
+from typing import Any, Sequence
 
 from council.contexts import LLMContext, Monitored
 from council.llm import LLMBase, LLMCallException, LLMException, LLMMessage, LLMResult
@@ -34,7 +34,7 @@ class LLMFallback(LLMBase):
     def fallback(self) -> LLMBase:
         return self._fallback.inner
 
-    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         try:
             return self._llm_call_with_retry(context, messages, **kwargs)
         except Exception as base_exception:
@@ -43,7 +43,7 @@ class LLMFallback(LLMBase):
             except Exception as e:
                 raise e from base_exception
 
-    def _llm_call_with_retry(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _llm_call_with_retry(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         retry_count = 0
         while retry_count == 0 or retry_count < self._retry_before_fallback:
             try:

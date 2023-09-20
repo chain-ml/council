@@ -5,6 +5,7 @@ from ._monitor import Monitor
 from ._monitored import Monitored
 
 T = TypeVar("T", bound="Monitorable")
+T_monitored = TypeVar("T_monitored", bound="Monitored")
 
 
 class Monitorable:
@@ -18,6 +19,10 @@ class Monitorable:
     def new_monitor(self, name: str, item: T) -> Monitored[T]:
         self._register_child(name, item)
         return Monitored(name, item)
+
+    def register_monitor(self, monitored: T_monitored) -> T_monitored:
+        self._register_child(monitored.name, monitored.inner)
+        return monitored
 
     def new_monitors(self, name: str, items: Iterable[T]) -> List[Monitored[T]]:
         result = [Monitored(f"{name}[{index}]", item) for index, item in enumerate(items)]

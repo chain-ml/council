@@ -1,6 +1,6 @@
 import abc
 import logging
-from typing import Any, List, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext, Monitorable
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class LLMResult:
-    def __init__(self, choices: List[str], consumptions: Optional[List[Consumption]] = None):
-        self._choices = choices
-        self._consumptions = consumptions if consumptions is not None else []
+    def __init__(self, choices: Sequence[str], consumptions: Optional[Sequence[Consumption]] = None):
+        self._choices = list(choices)
+        self._consumptions = list(consumptions) if consumptions is not None else []
 
     @property
     def first_choice(self) -> str:
@@ -35,13 +35,13 @@ class LLMBase(Monitorable, abc.ABC):
         super().__init__("llm")
         self._token_counter = token_counter
 
-    def post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         """
         Sends a chat request to the language model.
 
         Parameters:
             context (LLMContext): a context to track execution metrics
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the chat messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the chat messages.
             **kwargs: Additional keyword arguments for the chat request.
 
         Returns:
@@ -68,5 +68,5 @@ class LLMBase(Monitorable, abc.ABC):
             logger.debug('message="done execution of llm request"')
 
     @abc.abstractmethod
-    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         pass

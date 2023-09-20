@@ -140,7 +140,7 @@ class OpenAIChatCompletionsModel(LLMBase):
         self.config = config
         self._provider = provider
 
-    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         payload = self.config.build_default_payload()
         payload["messages"] = [message.dict() for message in messages]
         for key, value in kwargs.items():
