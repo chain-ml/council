@@ -49,7 +49,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
         Filters the first messages from a list of LLM messages based on a token limit margin.
 
         Args:
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the messages.
             margin (int): The token limit margin. The method will keep messages until the token count, including
                           assistant tokens, exceeds (limit + 3 - margin).
 
@@ -72,12 +72,12 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
                 break
         return result
 
-    def filter_last_messages(self, messages: List[LLMMessage], margin: int) -> List[LLMMessage]:
+    def filter_last_messages(self, messages: Sequence[LLMMessage], margin: int) -> List[LLMMessage]:
         """
         Filters the last messages from a list of LLM messages based on a token limit margin.
 
         Args:
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the messages.
             margin (int): The token limit margin. The method will keep messages until the token count, including
                           assistant tokens, exceeds (limit + 3 - margin).
 
