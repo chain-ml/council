@@ -18,6 +18,10 @@ Source = "https://github.com/chain-ml/council"
 Documentation = "https://council.dev"
 
 [tool.hatch.build]
+include = [
+    "council/**/*.py",
+    "council/py.typed",
+]
 exclude = [
     ".github",
     "*-requirements.txt",
