@@ -1,5 +1,7 @@
 from typing import Any, Dict
 
+import logging
+
 from ._agent_context_store import AgentContextStore
 from ._budget import Budget
 from ._chat_history import ChatHistory
@@ -74,3 +76,25 @@ class ContextBase:
         returns the execution as a JSON string
         """
         return self._execution_context.execution_log.to_json()
+
+    def log_debug(self, message: str) -> None:
+        if self._logger_log(logging.DEBUG, message):
+            self.log_entry.log_debug(message)
+
+    def log_error(self, message: str) -> None:
+        if self._logger_log(logging.ERROR, message):
+            self.log_entry.log_error(message)
+
+    def log_info(self, message: str) -> None:
+        if self._logger_log(logging.INFO, message):
+            self.log_entry.log_info(message)
+
+    @staticmethod
+    def _logger_log(level: int, message: str) -> bool:
+        import inspect
+
+        stack = inspect.stack()
+        logger_name = stack[2].frame.f_globals["__name__"]
+        logger = logging.getLogger(logger_name)
+        logger.log(level, message, stacklevel=3)
+        return logger.isEnabledFor(level)

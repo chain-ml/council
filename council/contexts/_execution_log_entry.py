@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence, Tuple
 
 from ._budget import Consumption
 from ._chat_message import ChatMessage
@@ -17,6 +17,7 @@ class ExecutionLogEntry:
         self._error = None
         self._consumptions: List[Consumption] = []
         self._messages: List[ChatMessage] = []
+        self._logs: List[Tuple[datetime, str, str]] = []
 
     @property
     def source(self) -> str:
@@ -68,9 +69,25 @@ class ExecutionLogEntry:
             "duration": self._duration,
             "consumptions": [item.to_dict() for item in self._consumptions],
             "messages": [item.to_dict() for item in self._messages],
+            "logs": self._logs_to_dict(),
         }
 
         if self._error is not None:
             result["error"] = self._error
 
         return result
+
+    def _log_message(self, level: str, message: str) -> None:
+        self._logs.append((datetime.now(timezone.utc), level, message))
+
+    def log_debug(self, message: str) -> None:
+        self._log_message("DEBUG", message)
+
+    def log_info(self, message: str) -> None:
+        self._log_message("INFO", message)
+
+    def log_error(self, message: str) -> None:
+        self._log_message("ERROR", message)
+
+    def _logs_to_dict(self) -> List[Dict[str, Any]]:
+        return [{"time": item[0].isoformat(), "level": item[1], "message": item[2]} for item in self._logs]
