@@ -6,7 +6,7 @@ from council.llm import LLMBase, LLMMessage, LLMResult
 
 class MonitoredLLM(Monitored[LLMBase]):
     """
-    A convenience class that wraps and LLM into a Monitor
+    A convenience class that wraps an LLM into a Monitor
     """
 
     def __init__(self, name: str, llm: LLMBase):
