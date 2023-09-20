@@ -1,7 +1,7 @@
 import logging
 import tiktoken
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from tiktoken import Encoding
 
 from . import LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException
@@ -33,7 +33,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             num_tokens += self._tokens_per_name
         return num_tokens
 
-    def count_messages_token(self, messages: List[LLMMessage]) -> int:
+    def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
         result = 0
         for message in messages:
             result += self.count_message_token(message)
@@ -44,7 +44,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
 
         return result
 
-    def filter_first_messages(self, messages: List[LLMMessage], margin: int) -> List[LLMMessage]:
+    def filter_first_messages(self, messages: Sequence[LLMMessage], margin: int) -> List[LLMMessage]:
         """
         Filters the first messages from a list of LLM messages based on a token limit margin.
 

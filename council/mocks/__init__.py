@@ -1,6 +1,6 @@
 import random
 import time
-from typing import Any, Callable, List, Optional, Protocol
+from typing import Any, Callable, List, Optional, Protocol, Sequence
 
 from council.agents import Agent, AgentResult
 from council.contexts import (
@@ -20,11 +20,11 @@ from council.skills import SkillBase
 
 
 class LLMMessagesToStr(Protocol):
-    def __call__(self, messages: List[LLMMessage]) -> List[str]:
+    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]:
         ...
 
 
-def llm_message_content_to_str(messages: List[LLMMessage]) -> List[str]:
+def llm_message_content_to_str(messages: Sequence[LLMMessage]) -> Sequence[str]:
     return [msg.content for msg in messages]
 
 
@@ -32,7 +32,7 @@ class MockTokenCounter(LLMessageTokenCounterBase):
     def __init__(self, limit: int = -1):
         self._limit = limit
 
-    def count_messages_token(self, messages: List[LLMMessage]) -> int:
+    def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
         result = 0
         for msg in messages:
             result += len(msg.content)
@@ -62,7 +62,7 @@ class MockLLM(LLMBase):
         super().__init__(token_counter=MockTokenCounter(token_limit))
         self._action = action
 
-    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         if self._action is not None:
             return LLMResult(choices=self._action(messages))
         return LLMResult(choices=[f"{self.__class__.__name__}"])
@@ -86,7 +86,7 @@ class MockErrorLLM(LLMBase):
         super().__init__()
         self.exception = exception
 
-    def _post_chat_request(self, context: LLMContext, messages: List[LLMMessage], **kwargs: Any) -> LLMResult:
+    def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         raise self.exception
 
 

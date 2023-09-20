@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Optional, Sequence
 
 from council.contexts import Budget, ContextBase, LLMContext, Monitored
 from council.llm import LLMBase, LLMMessage, LLMResult
@@ -13,7 +13,7 @@ class MonitoredLLM(Monitored[LLMBase]):
         super().__init__(name, llm)
 
     def post_chat_request(
-        self, context: ContextBase, messages: List[LLMMessage], budget: Optional[Budget] = None, **kwargs: Any
+        self, context: ContextBase, messages: Sequence[LLMMessage], budget: Optional[Budget] = None, **kwargs: Any
     ) -> LLMResult:
         """
         make a call to the wrapped llm, managing the creation of the context.
@@ -21,7 +21,7 @@ class MonitoredLLM(Monitored[LLMBase]):
 
         Args:
             context (ContextBase): the context of the caller
-            messages (List[LLMMessage]): see :meth:`LLMBase.post_chat_request`
+            messages (Sequence[LLMMessage]): see :meth:`LLMBase.post_chat_request`
             budget (Optional[Budget]): an optional budget. If none, the budget from the given context is used
             **kwargs: see :meth:`LLMBase.post_chat_request`
 
