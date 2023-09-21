@@ -18,11 +18,9 @@ Source = "https://github.com/chain-ml/council"
 Documentation = "https://council.dev"
 
 [tool.hatch.build]
-exclude = [
-    ".github",
-    "*-requirements.txt",
-    "tests",
-    "venv",
+include = [
+    "council/**/*.py",
+    "council/py.typed",
 ]
 
 package = ['council_ai']

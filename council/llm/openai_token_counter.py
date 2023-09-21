@@ -1,7 +1,7 @@
 import logging
 import tiktoken
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from tiktoken import Encoding
 
 from . import LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException
@@ -33,7 +33,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             num_tokens += self._tokens_per_name
         return num_tokens
 
-    def count_messages_token(self, messages: List[LLMMessage]) -> int:
+    def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
         result = 0
         for message in messages:
             result += self.count_message_token(message)
@@ -44,12 +44,12 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
 
         return result
 
-    def filter_first_messages(self, messages: List[LLMMessage], margin: int) -> List[LLMMessage]:
+    def filter_first_messages(self, messages: Sequence[LLMMessage], margin: int) -> List[LLMMessage]:
         """
         Filters the first messages from a list of LLM messages based on a token limit margin.
 
         Args:
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the messages.
             margin (int): The token limit margin. The method will keep messages until the token count, including
                           assistant tokens, exceeds (limit + 3 - margin).
 
@@ -72,12 +72,12 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
                 break
         return result
 
-    def filter_last_messages(self, messages: List[LLMMessage], margin: int) -> List[LLMMessage]:
+    def filter_last_messages(self, messages: Sequence[LLMMessage], margin: int) -> List[LLMMessage]:
         """
         Filters the last messages from a list of LLM messages based on a token limit margin.
 
         Args:
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the messages.
             margin (int): The token limit margin. The method will keep messages until the token count, including
                           assistant tokens, exceeds (limit + 3 - margin).
 

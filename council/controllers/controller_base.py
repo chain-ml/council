@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Sequence
 
-from council.chains import Chain
+from council.chains import ChainBase
 from council.contexts import AgentContext, Monitorable
 from .execution_unit import ExecutionUnit
 
@@ -11,13 +11,13 @@ class ControllerBase(Monitorable, ABC):
     Abstract base class for an agent controller.
     """
 
-    def __init__(self, chains: List[Chain]):
+    def __init__(self, chains: Sequence[ChainBase]):
         """
         Args:
             chains (List[Chain]): The list of chains available for execution.
         """
         super().__init__("controller")
-        self._chains = chains
+        self._chains = list(chains)
 
     def execute(self, context: AgentContext) -> List[ExecutionUnit]:
         """
@@ -40,7 +40,7 @@ class ControllerBase(Monitorable, ABC):
         pass
 
     @property
-    def chains(self) -> Sequence[Chain]:
+    def chains(self) -> Sequence[ChainBase]:
         """
         the chains of the controller
         """

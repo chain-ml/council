@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from council.contexts import ChainContext
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
@@ -24,7 +26,7 @@ class Sequential(RunnerBase):
             self.fork_run_merge(runner, context, executor)
 
     @staticmethod
-    def from_list(*runners: RunnerBase) -> RunnerBase:
+    def from_list(runners: Sequence[RunnerBase]) -> RunnerBase:
         if len(runners) == 1:
             return runners[0]
 

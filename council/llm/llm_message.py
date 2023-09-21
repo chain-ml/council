@@ -1,6 +1,6 @@
 import abc
 from enum import Enum
-from typing import Optional, List, Iterable
+from typing import Optional, List, Iterable, Sequence
 
 from council.contexts import ChatMessage, ChatMessageKind
 
@@ -119,12 +119,12 @@ class LLMMessage:
 
 class LLMessageTokenCounterBase(abc.ABC):
     @abc.abstractmethod
-    def count_messages_token(self, messages: List[LLMMessage]) -> int:
+    def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
         """
         Counts the total number of tokens in a list of LLM messages, including assistant tokens.
 
         Args:
-            messages (List[LLMMessage]): A list of LLMMessage objects representing the messages.
+            messages (Sequence[LLMMessage]): A list of LLMMessage objects representing the messages.
 
         Returns:
             int: The total number of tokens, including assistant tokens.

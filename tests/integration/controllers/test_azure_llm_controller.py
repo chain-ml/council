@@ -1,4 +1,4 @@
-from typing import List
+from typing import Sequence
 from unittest import TestCase
 
 import dotenv
@@ -66,7 +66,7 @@ class TestAzureLlmController(TestCase):
         self.assertIsNotNone(result[0].initial_state)
         print(f"Instructions: {result[0].initial_state.message}")
 
-    def _test_prompt(self, prompt: str, expected: List[Chain], top_k: int = 1000) -> List[ExecutionUnit]:
+    def _test_prompt(self, prompt: str, expected: Sequence[Chain], top_k: int = 1000) -> List[ExecutionUnit]:
         print("\n*******")
         print(f"Prompt: {prompt}")
         controller = LLMController(chains=self.chains, llm=AzureLLM.from_env(), top_k=top_k)

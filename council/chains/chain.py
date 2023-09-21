@@ -1,19 +1,18 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 
-from council.contexts import ChainContext, Monitorable, Monitored
+from council.chains.chain_base import ChainBase
+from council.contexts import ChainContext, Monitored
 from council.runners import RunnerBase, RunnerExecutor, Sequential
 
 
-class Chain(Monitorable):
+class Chain(ChainBase):
     """
     Represents a chain of skills that can be executed in a specific order.
     """
 
-    _name: str
-    _description: str
     _runner: Monitored[RunnerBase]
 
-    def __init__(self, name: str, description: str, runners: List[RunnerBase], support_instructions: bool = False):
+    def __init__(self, name: str, description: str, runners: Sequence[RunnerBase], support_instructions: bool = False):
         """
         Initializes the Chain object.
 
@@ -25,11 +24,8 @@ class Chain(Monitorable):
         Raises:
             None
         """
-        super().__init__("chain")
-        self._name = name
-        self._runner = self.new_monitor("runner", Sequential.from_list(*runners))
-        self.monitor.name = name
-        self._description = description
+        super().__init__(name, description)
+        self._runner = self.new_monitor("runner", Sequential.from_list(runners))
         self._instructions = support_instructions
 
     @property
@@ -40,39 +36,8 @@ class Chain(Monitorable):
         return self._runner.inner
 
     @property
-    def name(self) -> str:
-        """
-        the name of the chain
-        """
-        return self._name
-
-    @property
-    def description(self) -> str:
-        """
-        the description of the chain.
-        """
-        return self._description
-
-    @property
-    def has_instructions(self) -> bool:
+    def is_supporting_instructions(self) -> bool:
         return self._instructions
-
-    def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
-        """
-        Executes the chain of skills based on the provided context, budget, and optional executor.
-
-        Args:
-            context (ChainContext): The context for executing the chain.
-            executor (Optional[RunnerExecutor]): The skill executor to use for executing the chain.
-
-        Returns:
-            Any: The result of executing the chain.
-
-        Raises:
-            None
-        """
-        with context:
-            self._execute(context, executor)
 
     def _execute(
         self,
@@ -84,9 +49,3 @@ class Chain(Monitorable):
         )
 
         self._runner.inner.fork_run_merge(self._runner, context, executor)
-
-    def __repr__(self):
-        return f"Chain({self.name}, {self.description})"
-
-    def __str__(self):
-        return f"Chain {self.name}, description: {self.description}"
