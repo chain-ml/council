@@ -113,9 +113,9 @@ class LLMController(ControllerBase):
             return Option.some((self._build_execution_unit(chain, context, instructions, score), score))
 
         except StopIteration:
-            logger.warning(f'message="no chain found with name `{maybe_name}`"')
+            context.logger.warning(f'message="no chain found with name `{maybe_name}`"')
         except ValueError:
-            logger.warning(f'message="invalid score `{maybe_score}`"')
+            context.logger.warning(f'message="invalid score `{maybe_score}`"')
         return Option.none()
 
     def _build_execution_unit(self, chain: ChainBase, context: AgentContext, instructions: str, score: int):
