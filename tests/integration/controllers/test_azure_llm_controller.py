@@ -58,7 +58,7 @@ class TestAzureLlmController(TestCase):
             "generate a sql query to get the value of inflation for the last week", [self.chain_tex2sql], top_k=1
         )
 
-    def test_controller_chain_forecast(self):
+    def test_controller_chain_forecast_with_instructions(self):
         result = self._test_prompt(
             "forecast the value of inflation for the next week, using one month of data",
             [self.chain_forecast],
