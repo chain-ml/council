@@ -3,15 +3,12 @@ LLMEvaluator implementation.
 
 This evaluator uses the given `LLM` to evaluate the chain's responses.
 """
-import logging
 from typing import List
 
-from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
+from council.contexts import AgentContext, ChatMessage, ContextLogger, ScoredChatMessage
 from council.evaluators import EvaluatorBase
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
-
-logger = logging.getLogger(__name__)
 
 
 class LLMEvaluator(EvaluatorBase):
@@ -45,7 +42,11 @@ class LLMEvaluator(EvaluatorBase):
         llm_response = self._call_llm(context, query, chain_results)
 
         # Parse LLM response with the score for each message we want to score
-        scores = [self._parse_eval(line) for line in llm_response.split("\n") if line.lower().startswith("grade")]
+        scores = [
+            self._parse_eval(line, context.logger)
+            for line in llm_response.split("\n")
+            if line.lower().startswith("grade")
+        ]
 
         scored_messages = []
         for skill_message, score in filter(lambda tuple: tuple[1].is_some(), zip(chain_results, scores)):
@@ -63,7 +64,7 @@ class LLMEvaluator(EvaluatorBase):
 
         result = self._llm.post_chat_request(context, messages=messages)
         llm_response = result.first_choice
-        logger.debug(f"llm response: {llm_response}")
+        context.logger.debug(f"llm response: {llm_response}")
         return llm_response
 
     def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[LLMMessage]:
@@ -84,8 +85,7 @@ class LLMEvaluator(EvaluatorBase):
             LLMMessage.user_message(self._build_multiple_answers_message(query.message, responses)),
         ]
 
-    @staticmethod
-    def _parse_eval(line: str) -> Option[float]:
+    def _parse_eval(self, line: str, logger: ContextLogger) -> Option[float]:
         """Parse the evaluation response from the inner `LLM`."""
 
         line = line.lower().removeprefix("answer").strip().replace("-", ":")
@@ -93,10 +93,10 @@ class LLMEvaluator(EvaluatorBase):
             score = line.split(":", 3)
             return Option.some(float(score[1]))
         except ValueError:
-            logging.exception(f'message="could not parse score" line="{line}"')
+            logger.exception(f'message="could not parse score" line="{line}"')
             raise
         except Exception:
-            logging.exception(f'message="could not parse evaluation response" line="{line}"')
+            logger.exception(f'message="could not parse evaluation response" line="{line}"')
             raise
 
     @staticmethod
