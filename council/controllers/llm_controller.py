@@ -1,14 +1,11 @@
-import logging
 from typing import List, Optional, Sequence, Tuple
 
 from council.chains import ChainBase
-from council.contexts import AgentContext, ChatMessage
+from council.contexts import AgentContext, ContextLogger, ChatMessage
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
-
-logger = logging.getLogger(__name__)
 
 
 class LLMController(ControllerBase):
@@ -53,7 +50,7 @@ class LLMController(ControllerBase):
         messages = self._build_llm_messages(context)
         llm_result = self._llm.post_chat_request(context, messages)
         response = llm_result.first_choice
-        logger.debug(f"llm response: {response}")
+        context.logger.debug(f"llm response: {response}")
         return response
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:

@@ -1,4 +1,3 @@
-import logging
 import httpx
 
 from typing import List, Any, Protocol, Sequence, Optional
@@ -8,8 +7,6 @@ from .llm_message import LLMMessage, LLMessageTokenCounterBase
 from .llm_exception import LLMCallException
 from .llm_base import LLMBase, LLMResult
 from council.contexts import LLMContext, Consumption
-
-logger = logging.getLogger(__name__)
 
 
 class Provider(Protocol):
@@ -146,16 +143,16 @@ class OpenAIChatCompletionsModel(LLMBase):
         for key, value in kwargs.items():
             payload[key] = value
 
+        context.logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')
         r = self._post_request(payload)
+        context.logger.debug(f'message="got chat GPT completions result" id="{r.id}" model="{r.model}" {r.usage}')
         consumption = Consumption(r.usage.total_tokens, "token", r.model)
         return LLMResult(choices=[c.message.content for c in r.choices], consumptions=[consumption])
 
     def _post_request(self, payload) -> OpenAIChatCompletionsResult:
-        logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')
         response = self._provider.__call__(payload)
         if response.status_code != httpx.codes.OK:
             raise LLMCallException(response.status_code, response.text)
 
         r = OpenAIChatCompletionsResult.from_dict(response.json())
-        logger.debug(f'message="got chat GPT completions result" id="{r.id}" model="{r.model}" {r.usage}')
         return r

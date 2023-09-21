@@ -1,11 +1,8 @@
 import abc
-import logging
 from typing import Any, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext, Monitorable
 from .llm_message import LLMMessage, LLMessageTokenCounterBase
-
-logger = logging.getLogger(__name__)
 
 
 class LLMResult:
@@ -55,17 +52,17 @@ class LLMBase(Monitorable, abc.ABC):
         if self._token_counter is not None:
             _ = self._token_counter.count_messages_token(messages=messages)
 
-        logger.debug('message="starting execution of llm request"')
+        context.logger.debug('message="starting execution of llm request"')
         try:
             with context:
                 result = self._post_chat_request(context, messages, **kwargs)
                 context.budget.add_consumptions(result.consumptions)
                 return result
         except Exception as e:
-            logger.exception('message="failed execution of llm request"')
+            context.logger.exception('message="failed execution of llm request"')
             raise e
         finally:
-            logger.debug('message="done execution of llm request"')
+            context.logger.debug('message="done execution of llm request"')
 
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:

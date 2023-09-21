@@ -115,7 +115,11 @@ class TestAgent(TestCase):
         print(agent.render_as_json())
 
     def test_agent_log(self):
-        chains = [Chain("a chain", "do something", [MockSkill("a skill")])]
+        def skill_execute(context: SkillContext) -> ChatMessage:
+            context.logger.info("an %s log", "info")
+            return ChatMessage.skill("a message")
+
+        chains = [Chain("a chain", "do something", [MockSkill("a skill", action=skill_execute)])]
         agent = Agent(BasicController(chains), BasicEvaluator(), BasicFilter(), name="an agent")
 
         context = AgentContext.from_user_message("run")
@@ -135,3 +139,4 @@ class TestAgent(TestCase):
         ]
 
         self.assertEqual(expected_sources, [item["source"] for item in result["entries"]])
+        self.assertEqual("an info log", result["entries"][5]["logs"][2]["message"])
