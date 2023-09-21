@@ -1,14 +1,11 @@
-import logging
 from typing import List, Optional, Sequence, Tuple
 
 from council.chains import ChainBase
-from council.contexts import AgentContext
+from council.contexts import AgentContext, ContextLogger
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
-
-logger = logging.getLogger(__name__)
 
 
 class LLMController(ControllerBase):
@@ -45,7 +42,7 @@ class LLMController(ControllerBase):
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
         response = self._call_llm(context)
         parsed = [
-            self._parse_line(line, self._chains)
+            self._parse_line(line, context.logger)
             for line in response.strip().splitlines()
             if line.lower().startswith("name:")
         ]
@@ -98,16 +95,14 @@ class LLMController(ControllerBase):
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
-    @staticmethod
-    def _parse_line(line: str, chains: Sequence[ChainBase]) -> Option[Tuple[ChainBase, int]]:
+    def _parse_line(self, line: str, logger: ContextLogger) -> Option[Tuple[ChainBase, int]]:
         result: Option[Tuple[ChainBase, int]] = Option.none()
         name: str = ""
-        score: str = ""
         line = line.lower().removeprefix("name:")
         try:
             (name, score, _j) = line.split(";", 3)
             name = name.strip().casefold()
-            chain = next(filter(lambda item: item.name.casefold() == name, chains))
+            chain = next(filter(lambda item: item.name.casefold() == name, self.chains))
             score = score.replace("score:", "").strip()
             result = Option.some((chain, int(score)))
         except StopIteration:
