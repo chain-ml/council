@@ -44,13 +44,14 @@ This example builds on the previous one and shows how to consume the iteration i
 
         def execute(self, context: SkillContext) -> ChatMessage:
             it = context.iteration.unwrap()
-            message = f"index {it.index}, {it.value}"
-            print(message)
-            return self.build_success_message(message=message)
+            return self.build_success_message(message=f"index {it.index}, {it.value}")
+
 
     chain = Chain(name="name", description="parallel for", runners=[ParallelFor(generator, MySkill(), parallelism=5)])
     context = ChainContext.empty()
     chain.execute(context)
+    for message in context.messages:
+        print(message.message)
 
 The output would looks like.
 

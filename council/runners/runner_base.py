@@ -1,13 +1,10 @@
 import abc
-import logging
 from collections.abc import Set
 from concurrent import futures
 
 from council.contexts import ChainContext, Monitorable, Monitored
 from .errrors import RunnerError, RunnerTimeoutError
 from .runner_executor import RunnerExecutor
-
-logger = logging.getLogger(__name__)
 
 
 class RunnerBase(Monitorable, abc.ABC):
@@ -33,24 +30,24 @@ class RunnerBase(Monitorable, abc.ABC):
         if context.should_stop():
             return
 
-        logger.debug("start running %s", self.__class__.__name__)
+        context.logger.debug("start running %s", self.__class__.__name__)
         try:
             with context:
                 self._run(context, executor)
         except futures.TimeoutError as e:
-            logger.debug("timeout running %s", self.__class__.__name__)
+            context.logger.debug("timeout running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise RunnerTimeoutError(self.__class__.__name__) from e
         except RunnerError:
-            logger.debug("runner error running %s", self.__class__.__name__)
+            context.logger.debug("runner error running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise
         except Exception as e:
-            logger.exception("an unexpected error occurred running %s", self.__class__.__name__)
+            context.logger.exception("an unexpected error occurred running %s", self.__class__.__name__)
             context.cancellation_token.cancel()
             raise RunnerError(f"an unexpected error occurred in {self.__class__.__name__}") from e
         finally:
-            logger.debug("done running %s", self.__class__.__name__)
+            context.logger.debug("done running %s", self.__class__.__name__)
 
     @staticmethod
     def rethrow_if_exception(fs: Set[futures.Future]):

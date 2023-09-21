@@ -1,4 +1,3 @@
-import logging
 from concurrent import futures
 from typing import Iterable
 
@@ -12,8 +11,6 @@ from .loop_runner_base import LoopRunnerBase
 from .runner_executor import RunnerExecutor
 from .types import RunnerGenerator
 from .skill_runner_base import SkillRunnerBase
-
-logger = logging.getLogger(__name__)
 
 
 class ParallelFor(LoopRunnerBase):
@@ -63,11 +60,11 @@ class ParallelFor(LoopRunnerBase):
 
     def _run_skill(self, context: ChainContext, iteration: IterationContext):
         index = iteration.index
-        logger.debug(f'message="start iteration" index="{index}"')
+        context.logger.debug(f'message="start iteration" index="{index}"')
         try:
             self._skill.inner.run_in_current_thread(context, Option.some(iteration))
         finally:
-            logger.debug(f'message="end iteration" index="{index}"')
+            context.logger.debug(f'message="end iteration" index="{index}"')
 
     def _generate(self, context: ChainContext) -> Iterable[IterationContext]:
         try:

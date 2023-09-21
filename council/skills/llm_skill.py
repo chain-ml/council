@@ -1,4 +1,3 @@
-import logging
 from typing import List, Protocol
 
 from council.contexts import SkillContext, ChatMessage
@@ -35,12 +34,12 @@ class PromptToMessages:
 
     def to_system_message(self, context: SkillContext) -> List[LLMMessage]:
         msg = self._builder.apply(context)
-        logging.debug(msg=f'prompt="{msg}')
+        context.logger.debug(f'prompt="{msg}')
         return [LLMMessage.system_message(msg)]
 
     def to_user_message(self, context: SkillContext) -> List[LLMMessage]:
         msg = self._builder.apply(context)
-        logging.debug(msg=f'prompt="{msg}')
+        context.logger.debug(f'prompt="{msg}')
         return [LLMMessage.user_message(msg)]
 
 

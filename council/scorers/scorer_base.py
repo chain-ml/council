@@ -1,11 +1,8 @@
 import abc
-import logging
 from typing import Any, Dict
 
 from council.contexts import ChatMessage, Monitorable, ScorerContext
 from .scorer_exception import ScorerException
-
-logger = logging.getLogger(__name__)
 
 
 class ScorerBase(Monitorable, abc.ABC):
@@ -33,7 +30,7 @@ class ScorerBase(Monitorable, abc.ABC):
         try:
             return self._score(context, message)
         except Exception:
-            logging.exception('message="execution failed"')
+            context.logger.exception('message="execution failed"')
             raise ScorerException
 
     @abc.abstractmethod

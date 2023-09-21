@@ -3,6 +3,7 @@ from typing import Any, Dict
 from ._agent_context_store import AgentContextStore
 from ._budget import Budget
 from ._chat_history import ChatHistory
+from ._context_logger import ContextLogger
 from ._execution_context import ExecutionContext
 from ._execution_log_entry import ExecutionLogEntry
 from ._monitored import Monitored
@@ -21,6 +22,7 @@ class ContextBase:
         self._store = store
         self._execution_context = execution_context
         self._budget = MonitoredBudget(execution_context.entry, budget)
+        self._logger = ContextLogger(execution_context.entry)
 
     @property
     def iteration_count(self) -> int:
@@ -49,6 +51,10 @@ class ContextBase:
         the chat history
         """
         return self._store.chat_history
+
+    @property
+    def logger(self) -> ContextLogger:
+        return self._logger
 
     def __enter__(self):
         self.log_entry.__enter__()
