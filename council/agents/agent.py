@@ -1,4 +1,3 @@
-import logging
 from typing import List, Optional
 
 from council.chains import Chain, ChainBase
@@ -9,8 +8,6 @@ from council.filters import BasicFilter, FilterBase
 from council.runners import new_runner_executor
 from council.skills import SkillBase
 from .agent_result import AgentResult
-
-logger = logging.getLogger(__name__)
 
 
 class Agent(Monitorable):
@@ -90,14 +87,14 @@ class Agent(Monitorable):
     def _execute(self, context: AgentContext) -> AgentResult:
         executor = new_runner_executor("agent")
         try:
-            logger.info('message="agent execution started"')
+            context.logger.info('message="agent execution started"')
             while not context.budget.is_expired():
                 with context.new_agent_context_for_new_iteration() as iteration_context:
-                    logger.info(
+                    context.logger.info(
                         f'message="agent iteration started" iteration="{iteration_context.iteration_count - 1}"'
                     )
                     plan = self.controller.execute(context=iteration_context.new_agent_context_for(self._controller))
-                    logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
+                    context.logger.debug(f'message="agent controller returned {len(plan)} execution plan(s)"')
 
                     if len(plan) == 0:
                         return AgentResult()
@@ -110,26 +107,26 @@ class Agent(Monitorable):
                     iteration_context.set_evaluation(result)
 
                     result = self.filter.execute(context=iteration_context.new_agent_context_for(self._filter))
-                    logger.debug("controller selected %d responses", len(result))
+                    context.logger.debug("controller selected %d responses", len(result))
                     if len(result) > 0:
                         return AgentResult(messages=result)
 
             return AgentResult()
         finally:
-            logger.info('message="agent execution ended"')
+            context.logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
 
     @staticmethod
     def _execute_unit(context: AgentContext, unit: ExecutionUnit):
         chain = unit.chain
-        logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
+        context.logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
         chain_context = ChainContext.from_agent_context(
             context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
         )
         if unit.initial_state is not None:
             chain_context.append(unit.initial_state)
         chain.execute(chain_context)
-        logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
+        context.logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
 
     @staticmethod
     def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":

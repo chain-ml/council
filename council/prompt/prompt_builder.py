@@ -1,11 +1,8 @@
-import logging
 from typing import Any, List, Optional
 
 from jinja2 import Template
 
 from council.contexts import SkillContext, ChatMessageKind
-
-logger = logging.getLogger(__name__)
 
 
 class PromptBuilder:

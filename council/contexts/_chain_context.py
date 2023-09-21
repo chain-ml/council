@@ -1,4 +1,3 @@
-import logging
 from typing import Iterable, List, Optional
 
 import more_itertools
@@ -15,8 +14,6 @@ from ._execution_context import ExecutionContext
 from ._message_collection import MessageCollection
 from ._message_list import MessageList
 from ._monitored import Monitored
-
-logger = logging.getLogger(__name__)
 
 
 class ChainContext(ContextBase, MessageCollection):
@@ -129,10 +126,10 @@ class ChainContext(ContextBase, MessageCollection):
 
         """
         if self._budget.is_expired():
-            logger.debug('message="stopping" reason="budget expired"')
+            self.logger.debug('message="stopping" reason="budget expired"')
             return True
         if self.cancellation_token.cancelled:
-            logger.debug('message="stopping" reason="cancellation token is set"')
+            self.logger.debug('message="stopping" reason="cancellation token is set"')
             return True
 
         return False

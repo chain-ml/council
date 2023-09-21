@@ -69,7 +69,7 @@ class LLMController(ControllerBase):
         messages = self._build_llm_messages(context)
         llm_result = self._llm.post_chat_request(context, messages)
         response = llm_result.first_choice
-        logger.debug(f"llm response: {response}")
+        context.logger.debug(f"llm response: {response}")
         return response
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
