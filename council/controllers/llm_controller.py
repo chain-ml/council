@@ -1,7 +1,7 @@
 from typing import List, Optional, Sequence, Tuple
 
 from council.chains import ChainBase
-from council.contexts import AgentContext, ContextLogger, ChatMessage
+from council.contexts import AgentContext, ChatMessage
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
