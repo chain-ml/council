@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional, Sequence, Tuple
 
 from council.chains import ChainBase
-from council.contexts import AgentContext
+from council.contexts import AgentContext, ChatMessage
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
@@ -67,7 +67,7 @@ class LLMController(ControllerBase):
 
     def _build_system_message(self) -> LLMMessage:
         answer_choices = "\n".join(
-            [f"name: {c.name};description: {c.description};{c.has_instructions}" for c in self._chains]
+            [f"name: {c.name};description: {c.description};{c.is_supporting_instructions}" for c in self._chains]
         )
 
         if self._top_k == 1:
@@ -121,10 +121,10 @@ class LLMController(ControllerBase):
             logger.warning(f'message="invalid score `{maybe_score}`"')
         return Option.none()
 
-    def _build_execution_unit(self, chain: Chain, context: AgentContext, instructions: str, score: int):
+    def _build_execution_unit(self, chain: ChainBase, context: AgentContext, instructions: str, score: int):
         return ExecutionUnit(
             chain,
             context.budget,
-            initial_state=ChatMessage.chain(message=instructions) if chain.has_instructions else None,
+            initial_state=ChatMessage.chain(message=instructions) if chain.is_supporting_instructions else None,
             name=f"{chain.name};{score}",
         )

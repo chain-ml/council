@@ -24,9 +24,8 @@ class Chain(ChainBase):
         Raises:
             None
         """
-        super().__init__(name, description)
+        super().__init__(name, description, support_instructions)
         self._runner = self.new_monitor("runner", Sequential.from_list(runners))
-        self._instructions = support_instructions
 
     @property
     def runner(self) -> RunnerBase:
@@ -34,10 +33,6 @@ class Chain(ChainBase):
         the runner of the chain
         """
         return self._runner.inner
-
-    @property
-    def is_supporting_instructions(self) -> bool:
-        return self._instructions
 
     def _execute(
         self,

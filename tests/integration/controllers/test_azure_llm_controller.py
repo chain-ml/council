@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, List
 from unittest import TestCase
 
 import dotenv
