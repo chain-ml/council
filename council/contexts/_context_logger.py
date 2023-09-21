@@ -13,7 +13,7 @@ class ContextLogger:
         Logs a debug message using `logging` and keeps track of it into the context
 
         Args:
-            message (str): a message. Could be a format string
+            message (str): a message. Could be formatted a `msg % args`
             *args: optional format parameters
         """
         if self._logger_log(logging.DEBUG, message, *args):
@@ -24,7 +24,7 @@ class ContextLogger:
         Logs an error message using `logging` and keeps track of it into the context
 
         Args:
-            message (str): a message. Could be a format string
+            message (str): a message. Could be formatted a `msg % args`
             *args: optional format parameters
         """
         if self._logger_log(logging.ERROR, message, *args):
@@ -39,7 +39,7 @@ class ContextLogger:
         Logs an info message using `logging` and keeps track of it into the context
 
         Args:
-            message (str): a message. Could be a format string
+            message (str): a message. Could be formatted a `msg % args`
             *args: optional format parameters
         """
         if self._logger_log(logging.INFO, message, *args):
@@ -50,7 +50,7 @@ class ContextLogger:
         Logs a warning message using `logging` and keeps track of it into the context
 
         Args:
-            message (str): a message. Could be a format string
+            message (str): a message. Could be formatted a `msg % args`
             *args: optional format parameters
 
         """

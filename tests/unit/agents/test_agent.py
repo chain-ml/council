@@ -116,7 +116,7 @@ class TestAgent(TestCase):
 
     def test_agent_log(self):
         def skill_execute(context: SkillContext) -> ChatMessage:
-            context.log_info("an info log")
+            context.logger.info("an %s log", "info")
             return ChatMessage.skill("a message")
 
         chains = [Chain("a chain", "do something", [MockSkill("a skill", action=skill_execute)])]
@@ -139,3 +139,4 @@ class TestAgent(TestCase):
         ]
 
         self.assertEqual(expected_sources, [item["source"] for item in result["entries"]])
+        self.assertEqual("an info log", result["entries"][5]["logs"][2]["message"])
