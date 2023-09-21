@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
 from abc import abstractmethod
 
 from council.contexts import SkillContext, ChatMessage
 from council.runners import SkillRunnerBase
-
-logger = logging.getLogger(__name__)
 
 
 class SkillBase(SkillRunnerBase):
@@ -78,12 +75,12 @@ class SkillBase(SkillRunnerBase):
         return ChatMessage.skill(message, data, source=self._name, is_error=True)
 
     def execute_skill(self, context: SkillContext) -> ChatMessage:
-        logger.info(f'message="skill execution started" skill="{self.name}"')
+        context.logger.info(f'message="skill execution started" skill="{self.name}"')
         skill_message = self.execute(context)
         if skill_message.is_ok:
-            logger.info(f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"')
+            context.logger.info(f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"')
         else:
-            logger.warning(
+            context.logger.warning(
                 f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
             )
         return skill_message
