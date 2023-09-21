@@ -78,7 +78,9 @@ class SkillBase(SkillRunnerBase):
         context.logger.info(f'message="skill execution started" skill="{self.name}"')
         skill_message = self.execute(context)
         if skill_message.is_ok:
-            context.logger.info(f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"')
+            context.logger.info(
+                f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
+            )
         else:
             context.logger.warning(
                 f'message="skill execution ended" skill="{self.name}" skill_message="{skill_message.message}"'
