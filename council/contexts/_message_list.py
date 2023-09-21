@@ -28,15 +28,16 @@ class MessageList(MessageCollection):
     def reversed(self) -> Iterable[ChatMessage]:
         return reversed(self._messages)
 
-    def add_user_message(self, message: str):
+    def add_user_message(self, message: str, data: Optional[Any] = None):
         """
         adds a user :class:`ChatMessage` into the history
 
         Arguments:
             message (str): a text message
+            data (Any): Optional data to attach to the message
         """
 
-        self._messages.append(ChatMessage.user(message))
+        self._messages.append(ChatMessage.user(message, data))
 
     def add_agent_message(self, message: str, data: Any = None):
         """
@@ -44,7 +45,7 @@ class MessageList(MessageCollection):
 
         Arguments:
             message (str): a text message
-            data (Any): some data, if any
+            data (Any): Optional data to attach to the message
         """
 
         self._messages.append(ChatMessage.agent(message, data))

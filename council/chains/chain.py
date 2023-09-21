@@ -12,7 +12,7 @@ class Chain(ChainBase):
 
     _runner: Monitored[RunnerBase]
 
-    def __init__(self, name: str, description: str, runners: Sequence[RunnerBase]):
+    def __init__(self, name: str, description: str, runners: Sequence[RunnerBase], support_instructions: bool = False):
         """
         Initializes the Chain object.
 
@@ -24,7 +24,7 @@ class Chain(ChainBase):
         Raises:
             None
         """
-        super().__init__(name, description)
+        super().__init__(name, description, support_instructions)
         self._runner = self.new_monitor("runner", Sequential.from_list(runners))
 
     @property

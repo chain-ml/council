@@ -12,11 +12,13 @@ class ChainBase(Monitorable, abc.ABC):
 
     _name: str
     _description: str
+    _instructions: bool
 
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, support_instructions: bool = False):
         super().__init__("chain")
         self._name = name
         self._description = description
+        self._instructions = support_instructions
         self.monitor.name = name
 
     @property
@@ -32,6 +34,10 @@ class ChainBase(Monitorable, abc.ABC):
         the description of the chain.
         """
         return self._description
+
+    @property
+    def is_supporting_instructions(self) -> bool:
+        return self._instructions
 
     def execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         """
