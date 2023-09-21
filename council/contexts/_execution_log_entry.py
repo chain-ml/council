@@ -77,17 +77,20 @@ class ExecutionLogEntry:
 
         return result
 
-    def _log_message(self, level: str, message: str) -> None:
-        self._logs.append((datetime.now(timezone.utc), level, message))
+    def _log_message(self, level: str, message: str, *args: Any) -> None:
+        self._logs.append((datetime.now(timezone.utc), level, message.format(*args) % args))
 
-    def log_debug(self, message: str) -> None:
-        self._log_message("DEBUG", message)
+    def log_debug(self, message: str, *args: Any) -> None:
+        self._log_message("DEBUG", message, *args)
 
-    def log_info(self, message: str) -> None:
-        self._log_message("INFO", message)
+    def log_info(self, message: str, *args: Any) -> None:
+        self._log_message("INFO", message, *args)
 
-    def log_error(self, message: str) -> None:
-        self._log_message("ERROR", message)
+    def log_warning(self, message: str, *args: Any) -> None:
+        self._log_message("WARNING", message, *args)
+
+    def log_error(self, message: str, *args: Any) -> None:
+        self._log_message("ERROR", message, *args)
 
     def _logs_to_dict(self) -> List[Dict[str, Any]]:
         return [{"time": item[0].isoformat(), "level": item[1], "message": item[2]} for item in self._logs]
