@@ -37,11 +37,11 @@ class TestDoWhile(RunnerTestCase):
         self.assertSuccessMessages([])
 
     def test_do_while_runner_with_predicate_exception(self):
-        instance = DoWhile(self.predicate_raising_exception, SkillTest("skill", .1))
+        instance = DoWhile(self.predicate_raising_exception, SkillTest("skill", 0.1))
         with self.assertRaises(RunnerPredicateError):
             self.execute(instance, Budget(1))
 
-        self.assertSuccessMessages(['skill'])
+        self.assertSuccessMessages(["skill"])
 
     @staticmethod
     def run_while_budget_is_not_expired(context: ChainContext) -> bool:
@@ -50,4 +50,3 @@ class TestDoWhile(RunnerTestCase):
     @staticmethod
     def predicate_raising_exception(context: ChainContext) -> bool:
         raise Exception("the predicate function raised an exception")
-
