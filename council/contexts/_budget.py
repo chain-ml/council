@@ -125,7 +125,7 @@ class Budget:
         if self._deadline < time.monotonic():
             return True
 
-        return any(limit.value <= 0.0 for limit in self._remaining)
+        return any(limit.value < 0.0 for limit in self._remaining)
 
     def can_consume(self, value: float, unit: str, kind: str) -> bool:
         """

@@ -2,6 +2,8 @@ from council.contexts import ChainContext, Budget, Consumption
 from council.runners import While, RunnerSkillError, RunnerPredicateError
 from tests.unit.runners.helpers import RunnerTestCase, SkillTest, MySkillException
 
+BUDGET_KIND: str = "iteration"
+
 
 class TestWhile(RunnerTestCase):
     def test_monitors(self):
@@ -11,12 +13,11 @@ class TestWhile(RunnerTestCase):
         self.assertEqual(instance.monitor.children["whileBody"].name, skill.name)
 
     def test_while_runner_has_budget(self):
-        budget_kind = "iteration"
-        skill = SkillTest("skill", 0.1, budget_kind)
+        skill = SkillTest("skill", 0.1, BUDGET_KIND)
         instance = While(self.run_while_budget_is_not_expired, skill)
 
         max_iteration = 10
-        budget = Budget(duration=100, limits=[Consumption(max_iteration, "unit", budget_kind)])
+        budget = Budget(duration=100, limits=[Consumption(max_iteration, "unit", BUDGET_KIND)])
         self.execute(instance, budget)
         self.assertSuccessMessages(["skill" for _ in range(max_iteration)])
 
@@ -44,7 +45,7 @@ class TestWhile(RunnerTestCase):
 
     @staticmethod
     def run_while_budget_is_not_expired(context: ChainContext) -> bool:
-        return not context.budget.is_expired()
+        return context.budget.can_consume(1.0, "unit", BUDGET_KIND)
 
     @staticmethod
     def predicate_raising_exception(context: ChainContext) -> bool:
