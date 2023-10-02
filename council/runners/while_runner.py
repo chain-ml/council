@@ -4,13 +4,13 @@ from council.runners import RunnerBase, RunnerPredicate, RunnerExecutor, RunnerP
 
 class While(RunnerBase):
     """
-    Runner that executes while the given predicates return `True`
+    Runner that executes while the given predicate returns `True`
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
         """
         Args:
-            predicate: a predicate function
+            predicate: a predicate function evaluated in the while loop
             runner: a runner to be executed while the predicate returns `True`
         """
         super().__init__("whileRunner")
