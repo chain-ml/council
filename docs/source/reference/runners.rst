@@ -10,6 +10,7 @@ Runners
     council.runners.If
     council.runners.SkillRunnerBase
     council.runners.DoWhile
+    council.runners.While
     :full:
     :namespace: council.runners
 
