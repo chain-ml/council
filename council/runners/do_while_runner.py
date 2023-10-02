@@ -4,7 +4,8 @@ from council.runners import RunnerBase, RunnerPredicate, RunnerExecutor, RunnerP
 
 class DoWhile(RunnerBase):
     """
-    Runner that executes while the given predicate returns `True`
+    Runner that executes an inner Runner while the given predicate returns `True`.
+    The predicate is executed at the end of the loop. As such, the inner runner executes at least once.
     """
 
     def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):

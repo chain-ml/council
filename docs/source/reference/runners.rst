@@ -9,6 +9,7 @@ Runners
     council.runners.Sequential
     council.runners.If
     council.runners.SkillRunnerBase
+    council.runners.DoWhile
     :full:
     :namespace: council.runners
 
