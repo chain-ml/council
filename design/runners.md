@@ -161,7 +161,7 @@ Runs a skill as long as a given predicate is `true`. The predicate executes at t
 flowchart LR
     SkillA[Skill A]
     SkillB[Skill B]
-    subgraph While 
+    subgraph While
         direction LR
         Predicate{Predicate}
         SkillCA[Skill CA]
@@ -172,10 +172,10 @@ flowchart LR
     
     SkillA --a--> SkillB
     SkillB --b--> Predicate
-    Predicate --true--> SkillCA
+    Predicate -->|true| SkillCA
     SkillCA --cNa--> SkillCB
     SkillCB --cNb--> Predicate
-    Predicate --false--> SkillD
+    Predicate ---->|false| SkillD
     SkillD --d--> SkillE
 ```
 
@@ -234,3 +234,5 @@ flowchart LR
 | Skill CB | a, b, c1a, c1b, c2a, c2b, ... cNa       | cNa             |
 | Skill D  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | cNb             |
 | Skill E  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | d               |
+
+# Controller
