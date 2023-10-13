@@ -16,7 +16,12 @@ class LLMController(ControllerBase):
     _llm: MonitoredLLM
 
     def __init__(
-        self, chains: Sequence[ChainBase], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None
+        self,
+        chains: Sequence[ChainBase],
+        llm: LLMBase,
+        response_threshold: float = 0.0,
+        top_k: Optional[int] = None,
+        parallelism: bool = False,
     ):
         """
         Initialize a new instance of an LLMController
@@ -26,7 +31,7 @@ class LLMController(ControllerBase):
             response_threshold (float): a minimum threshold to select a response from its score
             top_k (int): maximum number of execution plan returned
         """
-        super().__init__(chains=chains)
+        super().__init__(chains=chains, parallelism=parallelism)
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._response_threshold = response_threshold
         self._top_k = top_k
@@ -124,4 +129,5 @@ class LLMController(ControllerBase):
             context.budget,
             initial_state=ChatMessage.chain(message=instructions) if chain.is_supporting_instructions else None,
             name=f"{chain.name};{score}",
+            rank=self.default_execution_unit_rank,
         )
