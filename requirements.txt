@@ -4,10 +4,10 @@ Jinja2~=3.1.2
 python-dotenv==1.0.0
 more-itertools~=9.1.0
 progressbar==2.5
-tiktoken==0.4.0
+tiktoken==0.5.1
 
 # Skills
 ## Google
-google-api-python-client==2.98.0
+google-api-python-client==2.103.0
 GoogleNews==1.6.10
-google-api-python-client-stubs
+google-api-python-client-stubs==1.18.0
