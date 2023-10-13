@@ -159,26 +159,25 @@ class TestAgent(TestCase):
         )
 
     def test_group_execution(self):
-        def wait(context: SkillContext) -> ChatMessage:
-            time.sleep(1)
-            return ChatMessage.skill("done")
-
         long = Chain(
             "long",
             "do something",
             [
-                MockSkill(action=wait),
-                MockSkill(action=wait),
-                MockSkill(action=lambda context: ChatMessage.skill("long")),
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=0, message="from long chain"),
             ],
         )
         short = Chain(
             "short",
             "do something faster",
-            [MockSkill(action=wait), MockSkill(action=lambda context: ChatMessage.skill("short"))],
+            [
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=0, message="from short chain"),
+            ],
         )
         shorter = Chain(
-            "shorter", "do something even faster", [MockSkill(action=lambda context: ChatMessage.skill("faster"))]
+            "shorter", "do something even faster", [MockSkill.build_wait_skill(duration=0, message="faster")]
         )
 
         context = AgentContext.empty(Budget(3))

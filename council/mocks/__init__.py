@@ -56,6 +56,16 @@ class MockSkill(SkillBase):
     def set_action_custom_message(self, message: str) -> None:
         self._action = lambda context: self.build_success_message(message)
 
+    @staticmethod
+    def build_wait_skill(duration: int = 1, message: str = "done") -> "MockSkill":
+        def wait_a_message(context: SkillContext) -> ChatMessage:
+            time.sleep(duration)
+            return ChatMessage.skill(message)
+
+        if duration > 0:
+            return MockSkill(action=wait_a_message)
+        return MockSkill(action=lambda context: ChatMessage.skill(message))
+
 
 class MockLLM(LLMBase):
     def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1):
