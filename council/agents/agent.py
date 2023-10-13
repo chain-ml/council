@@ -1,6 +1,6 @@
 import itertools
 from concurrent import futures
-from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence
 
 from council.chains import Chain, ChainBase
 from council.contexts import AgentContext, Budget, ChainContext, InfiniteBudget, Monitorable, Monitored
@@ -133,7 +133,7 @@ class Agent(Monitorable):
 
     @staticmethod
     def _group_units(plan: Sequence[ExecutionUnit]) -> List[List[ExecutionUnit]]:
-        groups = {}
+        groups: Dict[int, List[ExecutionUnit]] = {}
         for key, items in itertools.groupby(plan, lambda unit: unit.rank):
             group = groups.setdefault(key, [])
             group.extend(list(items))
