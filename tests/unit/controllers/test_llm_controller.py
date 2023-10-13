@@ -112,7 +112,7 @@ class LLMControllerTest(unittest.TestCase):
                 "name: shorter<->score: 10<->instructions: None<->justification: because",
             ]
         )
-        controller = LLMController(chains=[long, short, shorter], llm=llm, parallelism=False)
+        controller = LLMController(chains=[long, short, shorter], llm=llm, parallelism=True)
         context = AgentContext.from_user_message("test //", Budget(3))
 
         agent = Agent(controller, BasicEvaluator(), BasicFilter())
