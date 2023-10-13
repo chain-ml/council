@@ -30,6 +30,7 @@ class LLMController(ControllerBase):
             llm (LLMBase): the instance of LLM to use
             response_threshold (float): a minimum threshold to select a response from its score
             top_k (int): maximum number of execution plan returned
+            parallelism (bool): If true, Build a plan that will be executed in parallel
         """
         super().__init__(chains=chains, parallelism=parallelism)
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))

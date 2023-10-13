@@ -15,6 +15,7 @@ class ControllerBase(Monitorable, ABC):
         """
         Args:
             chains (List[Chain]): The list of chains available for execution.
+            parallelism (bool): If true, Build a plan that will be executed in parallel
         """
         super().__init__("controller")
         self._chains = list(chains)
