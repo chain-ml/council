@@ -25,13 +25,13 @@ class ExecutionUnit:
         budget: Budget,
         initial_state: Optional[ChatMessage] = None,
         name: Optional[str] = None,
-        rank: int = -1,
+        rank: Optional[int] = None,
     ):
         self._chain = chain
         self._budget = budget
         self._initial_state = initial_state
         self._name = name or chain.name
-        self._rank = rank
+        self._rank = rank or -1
 
     @property
     def chain(self) -> ChainBase:
