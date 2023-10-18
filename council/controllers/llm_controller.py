@@ -6,6 +6,42 @@ from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
+from .llm_answer import llm_property, LLMControllerAnswer
+
+
+class Specialist:
+    def __init__(self, name: str, justification: str, instructions: str, score: int):
+        self._instructions = instructions
+        self._score = score
+        self._name = name
+        self._justification = justification
+
+    @llm_property
+    def name(self) -> str:
+        """Specialist name to score for the task"""
+        return self._name
+
+    @llm_property
+    def score(self) -> int:
+        """Specialist relevance score from 0 to 10. 0 if poor relevance or out of scope, and 10 if perfectly relevant"""
+        return self._score
+
+    @llm_property
+    def instructions(self) -> str:
+        """Specific instructions to this particular specialist, or None if the specialist is not supporting those."""
+        return self._instructions
+
+    @llm_property
+    def justification(self):
+        """Short and specific explanation of this particular specialist score"""
+        return self._justification
+
+
+class LLMPrompter:
+    def __init__(self, llm: LLMBase, system_message: str, prompt: str):
+        self._llm = llm
+        self._system_message = system_message
+        self._prompt = prompt
 
 
 class LLMController(ControllerBase):
@@ -16,7 +52,7 @@ class LLMController(ControllerBase):
     _llm: MonitoredLLM
 
     def __init__(
-        self, chains: Sequence[ChainBase], llm: LLMBase, response_threshold: float = 0.0, top_k: Optional[int] = None
+        self, chains: Sequence[ChainBase], llm: LLMBase, response_threshold: int = 0, top_k: Optional[int] = None
     ):
         """
         Initialize a new instance of an LLMController
@@ -29,37 +65,50 @@ class LLMController(ControllerBase):
         super().__init__(chains=chains)
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._response_threshold = response_threshold
-        self._top_k = top_k
+        if top_k is None:
+            self._top_k = len(self._chains)
+        else:
+            self._top_k = min(top_k, len(self._chains))
+        self._llm_controller_answer = LLMControllerAnswer(Specialist)
         self._llm_system_message = self._build_system_message()
 
-    @property
-    def llm(self) -> LLMBase:
-        """
-        the LLM used by the controller
-        """
-        return self._llm.inner
-
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
-        response = self._call_llm(context)
+        retry = 2
+        messages = self._build_llm_messages(context)
+        while retry > 0:
+            llm_result = self._llm.post_chat_request(context, messages)
+            response = llm_result.first_choice
+            context.logger.debug(f"llm response: {response}")
+            try:
+                plan = self._parse_response(context, response)
+                plan.sort(key=lambda item: item[1], reverse=True)
+                return [item[0] for item in plan if item[1] >= self._response_threshold][: self._top_k]
+            except Exception as e:
+                messages.append(LLMMessage.assistant_message(response))
+                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: {e}"))
+                retry -= 1
+
+    def _parse_response(self, context: AgentContext, response: str) -> List[Tuple[ExecutionUnit, int]]:
         parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
         filtered = [r.unwrap() for r in parsed if r.is_some()]
-        filtered.sort(key=lambda item: item[1], reverse=True)
-        return [item[0] for item in filtered][: self._top_k]
+        if self._top_k > 1:
+            actual_chains = [item[0].chain.name for item in filtered]
+            missing_chains = [chain.name for chain in self._chains if chain.name not in actual_chains]
+            if len(missing_chains) > 0:
+                raise Exception(f"Missing scores for {missing_chains}.")
 
-    def _call_llm(self, context: AgentContext) -> str:
-        messages = self._build_llm_messages(context)
-        llm_result = self._llm.post_chat_request(context, messages)
-        response = llm_result.first_choice
-        context.logger.debug(f"llm response: {response}")
-        return response
+        if len(filtered) != 1 and self._top_k == 1:
+            raise Exception(f"You score all Specialists. ONLY score only the most relevant specialist.")
+
+        return filtered
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
         messages = [
             self._llm_system_message,
-            LLMMessage.user_message(
-                f"Score categories for:\n {context.chat_history.try_last_user_message.unwrap().message}"
-            ),
         ]
+        message = context.chat_history.try_last_user_message
+        if message.is_some():
+            messages.append(LLMMessage.user_message(f"Score Specialists for:\n `{message.unwrap().message}`"))
         return messages
 
     def _build_system_message(self) -> LLMMessage:
@@ -68,57 +117,37 @@ class LLMController(ControllerBase):
         )
 
         if self._top_k == 1:
-            instruction = "Score only the most relevant category. Your answer will be formatted precisely as:"
+            instruction = "- Score only the most relevant and best Specialist."
         else:
-            instruction = (
-                f"Score all {len(self._chains)} given categories. All your answers will be formatted precisely as:"
-            )
+            instruction = "- Score all Specialists."
         task_description = [
-            "\n# ROLE:",
-            "You are an assistant responsible to identify the intent of the user against a list of categories.",
-            "Categories are given as a name and a description formatted precisely as:",
-            "name: {name}, description: {description}, boolean indicating if supporting instructions",
-            "\n# CATEGORIES:",
-            answer_choices,
-            "\n# INSTRUCTIONS:",
-            "Score how relevant a category is from 0 to 10 using their description.",
+            "\n# INSTRUCTIONS",
+            "You are an assistant responsible to carefully select Specialist by giving them a relevance score.",
+            "- Use the Specialist description ONLY to score its relevance, ignore its name.",
             instruction,
-            "Name: {category name}<->"
-            "Score: {your score as int}<->"
-            "Instructions: {your instructions IF category supports instruction ELSE none}<->"
-            "Justification: {short justification}",
+            "- Specialist information are precisely formatted as:",
+            "`name: {name};description: {description};{boolean indicating if Specialists is supporting instructions}`",
+            "\n# SPECIALISTS",
+            answer_choices,
+            self._llm_controller_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
     def _parse_line(self, context: AgentContext, line: str) -> Option[Tuple[ExecutionUnit, int]]:
-        line = line.lower()
-        if not line.startswith("name:"):
+        if LLMControllerAnswer.field_separator() not in line:
             return Option.none()
-        else:
-            line = line.removeprefix("name:")
-
-        maybe_name: str = ""
-        maybe_score: str = ""
-        try:
-            (maybe_name, maybe_score, instructions, _j) = line.split("<->", 4)
-            name = maybe_name.strip().casefold()
-            chain = next(filter(lambda item: item.name.casefold() == name, self._chains))
-
-            maybe_score = maybe_score.replace("score:", "").strip()
-            score = int(maybe_score)
-            if score < self._response_threshold:
-                return Option.none()
-
-            instructions = instructions.replace("instructions:", "")
-            return Option.some((self._build_execution_unit(chain, context, instructions, score), score))
-
-        except StopIteration:
-            context.logger.warning(f'message="no chain found with name `{maybe_name}`"')
-        except ValueError:
-            context.logger.warning(f'message="invalid score `{maybe_score}`"')
+        cs: Specialist = self._llm_controller_answer.to_object(line)
+        if cs is not None:
+            try:
+                chain = next(filter(lambda item: item.name.casefold() == cs.name.casefold(), self._chains))
+                return Option.some((self._build_execution_unit(chain, context, cs.instructions, cs.score), cs.score))
+            except StopIteration:
+                context.logger.warning(f'message="no chain found with name `{cs.name}`"')
+                raise Exception(f"The Specialist `{cs.name}` does not exist")
         return Option.none()
 
-    def _build_execution_unit(self, chain: ChainBase, context: AgentContext, instructions: str, score: int):
+    @staticmethod
+    def _build_execution_unit(chain: ChainBase, context: AgentContext, instructions: str, score: int) -> ExecutionUnit:
         return ExecutionUnit(
             chain,
             context.budget,

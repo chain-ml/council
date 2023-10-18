@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 
 from jinja2 import Template
 
-from council.contexts import SkillContext, ChatMessageKind
+from council.contexts import ChatMessageKind, ChainContext, ContextBase
 
 
 class PromptBuilder:
@@ -34,16 +34,16 @@ class PromptBuilder:
 
         self._template = Template(t)
         if instructions is not None and len(instructions) > 0:
-            self._instructions = "\n".join(["# Instructions: "] + instructions) + "\n"
+            self._instructions = "\n".join(["# INSTRUCTIONS:"] + instructions) + "\n"
         else:
             self._instructions = ""
 
-    def apply(self, context: SkillContext, **kwargs: Any) -> str:
+    def apply(self, context: ChainContext, **kwargs: Any) -> str:
         """
         Builds and returns the prompt by rendering the template and appending instructions.
 
         Args:
-            context (SkillContext): The context object containing the necessary data for rendering the template.
+            context (ChainContext): The context object containing the necessary data for rendering the template.
 
         Returns:
             str: The generated prompt string.
@@ -51,8 +51,8 @@ class PromptBuilder:
         """
 
         template_context = {
-            "chat_history": self.__build_chat_history(context),
-            "chain_history": self.__build_chain_history(context),
+            "chat_history": self._build_chat_history(context),
+            "chain_history": self._build_chain_history(context),
             "instructions": self._instructions,
             **kwargs,
         }
@@ -61,7 +61,7 @@ class PromptBuilder:
         return prompt
 
     @staticmethod
-    def __build_chat_history(context: SkillContext) -> dict[str, Any]:
+    def _build_chat_history(context: ContextBase) -> dict[str, Any]:
         last_message = context.chat_history.try_last_message
         last_user_message = context.chat_history.try_last_user_message
         last_agent_message = context.chat_history.try_last_agent_message
@@ -84,7 +84,7 @@ class PromptBuilder:
         }
 
     @staticmethod
-    def __build_chain_history(context: SkillContext) -> dict[str, Any]:
+    def _build_chain_history(context: ChainContext) -> dict[str, Any]:
         if context.iteration_count == 0:
             return {
                 "messages": [],
