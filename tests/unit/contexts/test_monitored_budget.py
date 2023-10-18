@@ -5,7 +5,7 @@ from council.contexts import Budget, Consumption, ExecutionLogEntry, MonitoredBu
 
 class TestMonitoredBudget(unittest.TestCase):
     def test_add_consumption(self):
-        log_entry = ExecutionLogEntry("test")
+        log_entry = ExecutionLogEntry("test", node=None)
         limits = [Consumption(10, "count", "first"), Consumption(20, "count", "second")]
 
         budget = MonitoredBudget(log_entry, Budget(60, limits))

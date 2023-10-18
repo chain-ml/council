@@ -35,11 +35,11 @@ class Monitorable:
     def render_as_text(self) -> str:
         return "\n".join(self.monitor.render_as_text())
 
-    def render_as_dict(self) -> Dict[str, Any]:
+    def render_as_dict(self, include_children: bool = True) -> Dict[str, Any]:
         """
         returns the graph of operation as a dictionary
         """
-        return self.monitor.render_as_dict()
+        return self.monitor.render_as_dict(include_children)
 
     def render_as_json(self) -> str:
         """
