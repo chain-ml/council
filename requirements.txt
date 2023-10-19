@@ -10,4 +10,4 @@ tiktoken==0.5.1
 ## Google
 google-api-python-client==2.103.0
 GoogleNews==1.6.10
-google-api-python-client-stubs
+google-api-python-client-stubs==1.18.0

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ._monitorable import Monitorable
 from ._execution_log import ExecutionLog
 from ._execution_log_entry import ExecutionLogEntry
 from ._monitored import Monitored
@@ -13,9 +14,11 @@ class ExecutionContext:
     _executionLog: ExecutionLog
     _entry: ExecutionLogEntry
 
-    def __init__(self, execution_log: Optional[ExecutionLog] = None, path: str = ""):
+    def __init__(
+        self, execution_log: Optional[ExecutionLog] = None, path: str = "", node: Optional[Monitorable] = None
+    ):
         self._executionLog = execution_log or ExecutionLog()
-        self._entry = self._executionLog.new_entry(path)
+        self._entry = self._executionLog.new_entry(path, node)
 
     def _new_path(self, name: str):
         return name if self._entry.source == "" else f"{self._entry.source}/{name}"
@@ -30,7 +33,7 @@ class ExecutionContext:
         """
         returns a new instance for the given object
         """
-        return ExecutionContext(self._executionLog, self._new_path(monitored.name))
+        return ExecutionContext(self._executionLog, self._new_path(monitored.name), monitored.inner)
 
     @property
     def entry(self) -> ExecutionLogEntry:
