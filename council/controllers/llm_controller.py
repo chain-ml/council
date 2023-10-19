@@ -152,8 +152,9 @@ class LLMController(ControllerBase):
                 raise Exception(f"The Specialist `{cs.name}` does not exist")
         return Option.none()
 
-    @staticmethod
-    def _build_execution_unit(chain: ChainBase, context: AgentContext, instructions: str, score: int) -> ExecutionUnit:
+    def _build_execution_unit(
+        self, chain: ChainBase, context: AgentContext, instructions: str, score: int
+    ) -> ExecutionUnit:
         return ExecutionUnit(
             chain,
             context.budget,

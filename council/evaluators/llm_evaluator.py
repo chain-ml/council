@@ -101,7 +101,9 @@ class LLMEvaluator(EvaluatorBase):
 
     @staticmethod
     def _build_multiple_answers_message(query: str, answers: list[str]) -> str:
-        prompt_answers = "\n".join(f"Answer #{index+1} is:\n{answer}" for index, answer in enumerate(answers))
+        prompt_answers = "\n".join(
+            f"Answer #{index+1} is:\n{answer if len(answer) > 0 else 'EMPTY'}" for index, answer in enumerate(answers)
+        )
         lines = ["# The question to grade is:", query, "# The given answers are:", prompt_answers, "# Please grade."]
         return "\n".join(lines)
 
@@ -114,17 +116,22 @@ class LLMEvaluator(EvaluatorBase):
     def _build_system_prompt_multiple_answers() -> str:
         """Build prompt that will be sent to the inner `LLM`."""
         task_description = [
-            "# You are a grading expert, grading how accurate and relevant multiple answers are to a given question.",
-            "# Your grade will only be based on the given answer.",
-            "# The list of given answers is formatted precisely as:",
-            "Answer #{index} is:",
-            "{answer}",
+            "# ROLE: ",
+            "## You are a well educated expert grading fairly answers from different Specialists to a given question.",
+            "",
             "# INSTRUCTIONS: ",
-            "# Give a grade from 0.0 to 10.0",
-            "# Same answers must have the same grade.",
-            "# Irrelevant or empty answer must be graded 0.0",
-            "# For each given answer, your grade will be formatted precisely as:",
-            "grade #{index}: {grade as float} - short justification",
+            "## Give a grade from 0.0 to 10.0",
+            "## Evaluate carefully the question and answers before grading.",
+            "## Ignore the order of answers.",
+            "## Ensure to be consistent in grading, identical answers must have the same grade.",
+            "## Irrelevant, inaccurate, false or empty answer must be graded 0.0",
+            "",
+            "# FORMATTING: ",
+            "## The list of given answers is formatted precisely as:",
+            "Answer #{index} is:",
+            "{answer or EMPTY if no answer is provided}",
+            "## For each given answer, your grade will be formatted precisely as:",
+            "grade #{index}: {grade as float} - {short justification of the grade}",
         ]
         prompt = "\n".join(task_description)
         return prompt

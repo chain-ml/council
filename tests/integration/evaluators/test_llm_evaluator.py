@@ -34,8 +34,8 @@ class TestLlmEvaluator(unittest.TestCase):
 
         result = evaluator.execute(context)
 
-        self.assertGreater(result[1], result[0])
-        self.assertGreater(result[1], result[2])
+        self.assertGreater(result[1], result[0], "Should have a better score than an empty one")
+        self.assertGreater(result[1], result[2], "Should have a better score than an irrelevant one")
 
     def test_basic_prompt_multiple_math_responses(self):
         evaluator = LLMEvaluator(llm=self.llm)
