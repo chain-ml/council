@@ -1,4 +1,38 @@
-# Runners
+# Proposed Design Update
+
+- Skills: 
+  - it consumes from the context and provides a new message(s). It has a clear scope and responsibility, similar to a function
+  - it does not modify the context (Input is readonly context, Output is a List of messages)
+- Runners:
+  - Used to define a graph of operation (if, sequence or chain, parallel, while, ...)
+  - Manage `context` update and ensure thread safety
+  - new `Controller`? (as in flow controller, or control flow)
+- Chain: 
+  - would become `runner` + description
+  - new `Agent`???
+- Controller
+  - would become a `runner`
+- Evaluator
+  - would become a _many to many_ skill
+- Filter
+  - would become a _many to many_ skill
+- Agent 
+  - is too complex
+  - constraint workflow
+  - would be removed in favor of the new `runner`/`controller`
+
+## Design Goals
+
+- Thread Safe
+- 1 constraint => 1 or more benefits
+- composability
+
+## Categories
+
+- one to one
+- one to many
+- many to one
+- many to many
 
 ## Sequential
 
@@ -12,6 +46,8 @@ flowchart LR
     end
     SkillD[Skill D]
     SkillA --a--> SkillB --b--> SkillC --c--> SkillD
+%%    SkillD --> |d, data = c,s|EvalA
+%%    SkillD --> |c', data = c.data + s| EvalB
     
 ```
 In the scenario, each skill takes one message as input, and produces one message as output. 
@@ -21,7 +57,7 @@ In the scenario, each skill takes one message as input, and produces one message
 | Skill A | -                | -            |
 | Skill B | a                | a            |
 | Skill C | a, b             | b            |
-| Skill D | a, b, c          | c            |
+| Skill D | a, c             | c            |
 
 ## Parallel
 
@@ -180,19 +216,19 @@ flowchart LR
 ```
 
 
-| skill    | visible messages                        | last message(s) |
-|----------|-----------------------------------------|-----------------|
-| Skill A  | -                                       | -               |
-| Skill B  | a                                       | a               |
-| Skill CA | a, b                                    | b               |
-| Skill CB | a, b, c1a                               | c1a             |
-| Skill CA | a, b, c1a, c1b                          | c1b             |
-| Skill CB | a, b, c1a, c1b, c2a                     | c2a             |
-| ...      | ...                                     | ...             |
-| Skill CA | a ,b, c1a, c1b, c2a, c2b, ... c(N-1)b   | c(N-1)b         |
-| Skill CB | a, b, c1a, c1b, c2a, c2b, ... cNa       | cNa             |
-| Skill D  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | cNb (or b)      |
-| Skill E  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | d               |
+| skill    | visible messages                      | last message(s) |
+|----------|---------------------------------------|-----------------|
+| Skill A  | -                                     | -               |
+| Skill B  | a                                     | a               |
+| Skill CA | a, b                                  | b               |
+| Skill CB | a, b, c1a                             | c1a             |
+| Skill CA | a, b, c1a, c1b                        | c1b             |
+| Skill CB | a, b, c1a, c1b, c2a                   | c2a             |
+| ...      | ...                                   | ...             |
+| Skill CA | a ,b, c1a, c1b, c2a, c2b, ... c(N-1)b | c(N-1)b         |
+| Skill CB | a, b, c1a, c1b, c2a, c2b, ... cNa     | cNa             |
+| Skill D  | a, b, CNb                             | cNb (or b)      |
+| Skill E  | a, b, cNb, d                          | d               |
 
 ## DoWhile
 
@@ -221,18 +257,94 @@ flowchart LR
 ```
 
 
-| skill    | visible messages                        | last message(s) |
-|----------|-----------------------------------------|-----------------|
-| Skill A  | -                                       | -               |
-| Skill B  | a                                       | a               |
-| Skill CA | a, b                                    | b               |
-| Skill CB | a, b, c1a                               | c1a             |
-| Skill CA | a, b, c1a, c1b                          | c1b             |
-| Skill CB | a, b, c1a, c1b, c2a                     | c2a             |
-| ...      | ...                                     | ...             |
-| Skill CA | a ,b, c1a, c1b, c2a, c2b, ... c(N-1)b   | c(N-1)b         |
-| Skill CB | a, b, c1a, c1b, c2a, c2b, ... cNa       | cNa             |
-| Skill D  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | cNb             |
-| Skill E  | a, b, c1a, c1b, c2a, c2b, ..., cNa, cNb | d               |
+| skill    | visible messages                      | last message(s) |
+|----------|---------------------------------------|-----------------|
+| Skill A  | -                                     | -               |
+| Skill B  | a                                     | a               |
+| Skill CA | a, b                                  | b               |
+| Skill CB | a, b, c1a                             | c1a             |
+| Skill CA | a, b, c1a, c1b                        | c1b             |
+| Skill CB | a, b, c1a, c1b, c2a                   | c2a             |
+| ...      | ...                                   | ...             |
+| Skill CA | a ,b, c1a, c1b, c2a, c2b, ... c(N-1)b | c(N-1)b         |
+| Skill CB | a, b, c1a, c1b, c2a, c2b, ... cNa     | cNa             |
+| Skill D  | a, b, cNb                             | cNb             |
+| Skill E  | a, b, cNb, d                          | d               |
 
 # Controller
+
+A Controller is a dynamic runner: the graph of execution depends on the context. It has two main execution steps:
+- building a graph of execution (or an execution plan). This produce a `runner`
+- executing it
+
+A `controller` is a `runner` by contract (executing a graph for a given context), it shares the same benefits as any other `runner`, including:
+- traceability via the `context`
+- logging via the `context`
+- composability into complex graph of execution
+
+```Python
+class ControllerRunnerBase(RunnerBase):
+    def _execute(self, context) -> List[Message]:
+      return self.build_runner(context).execute(context).last_messages()
+    
+    def build_runner(self, context) -> Runner :
+      pass
+    
+class PlanControllerRunner(ControllerRunnerBase):
+    def build_runner(self, context) -> Runner:
+        plan = self.get_plan()
+        return self.build_runner_from_plan(plan)
+
+    def get_plan(self) -> List[ExecutionUnit]:
+        pass
+
+class AgentRunner(PlanControllerRunner):
+    def build_runner(self, context) -> Runner:
+      runner = super().build_runner()
+      return DoWhile(sequence(runner, filter, evaluator))
+        
+```
+
+Below are a few examples of controller execution flow.
+
+## Switch Controller
+
+From a set of runners, pick one and execute it
+```mermaid
+flowchart LR
+    User((User))
+    Done((end))
+    subgraph Controller
+        direction LR
+        llm
+        switch{Switch}
+        nyc[AirBNB NYC Specialist]
+        olist[OList Specialist]
+        
+    end
+    User --> |userMessage| Controller --> |response| Done 
+    llm --> switch -->|most relevant| nyc 
+```
+
+## Tool Controller
+
+From a set of runners, consume them as chainable tools to achieve a greater goal
+
+```mermaid
+flowchart LR
+    
+    User((User))
+    done((end))
+    subgraph Controller
+        direction LR
+        llm 
+        CsvAnalyst 
+        SqlAnalyst
+        PlotSpecialist 
+        TextCommentary
+        TimeseriesForecast
+    end
+    
+    User --> Controller --> done
+    llm --> CsvAnalyst --> PlotSpecialist --> TextCommentary
+```
