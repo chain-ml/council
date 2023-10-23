@@ -1,5 +1,6 @@
 """This package provides clients to use various LLMs"""
 
+from .llm_answer import llm_property, LLMAnswer, LLMProperty
 from .llm_exception import LLMException, LLMCallException, LLMTokenLimitException
 from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
 from .llm_base import LLMBase, LLMResult

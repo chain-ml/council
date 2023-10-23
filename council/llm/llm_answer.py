@@ -45,7 +45,7 @@ class LLMProperty:
             raise
 
 
-class LLMControllerAnswer:
+class LLMAnswer:
     def __init__(self, schema: Any):
         self._schema = schema
         self._class_name = schema.__name__
@@ -63,16 +63,11 @@ class LLMControllerAnswer:
         return "<->"
 
     def to_prompt(self) -> str:
-        fp = [
-            "\n# FORMATTING",
-            # f"For each {self._class_name} follow exactly the following format:\n",
-        ]
         p = [f"{prop}" for prop in self._properties]
-        return "\n".join(fp) + "`" + self.field_separator().join(p) + "`"
+        return self.field_separator().join(p)
 
     def to_yaml_prompt(self) -> str:
         fp = [
-            "\n# FORMATTING",
             "Use precisely the following template:",
             "```yaml",
             "{your yaml formatted answer}",
@@ -94,9 +89,12 @@ class LLMControllerAnswer:
         property_value_pairs = line.split(self.field_separator())
         properties_dict = {}
         for pair in property_value_pairs:
+            if ":" not in pair:
+                continue
             prop_name, value = pair.split(":")
             value = value.strip()
             prop_name = prop_name.replace("'", "")
+            prop_name = prop_name.replace("- ", "")
             class_prop = self._find(prop_name)
             if class_prop is not None:
                 typed_value = class_prop.parse(value, default)

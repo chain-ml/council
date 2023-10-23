@@ -3,13 +3,13 @@ from typing import Sequence
 
 from council.agents import Agent
 from council.chains import Chain
-from council.controllers import LLMController, LLMControllerAnswer
+from council.controllers import LLMController
 from council.contexts import AgentContext, Budget
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
 from council.mocks import MockLLM, MockSkill
 from council.controllers.llm_controller import Specialist
-from council.llm import LLMMessage
+from council.llm import LLMMessage, LLMAnswer
 
 
 class LLMControllerTest(unittest.TestCase):
@@ -65,7 +65,7 @@ class LLMControllerTest(unittest.TestCase):
         self.assertEqual(["first", "ThiRd", "second"], [item.chain.name for item in result])
 
     def test_llm_answer(self):
-        llma = LLMControllerAnswer(Specialist)
+        llma = LLMAnswer(Specialist)
         print("\n")
         print("Automatic Prompt for line parsing:\n")
         print(llma.to_prompt())
@@ -73,7 +73,7 @@ class LLMControllerTest(unittest.TestCase):
         print(llma.to_yaml_prompt())
 
     def test_llm_parse_line_answer(self):
-        llma = LLMControllerAnswer(Specialist)
+        llma = LLMAnswer(Specialist)
         print("\n")
         print(llma.parse_line("Name: first<->Score: 10<->Instructions: None<->Justification: because"))
         print(llma.parse_line("Instructions: None<->Name: first<->Score: ABC<->Justification: because"))
@@ -82,7 +82,7 @@ class LLMControllerTest(unittest.TestCase):
         self.assertEqual(cs.score, 10)
 
     def test_llm_parse_yaml_answer(self):
-        llma = LLMControllerAnswer(Specialist)
+        llma = LLMAnswer(Specialist)
 
         bloc = """
     ```yaml

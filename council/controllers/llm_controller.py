@@ -6,7 +6,7 @@ from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase
 from .execution_unit import ExecutionUnit
-from .llm_answer import llm_property, LLMControllerAnswer
+from council.llm.llm_answer import llm_property, LLMAnswer
 
 
 class Specialist:
@@ -23,7 +23,7 @@ class Specialist:
 
     @llm_property
     def score(self) -> int:
-        """Specialist relevance score from 0 to 10. 0 if poor relevance or out of scope, and 10 if perfectly relevant"""
+        """Specialist relevance score"""
         return self._score
 
     @llm_property
@@ -35,13 +35,6 @@ class Specialist:
     def justification(self):
         """Short and specific explanation of this particular specialist score"""
         return self._justification
-
-
-class LLMPrompter:
-    def __init__(self, llm: LLMBase, system_message: str, prompt: str):
-        self._llm = llm
-        self._system_message = system_message
-        self._prompt = prompt
 
 
 class LLMController(ControllerBase):
@@ -75,7 +68,7 @@ class LLMController(ControllerBase):
             self._top_k = len(self._chains)
         else:
             self._top_k = min(top_k, len(self._chains))
-        self._llm_controller_answer = LLMControllerAnswer(Specialist)
+        self._llm_controller_answer = LLMAnswer(Specialist)
         self._llm_system_message = self._build_system_message()
 
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
@@ -93,20 +86,8 @@ class LLMController(ControllerBase):
                 messages.append(LLMMessage.assistant_message(response))
                 messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: {e}"))
                 retry -= 1
-
-    def _parse_response(self, context: AgentContext, response: str) -> List[Tuple[ExecutionUnit, int]]:
-        parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
-        filtered = [r.unwrap() for r in parsed if r.is_some()]
-        if self._top_k > 1:
-            actual_chains = [item[0].chain.name for item in filtered]
-            missing_chains = [chain.name for chain in self._chains if chain.name not in actual_chains]
-            if len(missing_chains) > 0:
-                raise Exception(f"Missing scores for {missing_chains}.")
-
-        if len(filtered) != 1 and self._top_k == 1:
-            raise Exception(f"You score all Specialists. ONLY score only the most relevant specialist.")
-
-        return filtered
+        context.logger.debug(f"TODO")
+        return []
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
         messages = [
@@ -127,22 +108,43 @@ class LLMController(ControllerBase):
         else:
             instruction = "- Score all Specialists."
         task_description = [
+            "\n# ROLE"
+            "You are a knowledgeable expert responsible to fairly selects Specialists by giving them a relevance score "
+            "to execute a task."
             "\n# INSTRUCTIONS",
-            "You are an assistant responsible to carefully select Specialist by giving them a relevance score.",
-            "- Use the Specialist description ONLY to score its relevance, ignore its name.",
             instruction,
-            "- Specialist information are precisely formatted as:",
-            "`name: {name};description: {description};{boolean indicating if Specialists is supporting instructions}`",
+            "- Give a score from 0 to 10."
+            "- Score 0 if poor relevance or out of scope, and score 10 if perfectly relevant."
+            "- Read carefully the Specialist description to score its relevance.",
+            "- Ignore Specialist name to give your score.",
             "\n# SPECIALISTS",
             answer_choices,
+            "\n# FORMATTING",
+            "- Specialist information are precisely formatted as:",
+            "name: {name};description: {description};{boolean indicating if Specialists is supporting instructions}",
+            "- Your response are precisely formatted as:",
             self._llm_controller_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
+    def _parse_response(self, context: AgentContext, response: str) -> List[Tuple[ExecutionUnit, int]]:
+        parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
+        filtered = [r.unwrap() for r in parsed if r.is_some()]
+        if self._top_k > 1:
+            actual_chains = [item[0].chain.name for item in filtered]
+            missing_chains = [chain.name for chain in self._chains if chain.name not in actual_chains]
+            if len(missing_chains) > 0:
+                raise Exception(f"Missing scores for {missing_chains}. Ensure to follow formatting.")
+
+        if len(filtered) != 1 and self._top_k == 1:
+            raise Exception(f"You score all Specialists. ONLY score only the most relevant specialist.")
+
+        return filtered
+
     def _parse_line(self, context: AgentContext, line: str) -> Option[Tuple[ExecutionUnit, int]]:
-        if LLMControllerAnswer.field_separator() not in line:
+        if LLMAnswer.field_separator() not in line:
             return Option.none()
-        cs: Specialist = self._llm_controller_answer.to_object(line)
+        cs: Optional[Specialist] = self._llm_controller_answer.to_object(line)
         if cs is not None:
             try:
                 chain = next(filter(lambda item: item.name.casefold() == cs.name.casefold(), self._chains))
