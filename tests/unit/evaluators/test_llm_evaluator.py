@@ -9,7 +9,7 @@ from council.contexts import (
     ChatMessage,
     ChainContext,
 )
-from council.mocks import MockLLM, MockMonitored
+from council.mocks import MockLLM, MockMonitored, MockMultipleResponses
 
 
 class TestLLMEvaluator(unittest.TestCase):
@@ -27,8 +27,12 @@ class TestLLMEvaluator(unittest.TestCase):
     def to_tuple_message_score(items: List[ScoredChatMessage]):
         return [(item.message.message, item.score) for item in items]
 
+    @staticmethod
+    def to_score(items: List[ScoredChatMessage]):
+        return [item.score for item in items]
+
     def test_evaluate(self):
-        responses = ["grade:2", "grade:10"]
+        responses = ["grade:2<->index:1<->justification:None", "grade:10<->index:2<->justification:None"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
@@ -40,7 +44,7 @@ class TestLLMEvaluator(unittest.TestCase):
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_chain_with_no_message(self):
-        responses = ["grade:2", "grade:10"]
+        responses = ["index:1<->grade:2<->justification:None", "grade:10<->index:2<->justification:None"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),
@@ -53,14 +57,19 @@ class TestLLMEvaluator(unittest.TestCase):
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_evaluate_fail_to_parse(self):
-        response = "grade:Not a number"
-        instance = LLMEvaluator(MockLLM.from_response(response))
+        llm_responses = [
+            ["grade:NotANumber<->index:1<->justification:None", "grade:6<->index:2<->justification:None"],
+            ["grade:6<->index:2<->justification:None", "grade:3.<->index:NotAnInteger<->justification:None"],
+            ["grade:4<->index:1<->justification:Because", "grade:8<->index:2<->justification:None"],
+        ]
+
+        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses).call))
         self.add_one_iteration_result()
-        with self.assertRaises(Exception):
-            instance.execute(self.context)
+        result = instance.execute(self.context)
+        self.assertEqual(self.to_score(result), [4.0, 8.0])
 
     def test_evaluate_with_execution_history(self):
-        responses = ["grade:2", "grade:10"]
+        responses = ["grade:2<->index:1<->justification:None", "grade:10<->index:2<->justification:None"]
         expected = [
             ScoredChatMessage(ChatMessage.agent("result of a chain"), 2),
             ScoredChatMessage(ChatMessage.agent("result of another chain"), 10),

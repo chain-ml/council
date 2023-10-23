@@ -1,4 +1,5 @@
 from typing import List, Optional, Sequence, Tuple
+from typing_extensions import TypeGuard
 
 from council.chains import ChainBase
 from council.contexts import AgentContext, ChatMessage
@@ -28,12 +29,12 @@ class Specialist:
 
     @llm_property
     def instructions(self) -> str:
-        """Specific instructions to this particular specialist, or None if the specialist is not supporting those."""
+        """Specific instructions to give to this Specialist, or None if the Specialist is not supporting those."""
         return self._instructions
 
     @llm_property
     def justification(self):
-        """Short and specific explanation of this particular specialist score"""
+        """Short and specific explanation of your score to this particular Specialist"""
         return self._justification
 
 
@@ -70,9 +71,10 @@ class LLMController(ControllerBase):
             self._top_k = min(top_k, len(self._chains))
         self._llm_controller_answer = LLMAnswer(Specialist)
         self._llm_system_message = self._build_system_message()
+        self._retry = 3
 
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
-        retry = 2
+        retry = self._retry
         messages = self._build_llm_messages(context)
         while retry > 0:
             llm_result = self._llm.post_chat_request(context, messages)
@@ -83,8 +85,8 @@ class LLMController(ControllerBase):
                 plan.sort(key=lambda item: item[1], reverse=True)
                 return [item[0] for item in plan if item[1] >= self._response_threshold][: self._top_k]
             except Exception as e:
-                messages.append(LLMMessage.assistant_message(response))
-                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: {e}"))
+                messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
+                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
                 retry -= 1
         context.logger.debug(f"TODO")
         return []
@@ -113,15 +115,16 @@ class LLMController(ControllerBase):
             "to execute a task."
             "\n# INSTRUCTIONS",
             instruction,
-            "- Give a score from 0 to 10."
-            "- Score 0 if poor relevance or out of scope, and score 10 if perfectly relevant."
+            "- Give a score from 0 to 10.",
             "- Read carefully the Specialist description to score its relevance.",
+            "- Score 0 if poor relevance or out of scope, and score 10 if perfectly relevant."
             "- Ignore Specialist name to give your score.",
+            "- Ignore the order of Specialists to give your score",
             "\n# SPECIALISTS",
             answer_choices,
             "\n# FORMATTING",
             "- Specialist information are precisely formatted as:",
-            "name: {name};description: {description};{boolean indicating if Specialists is supporting instructions}",
+            "name: {name};description: {description};{boolean indicating if Specialist is supporting instructions}",
             "- Your response are precisely formatted as:",
             self._llm_controller_answer.to_prompt(),
         ]
@@ -146,8 +149,12 @@ class LLMController(ControllerBase):
             return Option.none()
         cs: Optional[Specialist] = self._llm_controller_answer.to_object(line)
         if cs is not None:
+
+            def typeguard_predicate(chain_base: ChainBase) -> TypeGuard[ChainBase]:
+                return isinstance(chain_base, ChainBase) and chain_base.name.casefold() == cs.name.casefold()
+
             try:
-                chain = next(filter(lambda item: item.name.casefold() == cs.name.casefold(), self._chains))
+                chain = next(filter(typeguard_predicate, self._chains))
                 return Option.some((self._build_execution_unit(chain, context, cs.instructions, cs.score), cs.score))
             except StopIteration:
                 context.logger.warning(f'message="no chain found with name `{cs.name}`"')

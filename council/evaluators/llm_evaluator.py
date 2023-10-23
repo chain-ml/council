@@ -45,6 +45,7 @@ class LLMEvaluator(EvaluatorBase):
         super().__init__()
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._llm_evaluator_answer = LLMAnswer(SpecialistGrade)
+        self._retry = 3
 
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         query = context.chat_history.try_last_user_message.unwrap()
@@ -54,7 +55,7 @@ class LLMEvaluator(EvaluatorBase):
             if chain_messages.try_last_message.is_some()
         ]
 
-        retry = 2
+        retry = self._retry
         messages = self._build_llm_messages(query, chain_results)
         while retry > 0:
             llm_result = self._llm.post_chat_request(context, messages)
@@ -65,9 +66,9 @@ class LLMEvaluator(EvaluatorBase):
                 return parse_response
             except Exception as e:
                 messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
-                messages.append(LLMMessage.user_message(f"Exception: `{e}`"))
+                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
                 retry -= 1
-
+        context.logger.debug(f"TODO")
         return []
 
     def _parse_response(self, response: str, chain_results: List[ChatMessage]) -> List[ScoredChatMessage]:

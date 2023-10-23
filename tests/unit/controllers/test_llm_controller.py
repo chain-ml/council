@@ -1,5 +1,4 @@
 import unittest
-from typing import Sequence
 
 from council.agents import Agent
 from council.chains import Chain
@@ -7,9 +6,9 @@ from council.controllers import LLMController
 from council.contexts import AgentContext, Budget
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
-from council.mocks import MockLLM, MockSkill
+from council.mocks import MockLLM, MockSkill, MockMultipleResponses
 from council.controllers.llm_controller import Specialist
-from council.llm import LLMMessage, LLMAnswer
+from council.llm import LLMAnswer
 
 
 class LLMControllerTest(unittest.TestCase):
@@ -108,17 +107,7 @@ class LLMControllerTest(unittest.TestCase):
             ],
         ]
 
-        class LLMResponses:
-            def __init__(self, responses):
-                self._count = 0
-                self._responses = ["\n".join(resp) for resp in responses]
-
-            def call(self, _messages: Sequence[LLMMessage]) -> Sequence[str]:
-                if self._count < len(self._responses):
-                    self._count += 1
-                return [self._responses[self._count - 1]]
-
-        llm = MockLLM(action=LLMResponses(responses=llm_responses).call)
+        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses).call)
 
         controller = LLMController(chains=self.chains, llm=llm, top_k=3)
         result = controller.execute(self.context)
