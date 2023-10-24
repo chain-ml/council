@@ -1,7 +1,7 @@
 import unittest
 from typing import List
 
-from council.evaluators import LLMEvaluator
+from council.evaluators import EvaluatorException, LLMEvaluator
 from council.contexts import (
     AgentContext,
     Budget,
@@ -56,7 +56,7 @@ class TestLLMEvaluator(unittest.TestCase):
         result = LLMEvaluator(MockLLM.from_multi_line_response(responses)).execute(self.context)
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
-    def test_evaluate_fail_to_parse(self):
+    def test_evaluate_fail_to_parse_first_2_answers(self):
         llm_responses = [
             ["grade:NotANumber<->index:1<->justification:None", "grade:6<->index:2<->justification:None"],
             ["grade:6<->index:2<->justification:None", "grade:3.<->index:NotAnInteger<->justification:None"],
@@ -67,6 +67,18 @@ class TestLLMEvaluator(unittest.TestCase):
         self.add_one_iteration_result()
         result = instance.execute(self.context)
         self.assertEqual(self.to_score(result), [4.0, 8.0])
+
+    def test_evaluate_fail(self):
+        llm_responses = [
+            ["grade:NotANumber<->index:1<->justification:None", "grade:6<->index:2<->justification:None"],
+            ["grade:6<->index:2<->justification:None", "grade:3.<->index:NotAnInteger<->justification:None"],
+            ["grade:4<->justification:Because", "grade:8<->index:2<->justification:None"],
+        ]
+
+        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses).call))
+        self.add_one_iteration_result()
+        with self.assertRaises(EvaluatorException):
+            instance.execute(self.context)
 
     def test_evaluate_with_execution_history(self):
         responses = ["grade:2<->index:1<->justification:None", "grade:10<->index:2<->justification:None"]

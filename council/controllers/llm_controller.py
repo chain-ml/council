@@ -5,7 +5,7 @@ from council.chains import ChainBase
 from council.contexts import AgentContext, ChatMessage
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
-from .controller_base import ControllerBase
+from .controller_base import ControllerBase, ControllerException
 from .execution_unit import ExecutionUnit
 from council.llm.llm_answer import llm_property, LLMAnswer
 
@@ -88,8 +88,7 @@ class LLMController(ControllerBase):
                 messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
                 messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
                 retry -= 1
-        context.logger.debug(f"TODO")
-        return []
+        raise ControllerException("LLMController failed to execute")
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
         messages = [
@@ -140,7 +139,7 @@ class LLMController(ControllerBase):
                 raise Exception(f"Missing scores for {missing_chains}. Ensure to follow formatting.")
 
         if len(filtered) != 1 and self._top_k == 1:
-            raise Exception(f"You score all Specialists. ONLY score only the most relevant specialist.")
+            raise Exception("You score all Specialists. ONLY score only the most relevant specialist.")
 
         return filtered
 

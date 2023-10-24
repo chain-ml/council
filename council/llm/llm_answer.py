@@ -1,8 +1,14 @@
+from __future__ import annotations
 import inspect
-import re
 from typing import Any, Dict, Optional
 
 import yaml
+
+from council.utils import CodeParser
+
+
+class LLMParsingException(Exception):
+    pass
 
 
 class llm_property(property):
@@ -39,10 +45,10 @@ class LLMProperty:
     def parse(self, value: Any, default: Optional[Any]) -> Any:
         try:
             return self._type(value)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             if default is not None:
                 return default
-            raise
+            raise LLMParsingException(f"Value {value} cannot be parsed into {self._type.__name__}") from e
 
 
 class LLMAnswer:
@@ -81,7 +87,7 @@ class LLMAnswer:
         d = self.parse_line(line, None)
         missing_keys = [key.name for key in self._properties if key.name not in d.keys()]
         if len(missing_keys) > 0:
-            raise Exception(f"missing {missing_keys} in response.")
+            raise LLMParsingException(f"missing {missing_keys} in response.")
         t = self._schema(**d)
         return t
 
@@ -104,20 +110,19 @@ class LLMAnswer:
     def parse_yaml(self, bloc: str) -> Dict[str, Any]:
         d = yaml.safe_load(bloc)
         properties_dict = {**d}
+        missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
+        if len(missing_keys) > 0:
+            raise LLMParsingException(f"missing {missing_keys} in response.")
         return properties_dict
+
+    def parse_yaml_bloc(self, bloc: str) -> Dict[str, Any]:
+        code_bloc = CodeParser.find_first(language="yaml", text=bloc)
+        if code_bloc is not None:
+            return self.parse_yaml(code_bloc.code)
+        return {}
 
     def _find(self, prop: str) -> Optional[LLMProperty]:
         for p in self._properties:
             if p.name.casefold() == prop.casefold():
                 return p
         return None
-
-    @staticmethod
-    def try_extract_bloc(text: str, bloc_type: str) -> Optional[str]:
-        bloc = None
-        pattern = rf"```{bloc_type}\s+(.*?)\s+```"
-        matches = re.findall(pattern, text, re.DOTALL)
-        if matches:
-            for match in matches:
-                bloc = match
-        return bloc

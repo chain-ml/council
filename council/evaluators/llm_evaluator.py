@@ -5,8 +5,8 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 """
 from typing import List, Optional
 
-from council.contexts import AgentContext, ChatMessage, ContextLogger, ScoredChatMessage
-from council.evaluators import EvaluatorBase
+from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
+from council.evaluators import EvaluatorBase, EvaluatorException
 from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
 from council.utils import Option
 
@@ -68,8 +68,7 @@ class LLMEvaluator(EvaluatorBase):
                 messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
                 messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
                 retry -= 1
-        context.logger.debug(f"TODO")
-        return []
+        raise EvaluatorException("LLMEvaluator failed to execute")
 
     def _parse_response(self, response: str, chain_results: List[ChatMessage]) -> List[ScoredChatMessage]:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]

@@ -6,6 +6,11 @@ from council.contexts import AgentContext, Monitorable
 from .execution_unit import ExecutionUnit
 
 
+class ControllerException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class ControllerBase(Monitorable, ABC):
     """
     Abstract base class for an agent controller.

@@ -91,7 +91,7 @@ class LLMControllerTest(unittest.TestCase):
       instructions: do this
       justification: because
     ```"""
-        print(llma.parse_yaml(llma.try_extract_bloc(bloc, "yaml")))
+        print(llma.parse_yaml_bloc(bloc))
 
     def test_plan_parse_no_matching_chain(self):
         llm_responses = [

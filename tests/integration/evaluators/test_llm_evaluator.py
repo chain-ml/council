@@ -2,6 +2,7 @@ import unittest
 
 import dotenv
 
+from council import OpenAILLM
 from council.contexts import AgentContext, ChatMessage, ChainContext
 from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
@@ -39,7 +40,7 @@ class TestLlmEvaluator(unittest.TestCase):
 
     def test_basic_prompt_multiple_math_responses(self):
         evaluator = LLMEvaluator(llm=self.llm)
-        context = AgentContext.from_user_message("Given x=`(8*9)+3`. What is the value of x?")
+        context = AgentContext.from_user_message("Given the following formula `x=3+(8*9)`. What is the value of x?")
         context.new_iteration()
 
         messages = ["x=70", "x=71", "x=75", "x=72", "x=73", "x=78"]
@@ -59,7 +60,7 @@ class TestLlmEvaluator(unittest.TestCase):
         context.new_iteration()
 
         agent_message = """
-            I am an agent!
+            I am an agent helping user to solve math problems!
             How can I help you today?
             """
 

@@ -4,6 +4,11 @@ from typing import List
 from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 
+class EvaluatorException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class EvaluatorBase(Monitorable, ABC):
     """
     Abstract base class for an agent evaluator.
