@@ -1,4 +1,6 @@
-from typing import List, Optional
+import itertools
+from concurrent import futures
+from typing import Dict, List, Optional, Sequence
 
 from council.chains import Chain, ChainBase
 from council.contexts import AgentContext, Budget, ChainContext, InfiniteBudget, Monitorable, Monitored
@@ -99,9 +101,7 @@ class Agent(Monitorable):
                     if len(plan) == 0:
                         return AgentResult()
 
-                    for unit in plan:
-                        with iteration_context.new_agent_context_for_execution_unit(unit.name) as unit_context:
-                            self._execute_unit(unit_context, unit)
+                    self.execute_plan(iteration_context, plan)
 
                     result = self.evaluator.execute(iteration_context.new_agent_context_for(self._evaluator))
                     iteration_context.set_evaluation(result)
@@ -116,17 +116,53 @@ class Agent(Monitorable):
             context.logger.info('message="agent execution ended"')
             executor.shutdown(wait=False, cancel_futures=True)
 
+    def execute_plan(self, iteration_context: AgentContext, plan: Sequence[ExecutionUnit]):
+        executor = new_runner_executor("agent")
+        fs = []
+        try:
+            for group in self._group_units(plan):
+                fs = [executor.submit(self._execute_unit, iteration_context, unit) for unit in group]
+                dones, not_dones = futures.wait(
+                    fs, iteration_context.budget.remaining_duration, futures.FIRST_EXCEPTION
+                )
+
+                # rethrow exception if any
+                [d.result(0) for d in dones]
+        finally:
+            [f.cancel() for f in fs]
+
     @staticmethod
-    def _execute_unit(context: AgentContext, unit: ExecutionUnit):
-        chain = unit.chain
-        context.logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
-        chain_context = ChainContext.from_agent_context(
-            context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
-        )
-        if unit.initial_state is not None:
-            chain_context.append(unit.initial_state)
-        chain.execute(chain_context)
-        context.logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
+    def _group_units(plan: Sequence[ExecutionUnit]) -> List[List[ExecutionUnit]]:
+        groups: Dict[int, List[ExecutionUnit]] = {}
+        for key, items in itertools.groupby(plan, lambda unit: unit.rank):
+            group = groups.setdefault(key, [])
+            group.extend(list(items))
+
+        keys = list(groups.keys())
+        keys.sort()
+
+        result = []
+        for key in keys:
+            if key < 0:
+                for item in groups[key]:
+                    result.append([item])
+            else:
+                result.append(groups[key])
+
+        return result
+
+    @staticmethod
+    def _execute_unit(iteration_context: AgentContext, unit: ExecutionUnit):
+        with iteration_context.new_agent_context_for_execution_unit(unit.name) as context:
+            chain = unit.chain
+            context.logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')
+            chain_context = ChainContext.from_agent_context(
+                context, Monitored(f"chain({chain.name})", chain), unit.name, unit.budget
+            )
+            if unit.initial_state is not None:
+                chain_context.append(unit.initial_state)
+            chain.execute(chain_context)
+            context.logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
 
     @staticmethod
     def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":

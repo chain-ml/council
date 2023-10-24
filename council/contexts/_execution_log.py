@@ -1,6 +1,7 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from ._monitorable import Monitorable
 from ._execution_log_entry import ExecutionLogEntry
 
 
@@ -13,16 +14,17 @@ class ExecutionLog:
     def __init__(self):
         self._entries = []
 
-    def new_entry(self, name: str) -> ExecutionLogEntry:
+    def new_entry(self, name: str, node: Optional[Monitorable]) -> ExecutionLogEntry:
         """
         adds a new entry into the log
         Args:
             name: name of the new entry
+            node: the related monitored runner
 
         Returns:
             the newly added entry
         """
-        result = ExecutionLogEntry(name)
+        result = ExecutionLogEntry(name, node)
         self._entries.append(result)
         return result
 

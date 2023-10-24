@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from council.agents import Agent
 from council.chains import Chain
-from council.contexts import AgentContext, ChatMessage, SkillContext
+from council.contexts import AgentContext, Budget, ChatMessage, SkillContext
 from council.controllers import BasicController, ExecutionUnit
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
@@ -140,3 +140,56 @@ class TestAgent(TestCase):
 
         self.assertEqual(expected_sources, [item["source"] for item in result["entries"]])
         self.assertEqual("an info log", result["entries"][5]["logs"][2]["message"])
+
+    def test_plan_group(self):
+        plan = [
+            ExecutionUnit(Chain("a", "do something", [MockSkill()]), Budget(1)),
+            ExecutionUnit(Chain("b", "do something", [MockSkill()]), Budget(1)),
+            ExecutionUnit(Chain("c", "do something", [MockSkill()]), Budget(1), rank=2),
+            ExecutionUnit(Chain("d", "do something", [MockSkill()]), Budget(1)),
+            ExecutionUnit(Chain("e", "do something", [MockSkill()]), Budget(1), rank=4),
+            ExecutionUnit(Chain("f", "do something", [MockSkill()]), Budget(1), rank=3),
+            ExecutionUnit(Chain("g", "do something", [MockSkill()]), Budget(1), rank=2),
+        ]
+
+        result = Agent._group_units(plan)
+
+        self.assertEqual(
+            [["a"], ["b"], ["d"], ["c", "g"], ["f"], ["e"]], [[chain.name for chain in group] for group in result]
+        )
+
+    def test_group_execution(self):
+        long = Chain(
+            "long",
+            "do something",
+            [
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=0, message="from long chain"),
+            ],
+        )
+        short = Chain(
+            "short",
+            "do something faster",
+            [
+                MockSkill.build_wait_skill(duration=1),
+                MockSkill.build_wait_skill(duration=0, message="from short chain"),
+            ],
+        )
+        shorter = Chain(
+            "shorter", "do something even faster", [MockSkill.build_wait_skill(duration=0, message="faster")]
+        )
+
+        context = AgentContext.empty(Budget(3))
+        context.new_iteration()
+        plan = [
+            ExecutionUnit(long, context.budget, rank=1),
+            ExecutionUnit(short, context.budget, rank=1),
+            ExecutionUnit(shorter, context.budget, rank=1),
+        ]
+        agent = Agent(BasicController([long, short, shorter]), BasicEvaluator(), BasicFilter())
+        agent.execute_plan(context, plan)
+
+        self.assertFalse(context.budget.is_expired())
+        self.assertLessEqual(context.budget.remaining_duration, 1)
+        self.assertGreaterEqual(context.budget.remaining_duration, 0.5)
