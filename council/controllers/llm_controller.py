@@ -5,7 +5,7 @@ from council.chains import ChainBase
 from council.contexts import AgentContext, ChatMessage
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
-from .controller_base import ControllerBase, ControllerException
+from council.controllers import ControllerBase, ControllerException
 from .execution_unit import ExecutionUnit
 from council.llm.llm_answer import llm_property, LLMAnswer, LLMParsingException
 
@@ -76,7 +76,7 @@ class LLMController(ControllerBase):
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
         retry = self._retry
         messages = self._build_llm_messages(context)
-        new_messages = []
+        new_messages: List[LLMMessage] = []
         while retry > 0:
             messages = messages + new_messages
             llm_result = self._llm.post_chat_request(context, messages)
@@ -90,7 +90,7 @@ class LLMController(ControllerBase):
             except LLMParsingException as e:
                 assistant_message = f"Your response is not correctly formatted:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
-            except Exception as e:
+            except ControllerException as e:
                 assistant_message = f"Your response raised an exception:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
 

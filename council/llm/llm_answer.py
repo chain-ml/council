@@ -87,7 +87,7 @@ class LLMAnswer:
         d = self.parse_line(line, None)
         missing_keys = [key.name for key in self._properties if key.name not in d.keys()]
         if len(missing_keys) > 0:
-            raise LLMParsingException(f"missing {missing_keys} in response.")
+            raise LLMParsingException(f"Missing {missing_keys} in response.")
         t = self._schema(**d)
         return t
 
@@ -97,15 +97,15 @@ class LLMAnswer:
         for pair in property_value_pairs:
             if ":" not in pair:
                 continue
-            prop_name, value = pair.split(":")
-            value = value.strip()
-            prop_name = prop_name.replace("'", "")
+            values = pair.split(":", 1)
+            prop_name = values[0].replace("'", "")
             prop_name = prop_name.replace("-", "")
             prop_name = prop_name.strip()
+            prop_value = values[1].strip()
 
             class_prop = self._find(prop_name)
             if class_prop is not None:
-                typed_value = class_prop.parse(value, default)
+                typed_value = class_prop.parse(prop_value, default)
                 properties_dict[class_prop.name] = typed_value
         return properties_dict
 
@@ -114,7 +114,7 @@ class LLMAnswer:
         properties_dict = {**d}
         missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
         if len(missing_keys) > 0:
-            raise LLMParsingException(f"missing {missing_keys} in response.")
+            raise LLMParsingException(f"Missing {missing_keys} in response.")
         return properties_dict
 
     def parse_yaml_bloc(self, bloc: str) -> Dict[str, Any]:
