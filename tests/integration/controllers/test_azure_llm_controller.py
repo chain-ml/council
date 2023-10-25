@@ -77,7 +77,5 @@ class TestAzureLlmController(TestCase):
 
         if len(expected) == 0:
             self.assertEqual(0, len(result), "no result is expected")
-        # else:
-        #     self.assertEqual(min(len(self.chains), top_k), len(result), "result length")
         self.assertEqual(expected, [item.chain for item in result[: len(expected)]])
         return result
