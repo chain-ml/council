@@ -143,7 +143,7 @@ class LLMController(ControllerBase):
         parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
         filtered = [r.unwrap() for r in parsed if r.is_some()]
         if len(filtered) == 0:
-            raise LLMParsingException(f"None of your scores could be parsed. Follow exactly formatting instructions.")
+            raise LLMParsingException("None of your scores could be parsed. Follow exactly formatting instructions.")
 
         if self._top_k > 1:
             actual_chains = [item[0].chain.name for item in filtered]

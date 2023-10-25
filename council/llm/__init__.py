@@ -2,7 +2,7 @@
 
 from .llm_answer import llm_property, LLMAnswer, LLMProperty
 from .llm_exception import LLMException, LLMCallException, LLMTokenLimitException
-from .llm_message import LLMMessageRole, LLMMessage, LLMMessages, LLMessageTokenCounterBase
+from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
 from .llm_base import LLMBase, LLMResult
 from .llm_answer import LLMAnswer
 from .monitored_llm import MonitoredLLM

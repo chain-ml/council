@@ -118,30 +118,6 @@ class LLMMessage:
         return [msg for msg in m if msg is not None]
 
 
-class LLMMessages:
-    def __init__(self, messages: Optional[List[LLMMessage]] = None):
-        self._messages = []
-        if messages is not None:
-            self._messages = [msg for msg in messages]
-
-    def add_user_message(self, message: str):
-        self._messages.append(LLMMessage.user_message(message))
-
-    def add_system_message(self, message: str):
-        self._messages.append(LLMMessage.system_message(message))
-
-    def add_assistant_message(self, message: str):
-        self._messages.append(LLMMessage.assistant_message(message))
-
-    @property
-    def messages(self) -> List[LLMMessage]:
-        return self._messages
-
-    @staticmethod
-    def empty() -> LLMMessages:
-        return LLMMessages()
-
-
 class LLMessageTokenCounterBase(abc.ABC):
     @abc.abstractmethod
     def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:

@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
 from council.evaluators import EvaluatorBase, EvaluatorException
-from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessages
+from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
 from council.llm.llm_answer import LLMParsingException
 from council.utils import Option
 
@@ -58,27 +58,36 @@ class LLMEvaluator(EvaluatorBase):
 
         retry = self._retry
         messages = self._build_llm_messages(query, chain_results)
+        new_messages: List[LLMMessage] = []
         while retry > 0:
             retry -= 1
-            llm_result = self._llm.post_chat_request(context, messages.messages)
+            messages = messages + new_messages
+            llm_result = self._llm.post_chat_request(context, messages)
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
                 parse_response = self._parse_response(response, chain_results)
                 return parse_response
             except LLMParsingException as e:
-                messages.add_assistant_message("Your response has an incorrect formatting:\n" + response)
-                messages.add_user_message(f"Please fix:\n{e.__class__.__name__}: `{e}`")
-            except Exception as e:
-                messages.add_assistant_message("Your response raised an exception:\n" + response)
-                messages.add_user_message(f"Please fix:\n{e.__class__.__name__}: `{e}`")
+                assistant_message = f"Your response is not correctly formatted:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
+            except EvaluatorException as e:
+                assistant_message = f"Your response raised an exception:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
+
         raise EvaluatorException("LLMEvaluator failed to execute.")
+
+    @staticmethod
+    def _handle_error(e: Exception, assistant_message: str, context: AgentContext) -> List[LLMMessage]:
+        error = f"{e.__class__.__name__}: `{e}`"
+        context.logger.warning(f"Exception occurred: {error}")
+        return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
     def _parse_response(self, response: str, chain_results: List[ChatMessage]) -> List[ScoredChatMessage]:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]
         grades = [r.unwrap() for r in parsed if r.is_some()]
         if len(grades) == 0:
-            raise LLMParsingException(f"None of your grade could be parsed. Follow exactly formatting instructions.")
+            raise LLMParsingException("None of your grade could be parsed. Follow exactly formatting instructions.")
 
         scored_messages = []
         missing = []
@@ -97,15 +106,12 @@ class LLMEvaluator(EvaluatorBase):
 
         return scored_messages
 
-    def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> LLMMessages:
-        result = LLMMessages.empty()
+    def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[LLMMessage]:
         if len(skill_messages) <= 0:
-            return result
+            return []
 
         responses = [skill_message.message for skill_message in skill_messages]
-        result.add_system_message(self._build_system_message())
-        result.add_user_message(self._build_user_message(query.message, responses))
-        return result
+        return [self._build_system_message(), self._build_user_message(query.message, responses)]
 
     def _parse_line(self, line: str) -> Option[SpecialistGrade]:
         if LLMAnswer.field_separator() not in line:
@@ -117,7 +123,7 @@ class LLMEvaluator(EvaluatorBase):
         return Option.none()
 
     @staticmethod
-    def _build_user_message(query: str, answers: list[str]) -> str:
+    def _build_user_message(query: str, answers: list[str]) -> LLMMessage:
         prompt_answers = "\n".join(
             f"- answer #{index + 1} is: {answer if len(answer) > 0 else 'EMPTY'}"
             for index, answer in enumerate(answers)
@@ -128,9 +134,10 @@ class LLMEvaluator(EvaluatorBase):
             "Please grade the following answers according to your instructions:",
             prompt_answers,
         ]
-        return "\n".join(lines)
+        prompt = "\n".join(lines)
+        return LLMMessage.user_message(prompt)
 
-    def _build_system_message(self) -> str:
+    def _build_system_message(self) -> LLMMessage:
         """Build prompt that will be sent to the inner `LLM`."""
         task_description = [
             "\n# ROLE",
@@ -150,4 +157,4 @@ class LLMEvaluator(EvaluatorBase):
             self._llm_evaluator_answer.to_prompt(),
         ]
         prompt = "\n".join(task_description)
-        return prompt
+        return LLMMessage.system_message(prompt)
