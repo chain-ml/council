@@ -5,7 +5,7 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 """
 from typing import List, Optional
 
-from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
+from council.contexts import AgentContext, ChatMessage, ScoredChatMessage, ContextBase
 from council.evaluators import EvaluatorBase, EvaluatorException
 from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
 from council.llm.llm_answer import LLMParsingException
@@ -29,7 +29,7 @@ class SpecialistGrade:
         return self._index
 
     @llm_property
-    def justification(self):
+    def justification(self) -> str:
         """Short, helpful and specific explanation your grade"""
         return self._justification
 
@@ -78,7 +78,7 @@ class LLMEvaluator(EvaluatorBase):
         raise EvaluatorException("LLMEvaluator failed to execute.")
 
     @staticmethod
-    def _handle_error(e: Exception, assistant_message: str, context: AgentContext) -> List[LLMMessage]:
+    def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
         context.logger.warning(f"Exception occurred: {error}")
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
@@ -106,7 +106,7 @@ class LLMEvaluator(EvaluatorBase):
 
         return scored_messages
 
-    def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[LLMMessage]:
+    def _build_llm_messages(self, query: ChatMessage, skill_messages: List[ChatMessage]) -> List[LLMMessage]:
         if len(skill_messages) <= 0:
             return []
 

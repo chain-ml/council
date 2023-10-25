@@ -10,7 +10,7 @@ from .schemas import ResponseReference
 
 class GoogleNewsSearchEngine(ContextProvider):
     """
-    A class that represents a Google news engine and provides functionality
+    A class that represents a Google News engine and provides functionality
      to execute news searches and retrieve results.
 
     Attributes:

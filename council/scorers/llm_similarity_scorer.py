@@ -2,7 +2,7 @@ from typing import List, Dict, Any, Optional
 
 from . import ScorerException
 from .scorer_base import ScorerBase
-from council.contexts import ChatMessage, ScorerContext
+from council.contexts import ChatMessage, ScorerContext, ContextBase
 from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
 from ..llm.llm_answer import LLMParsingException
 from ..utils import Option
@@ -19,7 +19,7 @@ class SimilarityScore:
         return self._score / 100.0
 
     @llm_property
-    def justification(self):
+    def justification(self) -> str:
         """Short, helpful and specific explanation your grade"""
         return self._justification
 
@@ -71,7 +71,7 @@ class LLMSimilarityScorer(ScorerBase):
         raise ScorerException("LLMSimilarityScorer failed to execute.")
 
     @staticmethod
-    def _handle_error(e: Exception, assistant_message: str, context: ScorerContext) -> List[LLMMessage]:
+    def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
         context.logger.warning(f"Exception occurred: {error}")
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
