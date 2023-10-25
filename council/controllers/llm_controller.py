@@ -103,19 +103,18 @@ class LLMController(ControllerBase):
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
-        messages = [
-            self._llm_system_message,
-        ]
+        messages = [self._llm_system_message]
         message = context.chat_history.try_last_user_message
         if message.is_some():
-            messages.append(LLMMessage.user_message(f"Score Specialists for:\n `{message.unwrap().message}`"))
+            user_message = "\n".join(
+                ["# SPECIALISTS"]
+                + [f"name: {c.name};description: {c.description};{c.is_supporting_instructions}" for c in self._chains]
+                + [f"\nScore Specialists for:\n `{message.unwrap().message}`"]
+            )
+            messages.append(LLMMessage.user_message(user_message))
         return messages
 
     def _build_system_message(self) -> LLMMessage:
-        answer_choices = "\n".join(
-            [f"name: {c.name};description: {c.description};{c.is_supporting_instructions}" for c in self._chains]
-        )
-
         if self._top_k == 1:
             instruction = "Score only the most relevant and best Specialist."
         else:
@@ -135,8 +134,6 @@ class LLMController(ControllerBase):
             "name: {name};description: {description};{boolean indicating if Specialist is supporting instructions}",
             "2. Your response is precisely formatted as:",
             self._llm_controller_answer.to_prompt(),
-            "\n# SPECIALISTS",
-            answer_choices,
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
@@ -144,7 +141,7 @@ class LLMController(ControllerBase):
         parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
         filtered = [r.unwrap() for r in parsed if r.is_some()]
         if len(filtered) == 0:
-            raise LLMParsingException("None of your scores could be parsed. Follow exactly formatting instructions.")
+            raise LLMParsingException("None of your response could be parsed. Follow exactly formatting instructions.")
 
         if self._top_k > 1:
             actual_chains = [item[0].chain.name for item in filtered]
@@ -153,7 +150,7 @@ class LLMController(ControllerBase):
                 raise ControllerException(f"Missing scores for {missing_chains}. Follow exactly your instructions.")
 
         if len(filtered) != 1 and self._top_k == 1:
-            raise ControllerException("You scored multiple Specialists. Score ONLY only the most relevant specialist.")
+            raise ControllerException("You scored multiple Specialists. Score ONLY the most relevant specialist.")
 
         return filtered
 

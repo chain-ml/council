@@ -57,7 +57,7 @@ class TestAzureLlmController(TestCase):
 
     def test_controller_chain_text2sql(self):
         self._test_prompt(
-            "generate a sql query to get past the value of inflation during the last week", [self.chain_tex2sql]
+            "generate a SQL query to get past the value of inflation during the last week", [self.chain_tex2sql]
         )
 
     def test_controller_chain_forecast_with_instructions(self):

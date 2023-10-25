@@ -5,8 +5,8 @@ from typing import Optional, List, Iterable
 
 
 class CodeBlock:
-    def __init__(self, language: str, code: str):
-        self._language = language if len(language) > 0 else "unknown"
+    def __init__(self, language: Optional[str], code: str):
+        self._language = language
         self._code = code
 
     @property
@@ -18,6 +18,8 @@ class CodeBlock:
         return self._language
 
     def is_language(self, language: str) -> bool:
+        if self._language is None:
+            return False
         return self._language.casefold() == language.casefold()
 
 

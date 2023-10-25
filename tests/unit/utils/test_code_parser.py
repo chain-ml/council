@@ -24,7 +24,15 @@ class TestCodeParser(unittest.TestCase):
             "```",
         ]
 
-        self._message = "\n".join(["Here is the code:"] + self._python1 + ["", "text", ""] + self._yaml + self._python2)
+        self._undefined = [
+            "```",
+            "print_message('hi!');",
+            "```",
+        ]
+
+        self._message = "\n".join(
+            ["Here is the code:"] + self._python1 + ["", "text", ""] + self._yaml + self._undefined + self._python2
+        )
 
     def test_parse_all_python(self):
         code_blocs = CodeParser.extract_code_blocs(language="python", text=self._message)
@@ -33,7 +41,7 @@ class TestCodeParser(unittest.TestCase):
 
     def test_parse_all(self):
         code_blocs = CodeParser.extract_code_blocs(text=self._message)
-        self.assertEqual(3, len(code_blocs))
+        self.assertEqual(4, len(code_blocs))
 
     def test_find_first(self):
         code_bloc = CodeParser.find_first(text=self._message)
