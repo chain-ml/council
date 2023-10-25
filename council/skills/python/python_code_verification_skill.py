@@ -58,12 +58,12 @@ class PythonCodeVerificationSkill(SkillBase):
 
     """
 
-    def __init__(self, code_template: str):
+    def __init__(self, code_template: str = ""):
         """
         initialize a new instance
 
         Args:
-            code_template: a code template use to validate the python code retrieved from the context
+            code_template: a code template use to validate the python code retrieved from the context.
         """
 
         super().__init__("code_verification")
@@ -103,7 +103,7 @@ class PythonCodeVerificationSkill(SkillBase):
 
         try:
             python_code = extract_code_block(last_message.message, "python")
-            if self.normalize_snippet(python_code) == self._code_template:
+            if python_code == self._code_template:
                 return self.build_error_message("generated code cannot be identical to the code template")
             normalized_code = self.normalize_code(python_code)
             self._validate_code(normalized_code)
