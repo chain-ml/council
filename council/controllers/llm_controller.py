@@ -121,7 +121,8 @@ class LLMController(ControllerBase):
         else:
             instruction = "Score all Specialists."
         task_description = [
-            "# ROLE" "You are a knowledgeable expert responsible to fairly score Specialists.",
+            "# ROLE",
+            "You are a knowledgeable expert responsible to fairly score Specialists.",
             "The score will reflect how relevant is a Specialist to solve or execute a user task.",
             "\n# INSTRUCTIONS",
             f"1. {instruction}",
