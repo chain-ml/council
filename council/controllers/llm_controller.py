@@ -69,7 +69,7 @@ class LLMController(ControllerBase):
             self._top_k = len(self._chains)
         else:
             self._top_k = min(top_k, len(self._chains))
-        self._llm_controller_answer = LLMAnswer(Specialist)
+        self._llm_answer = LLMAnswer(Specialist)
         self._llm_system_message = self._build_system_message()
         self._retry = 3
 
@@ -133,7 +133,7 @@ class LLMController(ControllerBase):
             "1. Specialist list is precisely formatted as:",
             "name: {name};description: {description};{boolean indicating if Specialist is supporting instructions}",
             "2. Your response is precisely formatted as:",
-            self._llm_controller_answer.to_prompt(),
+            self._llm_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
@@ -158,7 +158,7 @@ class LLMController(ControllerBase):
         if LLMAnswer.field_separator() not in line:
             return Option.none()
 
-        cs: Optional[Specialist] = self._llm_controller_answer.to_object(line)
+        cs: Optional[Specialist] = self._llm_answer.to_object(line)
         if cs is not None:
 
             def typeguard_predicate(chain_base: ChainBase) -> TypeGuard[ChainBase]:

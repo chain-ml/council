@@ -45,7 +45,7 @@ class LLMEvaluator(EvaluatorBase):
         """
         super().__init__()
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
-        self._llm_evaluator_answer = LLMAnswer(SpecialistGrade)
+        self._llm_answer = LLMAnswer(SpecialistGrade)
         self._retry = 3
 
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
@@ -117,7 +117,7 @@ class LLMEvaluator(EvaluatorBase):
         if LLMAnswer.field_separator() not in line:
             return Option.none()
 
-        cs: Optional[SpecialistGrade] = self._llm_evaluator_answer.to_object(line)
+        cs: Optional[SpecialistGrade] = self._llm_answer.to_object(line)
         if cs is not None:
             return Option.some(cs)
         return Option.none()
@@ -154,7 +154,7 @@ class LLMEvaluator(EvaluatorBase):
             "1. The list of given answers is formatted precisely as:",
             "- answer #{index} is: {Specialist's answer or EMPTY if no answer}",
             "2. For each given answer, format your response precisely as:",
-            self._llm_evaluator_answer.to_prompt(),
+            self._llm_answer.to_prompt(),
         ]
         prompt = "\n".join(task_description)
         return LLMMessage.system_message(prompt)
