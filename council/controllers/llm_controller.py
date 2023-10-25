@@ -7,7 +7,7 @@ from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from .controller_base import ControllerBase, ControllerException
 from .execution_unit import ExecutionUnit
-from council.llm.llm_answer import llm_property, LLMAnswer
+from council.llm.llm_answer import llm_property, LLMAnswer, LLMParsingException
 
 
 class Specialist:
@@ -76,19 +76,31 @@ class LLMController(ControllerBase):
     def _execute(self, context: AgentContext) -> List[ExecutionUnit]:
         retry = self._retry
         messages = self._build_llm_messages(context)
+        new_messages = []
         while retry > 0:
+            messages = messages + new_messages
             llm_result = self._llm.post_chat_request(context, messages)
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
+                retry -= 1
                 plan = self._parse_response(context, response)
                 plan.sort(key=lambda item: item[1], reverse=True)
                 return [item[0] for item in plan if item[1] >= self._response_threshold][: self._top_k]
+            except LLMParsingException as e:
+                assistant_message = f"Your response is not correctly formatted:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
             except Exception as e:
-                messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
-                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
-                retry -= 1
-        raise ControllerException("LLMController failed to execute")
+                assistant_message = f"Your response raised an exception:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
+
+        raise ControllerException("LLMController failed to execute.")
+
+    @staticmethod
+    def _handle_error(e: Exception, assistant_message: str, context: AgentContext) -> List[LLMMessage]:
+        error = f"{e.__class__.__name__}: `{e}`"
+        context.logger.warning(f"Exception occurred: {error}")
+        return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
         messages = [
@@ -105,47 +117,49 @@ class LLMController(ControllerBase):
         )
 
         if self._top_k == 1:
-            instruction = "- Score only the most relevant and best Specialist."
+            instruction = "Score only the most relevant and best Specialist."
         else:
-            instruction = "- Score all Specialists."
+            instruction = "Score all Specialists."
         task_description = [
-            "\n# ROLE"
-            "You are a knowledgeable expert responsible to fairly selects Specialists by giving them a relevance score "
-            "to execute a task."
+            "# ROLE" "You are a knowledgeable expert responsible to fairly score Specialists.",
+            "The score will reflect how relevant is a Specialist to solve or execute a user task.",
             "\n# INSTRUCTIONS",
-            instruction,
-            "- Give a score from 0 to 10.",
-            "- Read carefully the Specialist description to score its relevance.",
-            "- Score 0 if poor relevance or out of scope, and score 10 if perfectly relevant."
-            "- Ignore Specialist name to give your score.",
-            "- Ignore the order of Specialists to give your score",
+            f"1. {instruction}",
+            "2. Read carefully the user task and the Specialist description to score its relevance.",
+            "3. Score from 0 (poor relevance or out of scope) to 10 (perfectly relevant).",
+            "4. Ignore Specialist's name or its order in the list to give your score.",
+            "5. If Specialist is supporting instructions, give any useful instructions to execute the user task.",
+            "\n# FORMATTING",
+            "1. Specialist list is precisely formatted as:",
+            "name: {name};description: {description};{boolean indicating if Specialist is supporting instructions}",
+            "2. Your response is precisely formatted as:",
+            self._llm_controller_answer.to_prompt(),
             "\n# SPECIALISTS",
             answer_choices,
-            "\n# FORMATTING",
-            "- Specialist information are precisely formatted as:",
-            "name: {name};description: {description};{boolean indicating if Specialist is supporting instructions}",
-            "- Your response are precisely formatted as:",
-            self._llm_controller_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(task_description))
 
     def _parse_response(self, context: AgentContext, response: str) -> List[Tuple[ExecutionUnit, int]]:
         parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]
         filtered = [r.unwrap() for r in parsed if r.is_some()]
+        if len(filtered) == 0:
+            raise LLMParsingException(f"None of your scores could be parsed. Follow exactly formatting instructions.")
+
         if self._top_k > 1:
             actual_chains = [item[0].chain.name for item in filtered]
             missing_chains = [chain.name for chain in self._chains if chain.name not in actual_chains]
             if len(missing_chains) > 0:
-                raise Exception(f"Missing scores for {missing_chains}. Ensure to follow formatting.")
+                raise ControllerException(f"Missing scores for {missing_chains}. Follow exactly your instructions.")
 
         if len(filtered) != 1 and self._top_k == 1:
-            raise Exception("You score all Specialists. ONLY score only the most relevant specialist.")
+            raise ControllerException("You scored multiple Specialists. Score ONLY only the most relevant specialist.")
 
         return filtered
 
     def _parse_line(self, context: AgentContext, line: str) -> Option[Tuple[ExecutionUnit, int]]:
         if LLMAnswer.field_separator() not in line:
             return Option.none()
+
         cs: Optional[Specialist] = self._llm_controller_answer.to_object(line)
         if cs is not None:
 
@@ -157,7 +171,7 @@ class LLMController(ControllerBase):
                 return Option.some((self._build_execution_unit(chain, context, cs.instructions, cs.score), cs.score))
             except StopIteration:
                 context.logger.warning(f'message="no chain found with name `{cs.name}`"')
-                raise Exception(f"The Specialist `{cs.name}` does not exist")
+                raise ControllerException(f"The Specialist `{cs.name}` does not exist.")
         return Option.none()
 
     def _build_execution_unit(

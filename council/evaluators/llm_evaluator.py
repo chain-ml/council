@@ -7,7 +7,8 @@ from typing import List, Optional
 
 from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
 from council.evaluators import EvaluatorBase, EvaluatorException
-from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
+from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessages
+from council.llm.llm_answer import LLMParsingException
 from council.utils import Option
 
 
@@ -24,12 +25,12 @@ class SpecialistGrade:
 
     @llm_property
     def index(self) -> int:
-        """Index of the answer graded"""
+        """Index of the answer graded in the list"""
         return self._index
 
     @llm_property
     def justification(self):
-        """Short and specific explanation of this particular grade"""
+        """Short, helpful and specific explanation your grade"""
         return self._justification
 
 
@@ -58,23 +59,29 @@ class LLMEvaluator(EvaluatorBase):
         retry = self._retry
         messages = self._build_llm_messages(query, chain_results)
         while retry > 0:
-            llm_result = self._llm.post_chat_request(context, messages)
+            retry -= 1
+            llm_result = self._llm.post_chat_request(context, messages.messages)
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
                 parse_response = self._parse_response(response, chain_results)
                 return parse_response
+            except LLMParsingException as e:
+                messages.add_assistant_message("Your response has an incorrect formatting:\n" + response)
+                messages.add_user_message(f"Please fix:\n{e.__class__.__name__}: `{e}`")
             except Exception as e:
-                messages.append(LLMMessage.assistant_message("Your response raised an exception:\n" + response))
-                messages.append(LLMMessage.user_message(f"{e.__class__.__name__}: `{e}`"))
-                retry -= 1
-        raise EvaluatorException("LLMEvaluator failed to execute")
+                messages.add_assistant_message("Your response raised an exception:\n" + response)
+                messages.add_user_message(f"Please fix:\n{e.__class__.__name__}: `{e}`")
+        raise EvaluatorException("LLMEvaluator failed to execute.")
 
     def _parse_response(self, response: str, chain_results: List[ChatMessage]) -> List[ScoredChatMessage]:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]
         grades = [r.unwrap() for r in parsed if r.is_some()]
+        if len(grades) == 0:
+            raise LLMParsingException(f"None of your grade could be parsed. Follow exactly formatting instructions.")
 
         scored_messages = []
+        missing = []
         for idx, message in enumerate(chain_results):
             try:
                 grade = next(filter(lambda item: item.index == (idx + 1), grades))
@@ -83,20 +90,22 @@ class LLMEvaluator(EvaluatorBase):
                 )
                 scored_messages.append(scored_message)
             except StopIteration:
-                raise Exception(f"Please grade ALL {len(chain_results)} answers.")
+                missing.append(idx)
+
+        if len(missing) > 0:
+            raise EvaluatorException(f"Grade ALL {len(chain_results)} answers. Missing grade for {missing} answers.")
 
         return scored_messages
 
-    def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> List[LLMMessage]:
+    def _build_llm_messages(self, query: ChatMessage, skill_messages: list[ChatMessage]) -> LLMMessages:
+        result = LLMMessages.empty()
         if len(skill_messages) <= 0:
-            return []
+            return result
 
         responses = [skill_message.message for skill_message in skill_messages]
-        prompt = self._build_system_prompt_multiple_answers()
-        return [
-            LLMMessage.system_message(prompt),
-            LLMMessage.user_message(self._build_multiple_answers_message(query.message, responses)),
-        ]
+        result.add_system_message(self._build_system_message())
+        result.add_user_message(self._build_user_message(query.message, responses))
+        return result
 
     def _parse_line(self, line: str) -> Option[SpecialistGrade]:
         if LLMAnswer.field_separator() not in line:
@@ -108,7 +117,7 @@ class LLMEvaluator(EvaluatorBase):
         return Option.none()
 
     @staticmethod
-    def _build_multiple_answers_message(query: str, answers: list[str]) -> str:
+    def _build_user_message(query: str, answers: list[str]) -> str:
         prompt_answers = "\n".join(
             f"- answer #{index + 1} is: {answer if len(answer) > 0 else 'EMPTY'}"
             for index, answer in enumerate(answers)
@@ -121,23 +130,22 @@ class LLMEvaluator(EvaluatorBase):
         ]
         return "\n".join(lines)
 
-    def _build_system_prompt_multiple_answers(self) -> str:
+    def _build_system_message(self) -> str:
         """Build prompt that will be sent to the inner `LLM`."""
         task_description = [
-            "# ROLE",
-            "You are an expert grading fairly answers from different Specialists to a given question.",
-            "",
-            "# INSTRUCTIONS",
+            "\n# ROLE",
+            "You are an instructor, with a large breadth of knowledge.",
+            "You are grading with objectivity answers from different Specialists to a given question.",
+            "\n# INSTRUCTIONS",
             "1. Give a grade from 0.0 to 10.0",
-            "2. Evaluate carefully step by step the question and the proposed answer before grading.",
-            "3. Grade independently of the order of an answer.",
-            "4. Ensure to be consistent in grading, identical answers must have the same grade.",
-            "5. Irrelevant, inaccurate, inappropriate, false or empty answer must be graded 0.0",
-            "6. Math problem should be accurate.",
-            "",
-            "# FORMATTING",
+            "2. Evaluate carefully the question and the proposed answer.",
+            "3. Ignore how assertive the answer is, only content accuracy count for grading."
+            "4. Consider only the Specialist's answer and ignore its index for grading.",
+            "5. Ensure to be consistent in grading, identical answers must have the same grade.",
+            "6. Irrelevant, inaccurate, inappropriate, false or empty answer must be graded 0.0",
+            "\n# FORMATTING",
             "1. The list of given answers is formatted precisely as:",
-            "- answer #{index} is: {answer or EMPTY if no answer}",
+            "- answer #{index} is: {Specialist's answer or EMPTY if no answer}",
             "2. For each given answer, format your response precisely as:",
             self._llm_evaluator_answer.to_prompt(),
         ]

@@ -2,7 +2,6 @@ import unittest
 
 import dotenv
 
-from council import OpenAILLM
 from council.contexts import AgentContext, ChatMessage, ChainContext
 from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
@@ -43,7 +42,14 @@ class TestLlmEvaluator(unittest.TestCase):
         context = AgentContext.from_user_message("Given the following formula `x=3+(8*9)`. What is the value of x?")
         context.new_iteration()
 
-        messages = ["x=70", "x=71", "x=75", "x=72", "x=73", "x=78"]
+        messages = [
+            "x value is 70",
+            "x value is 71",
+            "x value is 75",
+            "x value is 72",
+            "x value is 73",
+            "x value is 78",
+        ]
         for index, message in enumerate(messages):
             chain_name = f"chain {index}"
             chain_context = ChainContext.from_agent_context(context, MockMonitored(), chain_name)

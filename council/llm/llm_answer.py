@@ -100,7 +100,9 @@ class LLMAnswer:
             prop_name, value = pair.split(":")
             value = value.strip()
             prop_name = prop_name.replace("'", "")
-            prop_name = prop_name.replace("- ", "")
+            prop_name = prop_name.replace("-", "")
+            prop_name = prop_name.strip()
+
             class_prop = self._find(prop_name)
             if class_prop is not None:
                 typed_value = class_prop.parse(value, default)

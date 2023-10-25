@@ -6,7 +6,7 @@ import dotenv
 from council.chains import Chain
 from council.contexts import AgentContext, Budget
 from council.controllers import LLMController, ExecutionUnit
-from council.llm import AzureLLM, OpenAILLM
+from council.llm import AzureLLM
 
 
 class TestAzureLlmController(TestCase):
