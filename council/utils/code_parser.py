@@ -10,7 +10,7 @@ class CodeBlock:
         self._code = code
 
     @property
-    def code(self):
+    def code(self) -> str:
         return self._code
 
     @property
