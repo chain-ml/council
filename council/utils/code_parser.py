@@ -14,7 +14,7 @@ class CodeBlock:
         return self._code
 
     @property
-    def language(self):
+    def language(self) -> Optional[str]:
         return self._language
 
     def is_language(self, language: str) -> bool:
