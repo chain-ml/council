@@ -34,7 +34,7 @@ class PromptBuilder:
 
         self._template = Template(t)
         if instructions is not None and len(instructions) > 0:
-            self._instructions = "\n".join(["# INSTRUCTIONS:"] + instructions) + "\n"
+            self._instructions = "\n".join(["# INSTRUCTIONS"] + instructions) + "\n"
         else:
             self._instructions = ""
 
