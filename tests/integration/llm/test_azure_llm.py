@@ -26,6 +26,7 @@ class TestLlmAzure(unittest.TestCase):
         results = self.llm.post_chat_request(LLMContext.empty(), messages)
         [print(choice) for choice in results.choices]
 
+    @unittest.skip("Azure no longer censored this prompt")
     def test_censored_prompt(self):
         messages = [
             LLMMessage.user_message(

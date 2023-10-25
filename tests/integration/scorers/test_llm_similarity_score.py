@@ -37,7 +37,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
 
     def test_similarity_support_agent(self):
         expected = """
-            I am an assistant expert in build SQL query.
+            I am an expert in build SQL query.
             How can I help you today?
         """
         instance = LLMSimilarityScorer(self.llm, expected)
@@ -46,7 +46,7 @@ class TestLLMSimilarityScorer(unittest.TestCase):
             How can I help you today?
         """
         score = instance.score(ScorerContext.empty(), ChatMessage.agent(actual))
-        self.assertAlmostEqual(0.1, score, delta=0.1)
+        self.assertAlmostEqual(0.25, score, delta=0.1)
 
     def test_similarity_unrelated(self):
         expected = """

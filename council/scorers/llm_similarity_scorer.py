@@ -1,8 +1,27 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
+from . import ScorerException
 from .scorer_base import ScorerBase
 from council.contexts import ChatMessage, ScorerContext
-from council.llm import LLMBase, LLMMessage, MonitoredLLM
+from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
+from ..llm.llm_answer import LLMParsingException
+from ..utils import Option
+
+
+class SimilarityScore:
+    def __init__(self, score: float, justification: str):
+        self._score = score
+        self._justification = justification
+
+    @llm_property
+    def score(self) -> float:
+        """Your similarity Score"""
+        return self._score / 100.0
+
+    @llm_property
+    def justification(self):
+        """Short, helpful and specific explanation your grade"""
+        return self._justification
 
 
 class LLMSimilarityScorer(ScorerBase):
@@ -21,7 +40,9 @@ class LLMSimilarityScorer(ScorerBase):
         super().__init__()
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._expected = expected
-        self._system_message = self._build_system_prompt()
+        self._llm_answer = LLMAnswer(SimilarityScore)
+        self._system_message = self._build_system_message()
+        self._retry = 3
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
@@ -29,17 +50,33 @@ class LLMSimilarityScorer(ScorerBase):
         return result
 
     def _score(self, context: ScorerContext, message: ChatMessage) -> float:
-        messages = self._build_messages(message)
-        llm_result = self._llm.post_chat_request(context, messages)
+        retry = self._retry
+        messages = self._build_llm_messages(message)
+        new_messages: List[LLMMessage] = []
+        while retry > 0:
+            messages = messages + new_messages
+            llm_result = self._llm.post_chat_request(context, messages)
+            response = llm_result.first_choice
+            context.logger.debug(f"llm response: {response}")
+            try:
+                retry -= 1
+                return self._parse_response(response)
+            except LLMParsingException as e:
+                assistant_message = f"Your response is not correctly formatted:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
+            except ScorerException as e:
+                assistant_message = f"Your response raised an exception:\n{response}"
+                new_messages = self._handle_error(e, assistant_message, context)
 
-        if len(llm_result.choices) < 1:
-            return self._parse_line("")
-        response = llm_result.first_choice.lower()
-        parsed = [self._parse_line(line) for line in response.split("\n") if line.strip().startswith("score")]
+        raise ScorerException("LLMSimilarityScorer failed to execute.")
 
-        return parsed[0]
+    @staticmethod
+    def _handle_error(e: Exception, assistant_message: str, context: ScorerContext) -> List[LLMMessage]:
+        error = f"{e.__class__.__name__}: `{e}`"
+        context.logger.warning(f"Exception occurred: {error}")
+        return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
-    def _build_messages(self, message: ChatMessage) -> List[LLMMessage]:
+    def _build_llm_messages(self, message: ChatMessage) -> List[LLMMessage]:
         user_prompt = [
             "Please give the similarity score of the actual message compared to the expected one.",
             "Actual message:",
@@ -51,24 +88,32 @@ class LLMSimilarityScorer(ScorerBase):
         result = [self._system_message, LLMMessage.user_message("\n".join(user_prompt))]
         return result
 
-    @staticmethod
-    def _build_system_prompt() -> LLMMessage:
+    def _build_system_message(self) -> LLMMessage:
         system_prompt = [
-            "# Role:",
-            "You are an assistant specialized in evaluating how similar an expected message and an actual message are.",
-            "# Instructions:",
-            "Compare the {expected} message and the {actual} message",
-            "Give a similarity score out of 100%",
-            "Unrelated messages have a 0% similarity score",
-            "Provide the result exactly in the format `score: {similarity score} - short justification`",
+            "# ROLE",
+            "You are an expert specialized in evaluating how similar an expected message and an actual message are.",
+            "\n# INSTRUCTIONS",
+            "1. Compare the {expected} message and the {actual} message.",
+            "2. Score 0 (2 messages are unrelated) to 100 (the 2 messages have the same content).",
+            "3. Your score must be fair.",
+            "\n#FORMATTING",
+            self._llm_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(system_prompt))
 
-    @staticmethod
-    def _parse_line(line: str) -> float:
-        line = line.lower().removeprefix("score").strip().replace("-", ":")
-        try:
-            score = line.split(":", 3)
-            return float(score[1].strip(":% ")) / 100.0
-        except Exception:
-            raise
+    def _parse_response(self, response: str) -> float:
+        parsed = [self._parse_line(line) for line in response.strip().splitlines()]
+        filtered = [r.unwrap() for r in parsed if r.is_some()]
+        if len(filtered) == 0:
+            raise LLMParsingException("None of your response could be parsed. Follow exactly formatting instructions.")
+
+        return filtered[0].score
+
+    def _parse_line(self, line: str) -> Option[SimilarityScore]:
+        if LLMAnswer.field_separator() not in line:
+            return Option.none()
+
+        similarity_score: Optional[SimilarityScore] = self._llm_answer.to_object(line)
+        if similarity_score is not None:
+            return Option.some(similarity_score)
+        return Option.none()

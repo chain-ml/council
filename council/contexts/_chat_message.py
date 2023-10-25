@@ -213,7 +213,9 @@ class ChatMessage:
         return self._source == source
 
     def __str__(self):
-        max_length = 50
+        return f"{self.kind}: {self.message}"
+
+    def to_string(self, max_length: int = 50):
         message = self.message[:max_length] + "..." if len(self.message) > max_length else self.message
         return f"Message of kind {self.kind}: {message}"
 

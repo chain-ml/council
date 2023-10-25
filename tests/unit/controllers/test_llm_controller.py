@@ -2,11 +2,11 @@ import unittest
 
 from council.agents import Agent
 from council.chains import Chain
-from council.controllers import LLMController
+from council.controllers import LLMController, ControllerException
 from council.contexts import AgentContext, Budget
 from council.evaluators import BasicEvaluator
 from council.filters import BasicFilter
-from council.mocks import MockLLM, MockSkill
+from council.mocks import MockLLM, MockSkill, MockMultipleResponses
 
 
 class LLMControllerTest(unittest.TestCase):
@@ -18,28 +18,17 @@ class LLMControllerTest(unittest.TestCase):
         llm = MockLLM.from_multi_line_response(
             [
                 "name: first<->score: 10<->instructions: None<->justification: because",
+                "score: 4<->name: third<->instructions: None<->justification: because",
                 "name: second<->score: 6<->instructions: None<->justification: because",
             ]
         )
         controller = LLMController(chains=self.chains, llm=llm)
         result = controller.execute(self.context)
-        self.assertEqual(["first", "second"], [item.chain.name for item in result])
+        self.assertEqual(["first", "second", "third"], [item.chain.name for item in result])
 
     def test_plan_parse_top_1(self):
         llm = MockLLM.from_multi_line_response(
             [
-                "name: first<->score: 10<->instructions: None<->justification: because",
-                "name: second<->score: 6<->instructions: None<->justification: because",
-            ]
-        )
-        controller = LLMController(chains=self.chains, llm=llm, top_k=1)
-        result = controller.execute(self.context)
-        self.assertEqual(["first"], [item.chain.name for item in result])
-
-    def test_plan_parse_top_1_unsorted(self):
-        llm = MockLLM.from_multi_line_response(
-            [
-                "name: second<->score: 6<->instructions: None<->justification: because",
                 "name: first<->score: 10<->instructions: None<->justification: because",
             ]
         )
@@ -52,9 +41,10 @@ class LLMControllerTest(unittest.TestCase):
             [
                 "name: first<->score: 10<->instructions: None<->justification: because",
                 "name: second<->score: 6<->instructions: None<->justification: because",
+                "name: third<->score: 6<->instructions: None<->justification: because",
             ]
         )
-        controller = LLMController(chains=self.chains, llm=llm, response_threshold=7.0)
+        controller = LLMController(chains=self.chains, llm=llm, response_threshold=7)
         result = controller.execute(self.context)
         self.assertEqual(["first"], [item.chain.name for item in result])
 
@@ -64,24 +54,60 @@ class LLMControllerTest(unittest.TestCase):
             [
                 "name: FirsT<->score: 10<->instructions: None<->justification: because",
                 "name: secOnd<->score: 6<->instructions: None<->justification: because",
-                "name: third<->score: 8<->instructions: None<->justification: because",
+                "name: thIrd<->justification: because<->score: 8<->instructions: None",
             ]
         )
         controller = LLMController(chains=chains, llm=llm, top_k=5)
         result = controller.execute(self.context)
         self.assertEqual(["first", "ThiRd", "second"], [item.chain.name for item in result])
 
-    def test_plan_parse_no_matching_chain(self):
-        llm = MockLLM.from_multi_line_response(
+    def test_plan_retry_until_success(self):
+        llm_responses = [
             [
                 "name: first<->score: 10<->instructions: None<->justification: because",
-                "name: secondDoesNotExists<->score: 6<->instructions: None<->justification: because",
+                "name: second<->instructions: None<->justification: Missing Score",
                 "name: third<->score: 2<->instructions: None<->justification: because",
-            ]
-        )
+            ],
+            [
+                "name: first<->score: 10<->instructions: None<->justification: because",
+                "name: secondDoesNotExists<->score: 6<->instructions: None<->justification: Missing chain",
+                "name: third<->score: 2<->instructions: None<->justification: because",
+            ],
+            [
+                "name: first<->score: 4<->instructions: None<->justification: because",
+                "name: second<->score: 6<->instructions: None<->justification: because",
+                "name: third<->score: 2<->instructions: None<->justification: because",
+            ],
+        ]
+
+        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses).call)
+
         controller = LLMController(chains=self.chains, llm=llm, top_k=3)
         result = controller.execute(self.context)
-        self.assertEqual(["first", "third"], [item.chain.name for item in result])
+        self.assertEqual(["second", "first", "third"], [item.chain.name for item in result])
+
+    def test_plan_fail(self):
+        invalid_llm_responses = [
+            [
+                "name: first<->score: 10<->instructions: None<->justification: Missing scores",
+            ],
+            [
+                "name: first<->score: 10<->instructions: None<->justification: because",
+                "name: secondDoesNotExists<->score: 6<->instructions: None<->justification: Invalid Chain name",
+                "name: third<->score: 2<->instructions: None<->justification: because",
+            ],
+            [
+                "name: first<->score: 4<->instructions: None<->justification: because",
+                "name: second<->score: A<->instructions: None<->justification: Invalid Score",
+                "name: third<->score: 2<->instructions: None<->justification: because",
+            ],
+        ]
+
+        llm = MockLLM(action=MockMultipleResponses(responses=invalid_llm_responses).call)
+
+        controller = LLMController(chains=self.chains, llm=llm, top_k=3)
+        with self.assertRaises(ControllerException):
+            _ = controller.execute(self.context)
 
     def test_parallelism(self):
         long = Chain(
