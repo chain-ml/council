@@ -24,6 +24,9 @@ class MockMultipleResponses:
         self._count = 0
         self._responses = ["\n".join(resp) for resp in responses]
 
+    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]:
+        return self.call(messages)
+
     def call(self, _messages: Sequence[LLMMessage]) -> Sequence[str]:
         if self._count < len(self._responses):
             self._count += 1

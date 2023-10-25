@@ -46,7 +46,7 @@ class TestHelpers(unittest.TestCase):
 
     def _run_up_to_n_iterations(self, count: int) -> ChatMessage:
         llm_responses = [self.no_code, self.bad_code, self.runtime_error, self.good_code]
-        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses).call)
+        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses))
 
         code_generation = PythonCodeGenerationSkill(llm)
         code_verification = PythonCodeVerificationSkill()
