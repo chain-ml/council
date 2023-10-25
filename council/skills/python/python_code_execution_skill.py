@@ -8,7 +8,7 @@ from council.skills import SkillBase
 from .llm_helper import extract_code_block
 
 
-class PythonCodeRunnerSkill(SkillBase):
+class PythonCodeExecutionSkill(SkillBase):
     """
     Skills that execute python code and provides the results.
 

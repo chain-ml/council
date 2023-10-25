@@ -4,16 +4,16 @@ import unittest
 
 from council.contexts import ChainContext, ChatHistory, SkillContext
 from council.utils import Option
-from council.skills.python import PythonCodeRunnerSkill
+from council.skills.python import PythonCodeExecutionSkill
 
 
-class TestPythonCodeRunnerSkill(unittest.TestCase):
+class TestPythonCodeExecutionSkill(unittest.TestCase):
     def test_print_hi(self):
         user_message = "\n".join(["```python", 'print("hi!")', "```"])
 
         context = self._context_from_user_message(user_message)
 
-        skill = PythonCodeRunnerSkill()
+        skill = PythonCodeExecutionSkill()
         result = skill.execute(context)
 
         self.assertTrue(result.is_ok)
@@ -27,7 +27,7 @@ class TestPythonCodeRunnerSkill(unittest.TestCase):
         context = self._context_from_user_message(user_message)
 
         env_var = {"TEST_PRINT_ENV_VAR": "you"}
-        skill = PythonCodeRunnerSkill(env_var=env_var)
+        skill = PythonCodeExecutionSkill(env_var=env_var)
         result = skill.execute(context)
 
         self.assertTrue(result.is_ok)
@@ -46,7 +46,7 @@ class TestPythonCodeRunnerSkill(unittest.TestCase):
         )
 
         context = self._context_from_user_message(user_message)
-        skill = PythonCodeRunnerSkill(decode_stdout=False)
+        skill = PythonCodeExecutionSkill(decode_stdout=False)
         result = skill.execute(context)
 
         with io.BytesIO(result.data["stdout_bytes"]) as f:
@@ -69,7 +69,7 @@ class TestPythonCodeRunnerSkill(unittest.TestCase):
         )
         context = self._context_from_user_message(user_message)
 
-        skill = PythonCodeRunnerSkill()
+        skill = PythonCodeExecutionSkill()
         result = skill.execute(context)
 
         self.assertTrue(result.is_error)
