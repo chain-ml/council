@@ -1,6 +1,6 @@
 import os
 import unittest
-from typing import List, Sequence
+from typing import Sequence
 
 import dotenv
 
@@ -11,7 +11,7 @@ from council.mocks import MockLLM
 from council.skills.llm_skill import LLMSkill
 
 
-def first_llm_message_content_to_str(messages: List[LLMMessage]) -> Sequence[str]:
+def first_llm_message_content_to_str(messages: Sequence[LLMMessage]) -> Sequence[str]:
     return [messages[0].content]
 
 
