@@ -2,7 +2,7 @@ from typing import List, Optional, Sequence, Tuple
 from typing_extensions import TypeGuard
 
 from council.chains import ChainBase
-from council.contexts import AgentContext, ChatMessage
+from council.contexts import AgentContext, ChatMessage, ContextBase
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from council.controllers import ControllerBase, ControllerException
@@ -33,7 +33,7 @@ class Specialist:
         return self._instructions
 
     @llm_property
-    def justification(self):
+    def justification(self) -> str:
         """Short and specific explanation of your score to this particular Specialist"""
         return self._justification
 
@@ -97,34 +97,34 @@ class LLMController(ControllerBase):
         raise ControllerException("LLMController failed to execute.")
 
     @staticmethod
-    def _handle_error(e: Exception, assistant_message: str, context: AgentContext) -> List[LLMMessage]:
+    def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
         context.logger.warning(f"Exception occurred: {error}")
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
     def _build_llm_messages(self, context: AgentContext) -> List[LLMMessage]:
-        messages = [self._llm_system_message]
+        return [self._llm_system_message, self._build_user_message(context)]
+
+    def _build_user_message(self, context: AgentContext) -> LLMMessage:
         message = context.chat_history.try_last_user_message
-        if message.is_some():
-            user_message = "\n".join(
-                ["# SPECIALISTS"]
-                + [f"name: {c.name};description: {c.description};{c.is_supporting_instructions}" for c in self._chains]
-                + [f"\nScore Specialists for:\n `{message.unwrap().message}`"]
-            )
-            messages.append(LLMMessage.user_message(user_message))
-        return messages
+        if message.is_none():
+            raise Exception("No user message.")
+
+        user_message = "\n".join(
+            ["# SPECIALISTS"]
+            + [f"name: {c.name};description: {c.description};{c.is_supporting_instructions}" for c in self._chains]
+            + [f"\n{self._get_main_instruction()} for:\n `{message.unwrap().message}`"]
+        )
+        return LLMMessage.user_message(user_message)
 
     def _build_system_message(self) -> LLMMessage:
-        if self._top_k == 1:
-            instruction = "Score only the most relevant and best Specialist."
-        else:
-            instruction = "Score all Specialists."
+        instruction = self._get_main_instruction()
         task_description = [
             "# ROLE",
             "You are a knowledgeable expert responsible to fairly score Specialists.",
             "The score will reflect how relevant is a Specialist to solve or execute a user task.",
             "\n# INSTRUCTIONS",
-            f"1. {instruction}",
+            f"1. {instruction}.",
             "2. Read carefully the user task and the Specialist description to score its relevance.",
             "3. Score from 0 (poor relevance or out of scope) to 10 (perfectly relevant).",
             "4. Ignore Specialist's name or its order in the list to give your score.",
@@ -136,6 +136,11 @@ class LLMController(ControllerBase):
             self._llm_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(task_description))
+
+    def _get_main_instruction(self):
+        if self._top_k == 1:
+            return "Score only the most relevant and best Specialist"
+        return "Score all Specialists"
 
     def _parse_response(self, context: AgentContext, response: str) -> List[Tuple[ExecutionUnit, int]]:
         parsed = [self._parse_line(context, line) for line in response.strip().splitlines()]

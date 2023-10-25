@@ -89,7 +89,7 @@ from council.skills import LLMSkill
 from council.llm import OpenAILLM
 ```
 
-Setup API keys in .env file (example in repository) and use it to setup the LLM (here: OpenAILLM).
+Setup API keys in .env file (example in repository) and use it to set up the LLM (here: OpenAILLM).
 
 ```python
 import dotenv
@@ -178,7 +178,7 @@ Major milestones the core team is working towards are shown below. The roadmap i
 
 # Support
 
-Please submit a Github issue should you need any help or reach out to the team via <a href="https://discord.gg/DWNCftGQZ3">Discord</a>.
+Please submit a GitHub issue should you need any help or reach out to the team via <a href="https://discord.gg/DWNCftGQZ3">Discord</a>.
 
 # Contributors
 
