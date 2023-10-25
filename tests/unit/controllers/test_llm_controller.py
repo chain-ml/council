@@ -80,7 +80,7 @@ class LLMControllerTest(unittest.TestCase):
             ],
         ]
 
-        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses).call)
+        llm = MockLLM(action=MockMultipleResponses(responses=llm_responses))
 
         controller = LLMController(chains=self.chains, llm=llm, top_k=3)
         result = controller.execute(self.context)
@@ -103,7 +103,7 @@ class LLMControllerTest(unittest.TestCase):
             ],
         ]
 
-        llm = MockLLM(action=MockMultipleResponses(responses=invalid_llm_responses).call)
+        llm = MockLLM(action=MockMultipleResponses(responses=invalid_llm_responses))
 
         controller = LLMController(chains=self.chains, llm=llm, top_k=3)
         with self.assertRaises(ControllerException):
