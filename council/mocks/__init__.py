@@ -19,6 +19,17 @@ from council.scorers import ScorerBase
 from council.skills import SkillBase
 
 
+class MockMultipleResponses:
+    def __init__(self, responses: List[List[str]]):
+        self._count = 0
+        self._responses = ["\n".join(resp) for resp in responses]
+
+    def call(self, _messages: Sequence[LLMMessage]) -> Sequence[str]:
+        if self._count < len(self._responses):
+            self._count += 1
+        return [self._responses[self._count - 1]]
+
+
 class LLMMessagesToStr(Protocol):
     def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]:
         ...

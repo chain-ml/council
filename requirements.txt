@@ -8,6 +8,12 @@ tiktoken==0.5.1
 
 # Skills
 ## Google
-google-api-python-client==2.103.0
+google-api-python-client==2.104.0
 GoogleNews==1.6.10
 google-api-python-client-stubs==1.18.0
+
+toml~=0.10.2
+nbformat==5.9.2
+nbconvert==7.9.2
+PyYAML==6.0.1
+types-PyYAML==6.0.12.12
