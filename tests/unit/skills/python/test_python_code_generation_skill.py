@@ -1,6 +1,7 @@
 import unittest
 
 from council import ChainContext, ChatMessage, SkillContext
+from council.llm import LLMMessageRole
 from council.mocks import MockLLM
 from council.skills.python import PythonCodeGenerationSkill
 from council.utils import Option
@@ -24,5 +25,8 @@ class TestPythonCodeGeneration(unittest.TestCase):
 
         self.assertEqual(len(actual), 3)
         self.assertEqual(actual[0].content, user_message)
+        self.assertEqual(actual[0].role, LLMMessageRole.User)
         self.assertEqual(actual[1].content, llm_answer)
+        self.assertEqual(actual[1].role, LLMMessageRole.Assistant)
         self.assertTrue(correction in actual[2].content)
+        self.assertEqual(actual[2].role, LLMMessageRole.User)
