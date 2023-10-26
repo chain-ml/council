@@ -118,9 +118,7 @@ class LLMEvaluator(EvaluatorBase):
             return Option.none()
 
         cs: Optional[SpecialistGrade] = self._llm_answer.to_object(line)
-        if cs is not None:
-            return Option.some(cs)
-        return Option.none()
+        return Option(cs)
 
     @staticmethod
     def _build_user_message(query: str, answers: list[str]) -> LLMMessage:
