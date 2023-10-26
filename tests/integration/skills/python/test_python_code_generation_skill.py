@@ -16,7 +16,6 @@ class TestPythonCodeGenSkill(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
         self.llm = AzureLLM(AzureLLMConfiguration.from_env())
-        # self.llm = OpenAILLM(OpenAILLMConfiguration.from_env())
 
     def test_code_gen_say_hi(self):
         chat_history = ChatHistory.from_user_message("write code that says `Hi`")
