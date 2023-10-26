@@ -5,9 +5,8 @@ This filter uses the given `LLM` to filter the chain's responses.
 """
 from typing import List, Optional
 
-from council import FilterBase
 from council.contexts import AgentContext, ScoredChatMessage, ContextBase
-from council.filters import FilterException
+from council.filters import FilterBase, FilterException
 from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
 from council.llm.llm_answer import LLMParsingException
 from council.utils import Option
@@ -43,6 +42,7 @@ class LLMFilter(FilterBase):
         Build a new LLMFilter.
 
         :param llm: model to use for the filtering.
+        :param filter_on: List of filters to filter chain responses on.
         """
         super().__init__()
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))

@@ -1,7 +1,6 @@
+import dotenv
 import unittest
 from typing import List
-
-import dotenv
 
 from council import AzureLLM
 from council.contexts import (
@@ -10,7 +9,7 @@ from council.contexts import (
     ScoredChatMessage,
     ChatMessage,
 )
-from council.filters.llm_filter import LLMFilter
+from council.filters import LLMFilter
 
 
 class TestLLMFilter(unittest.TestCase):

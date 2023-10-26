@@ -6,8 +6,7 @@ from council.contexts import (
     Budget,
     ScoredChatMessage,
 )
-from council.filters import FilterException
-from council.filters.llm_filter import LLMFilter
+from council.filters import FilterException, LLMFilter
 from council.mocks import MockLLM
 from . import build_scored_message
 
