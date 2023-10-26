@@ -115,9 +115,7 @@ class LLMFilter(FilterBase):
             return Option.none()
 
         cs: Optional[FilterResult] = self._llm_answer.to_object(line)
-        if cs is not None:
-            return Option.some(cs)
-        return Option.none()
+        return Option(cs)
 
     def _build_user_message(self, messages: List[ScoredChatMessage]) -> LLMMessage:
         prompt_answers = "\n".join(
