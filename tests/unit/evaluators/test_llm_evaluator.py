@@ -63,7 +63,7 @@ class TestLLMEvaluator(unittest.TestCase):
             ["grade:4<->index:1<->justification:Because", "grade:8<->index:2<->justification:None"],
         ]
 
-        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses).call))
+        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses)))
         self.add_one_iteration_result()
         result = instance.execute(self.context)
         self.assertEqual(self.to_score(result), [4.0, 8.0])
@@ -75,7 +75,7 @@ class TestLLMEvaluator(unittest.TestCase):
             ["grade:4<->justification:Because", "grade:8<->index:2<->justification:None"],
         ]
 
-        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses).call))
+        instance = LLMEvaluator(llm=MockLLM(action=MockMultipleResponses(responses=llm_responses)))
         self.add_one_iteration_result()
         with self.assertRaises(EvaluatorException):
             instance.execute(self.context)
