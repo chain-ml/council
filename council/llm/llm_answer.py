@@ -43,7 +43,17 @@ class LLMProperty:
             return False
 
     def parse(self, value: Any, default: Optional[Any]) -> Any:
+        def converter(x: str) -> bool:
+            result = x.strip().lower()
+            if result in ["true", "1", "t"]:
+                return True
+            if result in ["false", "0", "f"]:
+                return False
+            raise TypeError(x)
+
         try:
+            if self._type is bool:
+                return converter(value)
             return self._type(value)
         except (TypeError, ValueError) as e:
             if default is not None:
