@@ -38,7 +38,7 @@ class FilterResult:
 class LLMFilter(FilterBase):
     """Filter using an `LLM` to filter chain responses."""
 
-    def __init__(self, llm: LLMBase, filter_on: List[str] = ""):
+    def __init__(self, llm: LLMBase, filter_on: Optional[List[str]] = None):
         """
         Build a new LLMFilter.
 
@@ -47,13 +47,16 @@ class LLMFilter(FilterBase):
         super().__init__()
         self._llm = self.register_monitor(MonitoredLLM("llm", llm))
         self._llm_answer = LLMAnswer(FilterResult)
-        self._filter_on = filter_on
+        self._filter_on = filter_on or []
         self._retry = 3
 
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         all_eval_results = list(context.evaluation)
         if all_eval_results is None:
             return []
+
+        if len(self._filter_on) == 0:
+            return all_eval_results
 
         retry = self._retry
         messages = self._build_llm_messages(all_eval_results)
@@ -99,7 +102,7 @@ class LLMFilter(FilterBase):
 
         if len(missing) > 0:
             raise FilterException(
-                f"Please evaluate ALL {len(messages)} answers. Missing filter response for {missing} answers."
+                f"Please evaluate ALL {len(messages)} answers. Missing filter responses for {missing} answers."
             )
 
         return messages_to_keep

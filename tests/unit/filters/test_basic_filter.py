@@ -7,7 +7,7 @@ from council.contexts import (
     Budget,
     ScoredChatMessage,
 )
-from unit.filters import build_scored_message
+from . import build_scored_message
 
 
 class TestLLMFilter(unittest.TestCase):

@@ -9,7 +9,7 @@ from council.contexts import (
 from council.filters import FilterException
 from council.filters.llm_filter import LLMFilter
 from council.mocks import MockLLM
-from unit.filters import build_scored_message
+from . import build_scored_message
 
 
 class TestLLMFilter(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestLLMFilter(unittest.TestCase):
 
         self.add_one_iteration_result()
 
-        result = LLMFilter(MockLLM.from_multi_line_response(responses)).execute(self.context)
+        result = LLMFilter(MockLLM.from_multi_line_response(responses), ["Some"]).execute(self.context)
         self.assertEqual(self.to_tuple_message_score(expected), self.to_tuple_message_score(result))
 
     def test_filter_fail(self):
@@ -49,4 +49,4 @@ class TestLLMFilter(unittest.TestCase):
         self.add_one_iteration_result()
 
         with self.assertRaises(FilterException):
-            _ = LLMFilter(MockLLM.from_multi_line_response(responses)).execute(self.context)
+            _ = LLMFilter(MockLLM.from_multi_line_response(responses), ["Some"]).execute(self.context)

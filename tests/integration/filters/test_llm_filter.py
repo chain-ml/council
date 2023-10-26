@@ -10,16 +10,14 @@ from council.contexts import (
     ScoredChatMessage,
     ChatMessage,
 )
-from council.filters import FilterException
 from council.filters.llm_filter import LLMFilter
-from council.mocks import MockLLM
 
 
 class TestLLMFilter(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
         llm = AzureLLM.from_env()
-        self.context = AgentContext.from_user_message("bla", Budget(10))
+        self.context = AgentContext.from_user_message("bla", Budget(20))
         self.llm = llm
 
         self.aggressive = self._build_scored_message("Do this immediately!!!", 8)
