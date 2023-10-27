@@ -72,7 +72,7 @@ class LLMFilter(FilterBase):
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
-                return self._parse_response(response, all_eval_results)
+                return self._parse_response(context, response, all_eval_results)
             except LLMParsingException as e:
                 assistant_message = f"Your response is not correctly formatted:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
