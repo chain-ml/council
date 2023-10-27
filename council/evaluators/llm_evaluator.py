@@ -33,6 +33,9 @@ class SpecialistGrade:
         """Short, helpful and specific explanation your grade"""
         return self._justification
 
+    def __str__(self):
+        return f"Message {self._index} graded {self._grade} with the justification {self._justification}"
+
 
 class LLMEvaluator(EvaluatorBase):
     """Evaluator using an `LLM` to evaluate chain responses."""
@@ -66,7 +69,7 @@ class LLMEvaluator(EvaluatorBase):
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
-                parse_response = self._parse_response(response, chain_results)
+                parse_response = self._parse_response(context, response, chain_results)
                 return parse_response
             except LLMParsingException as e:
                 assistant_message = f"Your response is not correctly formatted:\n{response}"
@@ -83,7 +86,9 @@ class LLMEvaluator(EvaluatorBase):
         context.logger.warning(f"Exception occurred: {error}")
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
-    def _parse_response(self, response: str, chain_results: List[ChatMessage]) -> List[ScoredChatMessage]:
+    def _parse_response(
+        self, context: ContextBase, response: str, chain_results: List[ChatMessage]
+    ) -> List[ScoredChatMessage]:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]
         grades = [r.unwrap() for r in parsed if r.is_some()]
         if len(grades) == 0:
@@ -98,6 +103,7 @@ class LLMEvaluator(EvaluatorBase):
                     ChatMessage.agent(message=message.message, data=message.data), grade.grade
                 )
                 scored_messages.append(scored_message)
+                context.logger.debug(f"{grade} {message.message}")
             except StopIteration:
                 missing.append(idx)
 

@@ -33,6 +33,10 @@ class FilterResult:
         """Short, helpful and specific explanation your response"""
         return self._justification
 
+    def __str__(self):
+        t = " " if self._filtered else " not "
+        return f"Message {self._index} is{t}filtered with the justification: {self._justification}"
+
 
 class LLMFilter(FilterBase):
     """Filter using an `LLM` to filter chain responses."""
@@ -68,7 +72,7 @@ class LLMFilter(FilterBase):
             response = llm_result.first_choice
             context.logger.debug(f"llm response: {response}")
             try:
-                return self._parse_response(response, all_eval_results)
+                return self._parse_response(context, response, all_eval_results)
             except LLMParsingException as e:
                 assistant_message = f"Your response is not correctly formatted:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
@@ -84,7 +88,9 @@ class LLMFilter(FilterBase):
         context.logger.warning(f"Exception occurred: {error}")
         return [LLMMessage.assistant_message(assistant_message), LLMMessage.user_message(f"Fix:\n{error}")]
 
-    def _parse_response(self, response: str, messages: List[ScoredChatMessage]) -> List[ScoredChatMessage]:
+    def _parse_response(
+        self, context: ContextBase, response: str, messages: List[ScoredChatMessage]
+    ) -> List[ScoredChatMessage]:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]
         answers = [r.unwrap() for r in parsed if r.is_some()]
         if len(answers) == 0:
@@ -97,6 +103,7 @@ class LLMFilter(FilterBase):
                 answer = next(filter(lambda item: item.index == (idx + 1), answers))
                 if not answer.is_filtered:
                     messages_to_keep.append(message)
+                context.logger.debug(f"{answer} for {message.message}")
             except StopIteration:
                 missing.append(idx)
 

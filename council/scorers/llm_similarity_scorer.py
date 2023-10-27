@@ -20,8 +20,11 @@ class SimilarityScore:
 
     @llm_property
     def justification(self) -> str:
-        """Short, helpful and specific explanation your grade"""
+        """Short, helpful and specific explanation your score"""
         return self._justification
+
+    def __str__(self):
+        return f"Similarity score is {self.score} with the justification: {self._justification}"
 
 
 class LLMSimilarityScorer(ScorerBase):
@@ -60,7 +63,8 @@ class LLMSimilarityScorer(ScorerBase):
             context.logger.debug(f"llm response: {response}")
             try:
                 retry -= 1
-                return self._parse_response(response)
+                similarity_score = self._parse_response(context, response)
+                return similarity_score.score
             except LLMParsingException as e:
                 assistant_message = f"Your response is not correctly formatted:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
@@ -101,13 +105,15 @@ class LLMSimilarityScorer(ScorerBase):
         ]
         return LLMMessage.system_message("\n".join(system_prompt))
 
-    def _parse_response(self, response: str) -> float:
+    def _parse_response(self, context: ContextBase, response: str) -> SimilarityScore:
         parsed = [self._parse_line(line) for line in response.strip().splitlines()]
         filtered = [r.unwrap() for r in parsed if r.is_some()]
         if len(filtered) == 0:
             raise LLMParsingException("None of your response could be parsed. Follow exactly formatting instructions.")
 
-        return filtered[0].score
+        similarity_score = filtered[0]
+        context.logger.debug(f"{similarity_score}")
+        return similarity_score
 
     def _parse_line(self, line: str) -> Option[SimilarityScore]:
         if LLMAnswer.field_separator() not in line:

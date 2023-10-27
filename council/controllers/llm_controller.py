@@ -37,6 +37,9 @@ class Specialist:
         """Short and specific explanation of your score to this particular Specialist"""
         return self._justification
 
+    def __str__(self):
+        return f"The specialist {self._name} was scored {self._score} with the justification {self._justification}"
+
 
 class LLMController(ControllerBase):
     """
@@ -163,18 +166,29 @@ class LLMController(ControllerBase):
         if LLMAnswer.field_separator() not in line:
             return Option.none()
 
-        cs: Optional[Specialist] = self._llm_answer.to_object(line)
-        if cs is not None:
+        scored_specialist: Optional[Specialist] = self._llm_answer.to_object(line)
+        if scored_specialist is not None:
 
             def typeguard_predicate(chain_base: ChainBase) -> TypeGuard[ChainBase]:
-                return isinstance(chain_base, ChainBase) and chain_base.name.casefold() == cs.name.casefold()
+                return (
+                    isinstance(chain_base, ChainBase)
+                    and chain_base.name.casefold() == scored_specialist.name.casefold()
+                )
 
             try:
                 chain = next(filter(typeguard_predicate, self._chains))
-                return Option.some((self._build_execution_unit(chain, context, cs.instructions, cs.score), cs.score))
+                context.logger.debug(f"{scored_specialist}")
+                return Option.some(
+                    (
+                        self._build_execution_unit(
+                            chain, context, scored_specialist.instructions, scored_specialist.score
+                        ),
+                        scored_specialist.score,
+                    )
+                )
             except StopIteration:
-                context.logger.warning(f'message="no chain found with name `{cs.name}`"')
-                raise ControllerException(f"The Specialist `{cs.name}` does not exist.")
+                context.logger.warning(f'message="no chain found with name `{scored_specialist.name}`"')
+                raise ControllerException(f"The Specialist `{scored_specialist.name}` does not exist.")
         return Option.none()
 
     def _build_execution_unit(
