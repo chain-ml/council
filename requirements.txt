@@ -6,6 +6,9 @@ more-itertools~=9.1.0
 progressbar==2.5
 tiktoken==0.5.1
 
+# LLMs
+anthropic>=0.5.0
+
 # Skills
 ## Google
 google-api-python-client==2.104.0
