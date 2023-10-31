@@ -13,7 +13,20 @@ _ASSISTANT_TURN = "\n\nAssistant:"
 
 
 class AnthropicLLM(LLMBase):
+    """
+    Implementation for an Anthropic LLM.
+
+    Notes:
+        More details: https://docs.anthropic.com/claude/docs
+    """
+
     def __init__(self, config: AnthropicLLMConfiguration):
+        """
+        Initialize a new instance.
+
+        Args:
+            config(AnthropicLLMConfiguration): configuration for the instance
+        """
         super().__init__()
         self._config = config
         self._client = Anthropic(api_key=self._config.api_key)
@@ -42,4 +55,11 @@ class AnthropicLLM(LLMBase):
 
     @staticmethod
     def from_env() -> AnthropicLLM:
+        """
+        Helper function that create a new instance by getting the configuration from environment variables.
+
+        Returns:
+            AnthropicLLM
+        """
+
         return AnthropicLLM(AnthropicLLMConfiguration.from_env())
