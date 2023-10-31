@@ -17,3 +17,6 @@ from .azure_llm import AzureLLM
 
 from .openai_llm_configuration import OpenAILLMConfiguration
 from .openai_llm import OpenAILLM
+
+from .anthropic_llm_configuration import AnthropicLLMConfiguration
+from .anthropic_llm import AnthropicLLM
