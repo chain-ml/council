@@ -29,7 +29,7 @@ class AnthropicLLM(LLMBase):
         """
         super().__init__()
         self._config = config
-        self._client = Anthropic(api_key=self._config.api_key)
+        self._client = Anthropic(api_key=self._config.api_key, timeout=config.timeout)
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         prompt = self._to_anthropic_messages(messages)

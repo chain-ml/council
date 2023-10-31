@@ -3,6 +3,8 @@ from typing import Any
 
 from council.utils.parameter import Parameter
 
+_DEFAULT_TIMEOUT = 30
+
 
 def _tv(x: float):
     """

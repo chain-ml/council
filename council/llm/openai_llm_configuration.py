@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from council.llm import LLMConfigurationBase
 from council.utils import read_env_str, read_env_int, Option
+from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
 
 class OpenAILLMConfiguration(LLMConfigurationBase):
@@ -25,7 +26,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
     def __init__(self, model: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
         super().__init__()
         self.model = Option(model)
-        self.timeout = timeout or 30
+        self.timeout = timeout or _DEFAULT_TIMEOUT
         if api_key is not None:
             self._set_api_key(api_key)
 
@@ -43,7 +44,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         config._set_api_key(read_env_str("OPENAI_API_KEY").unwrap())
         if config.model.is_none():
             config.model = read_env_str("OPENAI_LLM_MODEL", required=False, default="gpt-3.5-turbo")
-        config.timeout = read_env_int("OPENAI_LLM_TIMEOUT", required=False, default=30).unwrap()
+        config.timeout = read_env_int("OPENAI_LLM_TIMEOUT", required=False, default=_DEFAULT_TIMEOUT).unwrap()
         return config
 
     def _set_api_key(self, key: str) -> None:

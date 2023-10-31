@@ -106,7 +106,7 @@ class MockLLM(LLMBase):
 
 
 class MockErrorLLM(LLMBase):
-    def __init__(self, exception: LLMException = LLMException()):
+    def __init__(self, exception: LLMException = LLMException("From Mock")):
         super().__init__()
         self.exception = exception
 

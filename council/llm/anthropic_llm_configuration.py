@@ -1,13 +1,18 @@
 from __future__ import annotations
 from typing import Optional
 
-from council.utils import read_env_str
+from council.utils import read_env_str, read_env_float
+from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
 
 class AnthropicLLMConfiguration:
     """
     Configuration for Anthropic LLMs
     """
+
+    timeout: int
+    model: str
+    api_key: str
 
     def __init__(self, model: Optional[str] = None, api_key: Optional[str] = None):
         """
@@ -30,5 +35,6 @@ class AnthropicLLMConfiguration:
 
         config.model = read_env_str("ANTHROPIC_MODEL").unwrap()
         config.api_key = read_env_str("ANTHROPIC_API_KEY").unwrap()
+        config.timeout = read_env_float(name="ANTHROPIC_LLM_TIMEOUT", required=False, default=_DEFAULT_TIMEOUT).unwrap()
 
         return config
