@@ -5,5 +5,5 @@ from .contexts import AgentContext, Budget, ChainContext, ChatHistory, ChatMessa
 from .controllers import BasicController, ControllerBase, ExecutionUnit, LLMController
 from .evaluators import BasicEvaluator, EvaluatorBase, LLMEvaluator
 from .filters import BasicFilter, FilterBase
-from .llm import AzureLLM, OpenAILLM
+from .llm import AnthropicLLMConfiguration, AzureLLM, OpenAILLM
 from .runners import DoWhile, If, Parallel, ParallelFor, RunnerGenerator, RunnerPredicate, Sequential, While

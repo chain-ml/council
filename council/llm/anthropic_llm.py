@@ -1,26 +1,26 @@
+from __future__ import annotations
+
 from typing import Any, Sequence
 
 from anthropic import Anthropic
-from council import LLMContext
-from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
 
+from council.contexts import LLMContext
+from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
+from .anthropic_llm_configuration import AnthropicLLMConfiguration
 
 _HUMAN_TURN = "\n\nHuman:"
 _ASSISTANT_TURN = "\n\nAssistant:"
 
 
 class AnthropicLLM(LLMBase):
-    def __init__(self):
+    def __init__(self, config: AnthropicLLMConfiguration):
         super().__init__()
-        self._client = Anthropic()
+        self._config = config
+        self._client = Anthropic(api_key=self._config.api_key)
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         prompt = self._to_anthropic_messages(messages)
-        completion = self._client.completions.create(
-            model="claude-2",
-            prompt=prompt,
-            max_tokens_to_sample=300
-        )
+        completion = self._client.completions.create(model=self._config.model, prompt=prompt, max_tokens_to_sample=300)
 
         return LLMResult(choices=[completion.completion])
 
@@ -39,3 +39,7 @@ class AnthropicLLM(LLMBase):
         result.append(_ASSISTANT_TURN)
 
         return "".join(result)
+
+    @staticmethod
+    def from_env() -> AnthropicLLM:
+        return AnthropicLLM(AnthropicLLMConfiguration.from_env())
