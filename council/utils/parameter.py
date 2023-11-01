@@ -70,7 +70,7 @@ class Parameter(Generic[T]):
         return self._value.unwrap()
 
     def unwrap_or(self, value: Any) -> Union[T, Any]:
-        return self._value.unwrap() if self.is_some() else value
+        return self._value.unwrap_or(value)
 
     def is_some(self) -> bool:
         return self._value.is_some()

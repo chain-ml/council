@@ -11,7 +11,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
 
     Args:
         api_key (str): the OpenAI api key
-        model (str): optional model version to use
+        model: optional model version to use
         timeout (int): seconds to wait for response from OpenAI before timing out
 
     Notes:
@@ -19,9 +19,6 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
     """
 
     api_key: str
-    authorization: str  # not a parameter - used to optimize calls
-    model: Option[str]
-    timeout: int
 
     def __init__(self, model: Optional[str] = None, timeout: Optional[int] = None, api_key: Optional[str] = None):
         super().__init__()
