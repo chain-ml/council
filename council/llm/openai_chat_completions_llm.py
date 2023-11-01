@@ -69,6 +69,14 @@ class Usage:
         return f'prompt_tokens="{self._prompt}" total_tokens="{self._total}" completion_tokens="{self._completion}"'
 
     @property
+    def prompt_tokens(self) -> int:
+        return self._prompt
+
+    @property
+    def completion_tokens(self) -> int:
+        return self._completion
+
+    @property
     def total_tokens(self) -> int:
         return self._total
 
@@ -112,6 +120,14 @@ class OpenAIChatCompletionsResult:
     def choices(self) -> Sequence[Choice]:
         return self._choices
 
+    def to_consumptions(self) -> Sequence[Consumption]:
+        return [
+            Consumption(1, "call", f"{self.model}"),
+            Consumption(self.usage.prompt_tokens, "token", f"{self.model}:prompt_tokens"),
+            Consumption(self.usage.completion_tokens, "token", f"{self.model}:completion_tokens"),
+            Consumption(self.usage.total_tokens, "token", f"{self.model}:total_tokens"),
+        ]
+
     @staticmethod
     def from_dict(obj: Any) -> "OpenAIChatCompletionsResult":
         _id = str(obj.get("id"))
@@ -146,8 +162,7 @@ class OpenAIChatCompletionsModel(LLMBase):
         context.logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')
         r = self._post_request(payload)
         context.logger.debug(f'message="got chat GPT completions result" id="{r.id}" model="{r.model}" {r.usage}')
-        consumption = Consumption(r.usage.total_tokens, "token", r.model)
-        return LLMResult(choices=[c.message.content for c in r.choices], consumptions=[consumption])
+        return LLMResult(choices=[c.message.content for c in r.choices], consumptions=r.to_consumptions())
 
     def _post_request(self, payload) -> OpenAIChatCompletionsResult:
         response = self._provider.__call__(payload)

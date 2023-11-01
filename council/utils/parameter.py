@@ -1,6 +1,6 @@
-from typing import Callable, TypeVar, Optional, Generic, Any
+from typing import Callable, TypeVar, Optional, Generic, Any, Union
 
-from council.utils import Option, read_env_int, read_env_float
+from council.utils import Option, read_env_int, read_env_float, read_env_str
 
 T = TypeVar("T")
 Validator = Callable[[T], None]
@@ -40,23 +40,27 @@ class Parameter(Generic[T]):
         self._read_env = converter
         self._validator: Validator = validator if validator is not None else lambda x: None
         if default is not None:
-            self.__set_value(default)
+            self.set(default)
 
     def from_env(self, env_var: str):
         v = self._read_env(env_var, self._required)
         if v.is_some():
-            self.__set_value(v.unwrap())
+            self.set(v.unwrap())
 
-    def __set_value(self, value: T):
+    def set(self, value: T):
         try:
             self._validator(value)
             self._value = Option(value)
-        except Exception as e:
+        except ValueError as e:
             raise ParameterValueException(self._name, value=value, message=e)
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def value(self) -> Optional[T]:
+        return self._value.unwrap() if self.is_some() else None
 
     @property
     def required(self) -> bool:
@@ -65,11 +69,20 @@ class Parameter(Generic[T]):
     def unwrap(self) -> T:
         return self._value.unwrap()
 
+    def unwrap_or(self, value: Any) -> Union[T, Any]:
+        return self._value.unwrap() if self.is_some() else value
+
     def is_some(self) -> bool:
         return self._value.is_some()
 
     def is_none(self) -> bool:
         return self._value.is_none()
+
+    @staticmethod
+    def string(
+        name: str, required: bool, default: Optional[str] = None, validator: Optional[Validator] = None
+    ) -> "Parameter[str]":
+        return Parameter(name, required, read_env_str, default, validator)
 
     @staticmethod
     def int(

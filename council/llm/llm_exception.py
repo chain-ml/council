@@ -1,10 +1,13 @@
+from typing import Optional
+
+
 class LLMException(Exception):
     def __init__(self, message: str):
         super().__init__(message)
 
 
 class LLMCallTimeoutException(LLMException):
-    def __init__(self, timeout: float):
+    def __init__(self, timeout: Optional[float]):
         super().__init__(f"Call to LLM timed out after {timeout} seconds")
 
 

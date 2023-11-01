@@ -12,7 +12,7 @@ def _tv(x: float):
     Sampling temperature to use, between 0. and 2.
     """
     if x < 0.0 or x > 2.0:
-        raise Exception("must be in the range [0.0..2.0]")
+        raise ValueError("must be in the range [0.0..2.0]")
 
 
 def _pv(x: float):
@@ -21,7 +21,7 @@ def _pv(x: float):
     Penalty must be between -2.0 and 2.0
     """
     if x < -2.0 or x > 2.0:
-        raise Exception("must be in the range [-2.0..2.0]")
+        raise ValueError("must be in the range [-2.0..2.0]")
 
 
 def _mtv(x: int):
@@ -30,7 +30,7 @@ def _mtv(x: int):
     Must be positive
     """
     if x <= 0:
-        raise Exception("must be positive")
+        raise ValueError("must be positive")
 
 
 class LLMConfigurationBase(abc.ABC):
@@ -38,22 +38,15 @@ class LLMConfigurationBase(abc.ABC):
     Configuration for OpenAI LLM Chat Completion GPT Model
 
     Args:
-        temperature (float): optional temperature settings for the LLM
-        max_tokens (int): optional limit on number of tokens
-        top_p (int): optional he model only takes into account the tokens with the highest probability mass
-        n (int): optional How many completions to generate for each prompt
-        presence_penalty (float): optional, impacts how the model penalizes new tokens based on whether
+        temperature: optional, temperature settings for the LLM
+        max_tokens: optional, limit on number of tokens
+        top_p: optional, the model only takes into account the tokens with the highest probability mass
+        n: optional, How many completions to generate for each prompt
+        presence_penalty: optional, impacts how the model penalizes new tokens based on whether
             they have appeared in the text so far
-        frequency_penalty (float): optional, impacts how the model penalizes new tokens based on their existing
+        frequency_penalty: optional, impacts how the model penalizes new tokens based on their existing
             frequency in the text.
     """
-
-    temperature: Parameter[float]
-    max_tokens: Parameter[int]
-    top_p: Parameter[float]
-    n: Parameter[int]
-    presence_penalty: Parameter[float]
-    frequency_penalty: Parameter[float]
 
     def __init__(self):
         self.temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
