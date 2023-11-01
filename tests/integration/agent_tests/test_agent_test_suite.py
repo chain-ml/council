@@ -9,15 +9,16 @@ from council.controllers import LLMController
 from council.chains import Chain
 from council.evaluators import LLMEvaluator
 from council.filters import BasicFilter
-from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 from council.skills import LLMSkill
+
+from .. import get_test_default_llm
 
 
 class TestTestSuite(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM.from_env()
+        llm = get_test_default_llm()
 
         prompt = "you are an assistant expert in Finance. When asked about something else, say you don't know"
         finance_skill = LLMSkill(llm=llm, system_prompt=prompt)

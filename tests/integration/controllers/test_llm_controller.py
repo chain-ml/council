@@ -6,10 +6,11 @@ import dotenv
 from council.chains import Chain
 from council.contexts import AgentContext, Budget
 from council.controllers import LLMController, ExecutionUnit
-from council.llm import AzureLLM
+
+from .. import get_test_default_llm
 
 
-class TestAzureLlmController(TestCase):
+class TestLlmController(TestCase):
     """requires an Azure LLM model deployed"""
 
     def setUp(self) -> None:
@@ -39,6 +40,7 @@ class TestAzureLlmController(TestCase):
             self.chain_forecast,
         ]
         dotenv.load_dotenv()
+        self.llm = get_test_default_llm()
 
     def test_controller_chain_search(self):
         self._test_prompt("what is the definition of inflation in finance?", [self.chain_search])
@@ -71,7 +73,7 @@ class TestAzureLlmController(TestCase):
     def _test_prompt(self, prompt: str, expected: Sequence[Chain], top_k: Optional[int] = None) -> List[ExecutionUnit]:
         print("\n*******")
         print(f"Prompt: {prompt}")
-        controller = LLMController(chains=self.chains, llm=AzureLLM.from_env(), response_threshold=1, top_k=top_k)
+        controller = LLMController(chains=self.chains, llm=self.llm, response_threshold=1, top_k=top_k)
         execution_context = AgentContext.from_user_message(prompt, Budget(10))
         result = controller.execute(execution_context)
 
