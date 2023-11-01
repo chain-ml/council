@@ -10,7 +10,7 @@ def tv(x: float):
     Temperature is an Optional float valid between 0.0 and 2.0, default value 0.0
     """
     if x < 0.0 or x > 2.0:
-        raise Exception("must be in the range [0.0..2.0]")
+        raise ValueError("must be in the range [0.0..2.0]")
 
 
 class TestParameter(unittest.TestCase):
