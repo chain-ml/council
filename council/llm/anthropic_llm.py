@@ -2,11 +2,18 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from anthropic import Anthropic
+from anthropic import Anthropic, APITimeoutError, APIStatusError
 
 from council.contexts import LLMContext
-from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
-from .anthropic_llm_configuration import AnthropicLLMConfiguration
+from council.llm import (
+    LLMBase,
+    LLMMessage,
+    LLMMessageRole,
+    LLMResult,
+    LLMCallTimeoutException,
+    LLMCallException,
+    AnthropicLLMConfiguration,
+)
 
 _HUMAN_TURN = "\n\nHuman:"
 _ASSISTANT_TURN = "\n\nAssistant:"
@@ -29,13 +36,19 @@ class AnthropicLLM(LLMBase):
         """
         super().__init__()
         self._config = config
-        self._client = Anthropic(api_key=self._config.api_key, timeout=config.timeout)
+        self._client = Anthropic(api_key=self._config.api_key)
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         prompt = self._to_anthropic_messages(messages)
-        completion = self._client.completions.create(model=self._config.model, prompt=prompt, max_tokens_to_sample=300)
-
-        return LLMResult(choices=[completion.completion])
+        try:
+            completion = self._client.completions.create(
+                model=self._config.model, prompt=prompt, max_tokens_to_sample=300, timeout=self._config.timeout
+            )
+            return LLMResult(choices=[completion.completion])
+        except APITimeoutError as e:
+            raise LLMCallTimeoutException(self._config.timeout) from e
+        except APIStatusError as e:
+            raise LLMCallException(code=e.status_code, error=e.message) from e
 
     @staticmethod
     def _to_anthropic_messages(messages) -> str:

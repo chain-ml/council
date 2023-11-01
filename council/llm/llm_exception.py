@@ -4,7 +4,7 @@ class LLMException(Exception):
 
 
 class LLMCallTimeoutException(LLMException):
-    def __init__(self, timeout: int):
+    def __init__(self, timeout: float):
         super().__init__(f"Call to LLM timed out after {timeout} seconds")
 
 

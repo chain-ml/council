@@ -34,7 +34,7 @@ class SpecialistGrade:
         return self._justification
 
     def __str__(self):
-        return f"Message {self._index} graded {self._grade} with the justification {self._justification}"
+        return f"Message `{self._index}` graded {self._grade} with the justification: `{self._justification}`"
 
 
 class LLMEvaluator(EvaluatorBase):

@@ -10,11 +10,11 @@ class AnthropicLLMConfiguration:
     Configuration for Anthropic LLMs
     """
 
-    timeout: int
+    timeout: float
     model: str
     api_key: str
 
-    def __init__(self, model: Optional[str] = None, api_key: Optional[str] = None):
+    def __init__(self, model: Optional[str] = None, api_key: Optional[str] = None, timeout: Optional[float] = None):
         """
         Initialize a new instance
 
@@ -28,6 +28,8 @@ class AnthropicLLMConfiguration:
             self.model = model
         if api_key is not None:
             self.api_key = api_key
+        if timeout is not None:
+            self.timeout = timeout
 
     @staticmethod
     def from_env() -> AnthropicLLMConfiguration:

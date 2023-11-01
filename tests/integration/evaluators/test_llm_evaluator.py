@@ -3,16 +3,16 @@ import unittest
 import dotenv
 
 from council.contexts import AgentContext, ChatMessage, ChainContext
-from council.llm import AzureLLM
 from council.evaluators import LLMEvaluator
 from council.mocks import MockMonitored
+
+from .. import get_test_default_llm
 
 
 class TestLlmEvaluator(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM.from_env()
-        self.llm = llm
+        self.llm = get_test_default_llm()
 
     def test_basic_prompt_multiple_responses(self):
         evaluator = LLMEvaluator(llm=self.llm)

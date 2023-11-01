@@ -14,6 +14,7 @@ class AzureLLMConfiguration(LLMConfigurationBase):
         api_version (str): The API version to use i.e. `2023-03-15-preview`, `2023-05-15`, `2023-06-01-preview`
         api_base (str): the base path for Azure api
         deployment_name (str): the deployment name in Azure
+        timeout (int):
 
     Notes:
         https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions

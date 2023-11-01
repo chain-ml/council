@@ -1,9 +1,9 @@
 from typing import Any
 
 import httpx
-from httpx import ReadTimeout
+from httpx import TimeoutException, HTTPStatusError
 
-from . import OpenAIChatCompletionsModel, LLMCallTimeoutException
+from . import OpenAIChatCompletionsModel, LLMCallTimeoutException, LLMCallException
 from .azure_llm_configuration import AzureLLMConfiguration
 
 
@@ -26,8 +26,10 @@ class AzureOpenAIChatCompletionsModelProvider:
             with httpx.Client() as client:
                 client.timeout.read = self.config.timeout
                 return client.post(url=uri, headers=headers, params=params, json=payload)
-        except ReadTimeout as e:
+        except TimeoutException as e:
             raise LLMCallTimeoutException(self.config.timeout) from e
+        except HTTPStatusError as e:
+            raise LLMCallException(code=e.response.status_code, error=e.response.text) from e
 
 
 class AzureLLM(OpenAIChatCompletionsModel):

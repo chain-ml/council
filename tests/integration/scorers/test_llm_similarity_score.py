@@ -3,14 +3,15 @@ import unittest
 import dotenv
 
 from council.contexts import ChatMessage, ScorerContext
-from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
+
+from .. import get_test_default_llm
 
 
 class TestLLMSimilarityScorer(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        self.llm = AzureLLM.from_env()
+        self.llm = get_test_default_llm()
 
     def test_similarity_hello(self):
         expected = """

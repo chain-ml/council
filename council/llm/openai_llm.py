@@ -2,9 +2,9 @@ import httpx
 
 from typing import Any, Optional
 
-from httpx import ReadTimeout
+from httpx import TimeoutException, HTTPStatusError
 
-from . import OpenAIChatCompletionsModel, OpenAITokenCounter, LLMCallTimeoutException
+from . import OpenAIChatCompletionsModel, OpenAITokenCounter, LLMCallTimeoutException, LLMCallException
 from .openai_llm_configuration import OpenAILLMConfiguration
 
 
@@ -26,8 +26,10 @@ class OpenAIChatCompletionsModelProvider:
             with httpx.Client() as client:
                 client.timeout.read = self.config.timeout
                 return client.post(url=uri, headers=headers, json=payload)
-        except ReadTimeout as e:
+        except TimeoutException as e:
             raise LLMCallTimeoutException(self.config.timeout) from e
+        except HTTPStatusError as e:
+            raise LLMCallException(code=e.response.status_code, error=e.response.text) from e
 
 
 class OpenAILLM(OpenAIChatCompletionsModel):
