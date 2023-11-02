@@ -26,5 +26,5 @@ class TestWikipediaSkill(unittest.TestCase):
             ' <span class="searchmatch">programming</span> <span class="searchmatch">language</span>.'
             " Its design philosophy emphasizes code readability with the use of significant indentation"
         )
-        result = WikipediaClient.clean_text(text)
+        result = WikipediaClient._clean_text(text)
         assert "programming language" in result
