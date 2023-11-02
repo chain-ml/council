@@ -6,7 +6,18 @@ from .wikipedia_client import WikipediaClient
 
 
 class WikipediaSearchSkill(SkillBase):
+    """
+    A Skill to search for pages on Wikipedia
+    """
+
     def __init__(self, name: str = "WikipediaSearch"):
+        """
+        Initialize a new instance
+
+        Args:
+            name (str): name of the skill
+        """
+
         super().__init__(name)
         self._client = WikipediaClient()
 
