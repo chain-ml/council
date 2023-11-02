@@ -102,7 +102,7 @@ class AnthropicLLMConfiguration:
         """
         Use nucleus sampling.
         In nucleus sampling, we compute the cumulative distribution over all the options for each subsequent token in
-            decreasing probability order and cut it off once it reaches a particular probability specified by top_p.
+        decreasing probability order and cut it off once it reaches a particular probability specified by top_p.
         """
         return self._top_p
 

@@ -83,7 +83,7 @@ class LLMConfigurationBase(abc.ABC):
     def presence_penalty(self) -> Parameter[float]:
         """
         Positive values penalize new tokens based on whether they appear in the text so far,
-            increasing the model's likelihood to talk about new topics.
+        increasing the model's likelihood to talk about new topics.
         Number between -2.0 and 2.0
         See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-presence_penalty
         """
@@ -92,8 +92,8 @@ class LLMConfigurationBase(abc.ABC):
     @property
     def frequency_penalty(self) -> Parameter[float]:
         """
-         Positive values penalize new tokens based on their existing frequency in the text so far,
-            decreasing the model's likelihood to repeat the same line verbatim.
+        Positive values penalize new tokens based on their existing frequency in the text so far,
+        decreasing the model's likelihood to repeat the same line verbatim.
         Number between -2.0 and 2.0
         See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-frequency_penalty
         """
