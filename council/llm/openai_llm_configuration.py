@@ -12,6 +12,11 @@ def _model_validator(x: str):
         raise ValueError("must start with `gpt-`")
 
 
+def _api_key_validator(x: str):
+    if not x.startswith("sk-"):
+        raise ValueError("must start with `sk-`")
+
+
 def _positive_validator(x: int):
     """
     Max Token and Top_K Validator
@@ -40,7 +45,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         super().__init__()
         self._model = Parameter.string(name="model", required=True, value=model, validator=_model_validator)
         self._timeout = Parameter.int(name="timeout", required=False, default=timeout, validator=_positive_validator)
-        self._api_key = Parameter.string(name="api_key", required=True, value=api_key)
+        self._api_key = Parameter.string(name="api_key", required=True, value=api_key, validator=_api_key_validator)
 
     @property
     def model(self) -> Parameter[str]:
@@ -71,9 +76,8 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env(model: Optional[str] = None) -> "OpenAILLMConfiguration":
-        model = (
-            "gpt-3.5-turbo" if model is None else read_env_str(_env_var_prefix + "LLM_MODEL", required=False).unwrap()
-        )
+        if model is None:
+            model = read_env_str(_env_var_prefix + "LLM_MODEL", required=False, default="gpt-3.5-turbo").unwrap()
         api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
         timeout = read_env_int(_env_var_prefix + "LLM_TIMEOUT", required=False, default=_DEFAULT_TIMEOUT).unwrap()
         config = OpenAILLMConfiguration(model=model, api_key=api_key, timeout=timeout)
