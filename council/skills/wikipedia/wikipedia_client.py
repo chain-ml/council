@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import bs4
-from mediawiki import MediaWiki, MediaWikiPage
+from mediawiki import MediaWiki, MediaWikiPage  # type: ignore
 
 
 class WikipediaPageSection:
@@ -31,7 +31,7 @@ class WikipediaPageSection:
     def page_id(self) -> int:
         return self._page_id
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, Any]:
         return {"title": self._title, "content": self._content, "page_id": self._page_id}
 
 
@@ -67,6 +67,7 @@ class WikipediaClient:
             content = page.section(section)
             if normalized_text in content.lower():
                 return WikipediaPageSection(title=section, content=content, page_id=page_id)
+        return None
 
     def get_page_by_id(self, page_id: int) -> Optional[MediaWikiPage]:
         return self.wikipedia.page(pageid=page_id)
