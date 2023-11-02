@@ -7,11 +7,11 @@ class TestOpenAILLMConfiguration(unittest.TestCase):
     def test_model_default_value(self):
         with OsEnviron("OPENAI_API_KEY", "akey"):
             config = OpenAILLMConfiguration.from_env()
-            self.assertEqual("akey", config.api_key)
-            self.assertEqual("gpt-3.5-turbo", config.model.unwrap())
+            self.assertEqual("akey", config.api_key.value)
+            self.assertEqual("gpt-3.5-turbo", config.model.value)
 
     def test_model_override(self):
         with OsEnviron("OPENAI_API_KEY", "akey"), OsEnviron("OPENAI_LLM_MODEL", "amodel"):
             config = OpenAILLMConfiguration.from_env()
-            self.assertEqual("akey", config.api_key)
-            self.assertEqual("amodel", config.model.unwrap())
+            self.assertEqual("akey", config.api_key.value)
+            self.assertEqual("amodel", config.model.value)

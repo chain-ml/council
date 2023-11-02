@@ -16,13 +16,13 @@ class TestLlmController(TestCase):
     def setUp(self) -> None:
         self.chain_news = Chain(
             "finance with google news engine",
-            "Finance News feed, answer only to academic and serious questions about Finance.",
+            "Finance News feed, answer only to serious questions about Finance.",
             [],
             support_instructions=True,
         )
         self.chain_search = Chain(
             "finance with google search engine",
-            "Finance search engine, answer only to academic and serious questions about Finance.",
+            "Finance corpus search engine, answer only to academic and serious questions about Finance.",
             [],
         )
         self.chain_tex2sql = Chain("text2sql", "generate a sql query from a user prompt", [])
