@@ -1,29 +1,10 @@
 from typing import Any, Optional
 
 from council.llm import LLMConfigurationBase
-from council.utils import read_env_str, read_env_int, Parameter
+from council.utils import read_env_str, read_env_int, Parameter, greater_than_validator, prefix_validator
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
 _env_var_prefix = "OPENAI_"
-
-
-def _model_validator(x: str):
-    if not x.startswith("gpt-"):
-        raise ValueError("must start with `gpt-`")
-
-
-def _api_key_validator(x: str):
-    if not x.startswith("sk-"):
-        raise ValueError("must start with `sk-`")
-
-
-def _positive_validator(x: int):
-    """
-    Max Token and Top_K Validator
-    Must be positive
-    """
-    if x <= 0:
-        raise ValueError("must be positive")
 
 
 class OpenAILLMConfiguration(LLMConfigurationBase):
@@ -34,7 +15,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         * see https://platform.openai.com/docs/api-reference/chat
     """
 
-    def __init__(self, api_key: str, model: str, timeout: Optional[int] = None):
+    def __init__(self, api_key: str, model: str, timeout: int = _DEFAULT_TIMEOUT):
         """
         Initialize a new instance of OpenAILLMConfiguration
         Args:
@@ -43,9 +24,13 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
             timeout (int): seconds to wait for response from OpenAI before timing out
         """
         super().__init__()
-        self._model = Parameter.string(name="model", required=True, value=model, validator=_model_validator)
-        self._timeout = Parameter.int(name="timeout", required=False, default=timeout, validator=_positive_validator)
-        self._api_key = Parameter.string(name="api_key", required=True, value=api_key, validator=_api_key_validator)
+        self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gpt-"))
+        self._timeout = Parameter.int(
+            name="timeout", required=False, default=timeout, validator=greater_than_validator(0)
+        )
+        self._api_key = Parameter.string(
+            name="api_key", required=True, value=api_key, validator=prefix_validator("sk-")
+        )
 
     @property
     def model(self) -> Parameter[str]:

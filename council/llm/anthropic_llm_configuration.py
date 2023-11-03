@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-from council.utils import read_env_str, Parameter, read_env_int
+from council.utils import read_env_str, Parameter, read_env_int, greater_than_validator, prefix_validator
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
 _env_var_prefix = "ANTHROPIC_"
-
-
-def _model_validator(x: str):
-    if not x.startswith("claude-2") and not x.startswith("claude-instant-1"):
-        raise ValueError("base must be either `claude-2` or `claude-instant-1`")
 
 
 def _tv(x: float):
@@ -20,18 +15,9 @@ def _tv(x: float):
         raise ValueError("must be in the range [0.0..1.0]")
 
 
-def _positive_validator(x: int):
-    """
-    Max Token and Top_K Validator
-    Must be positive
-    """
-    if x <= 0:
-        raise ValueError("must be positive")
-
-
 class AnthropicLLMConfiguration:
     """
-    Configuration for Anthropic LLMs
+    Configuration for :class:AnthropicLLM
     """
 
     def __init__(
@@ -40,7 +26,6 @@ class AnthropicLLMConfiguration:
         api_key: str,
         max_tokens: int,
         timeout: int = _DEFAULT_TIMEOUT,
-        temperature: float = 0.0,
     ):
         """
         Initialize a new instance
@@ -48,17 +33,22 @@ class AnthropicLLMConfiguration:
         Args:
             model (str): either `claude-2` or `claude-instant-1`. More details https://docs.anthropic.com/claude/reference/selecting-a-model
             api_key (str): the api key
+            max_tokens (int): The maximum number of tokens to generate before stopping.
+            timeout (int): seconds to wait for response from Anthropic before timing out
         """
-
         super().__init__()
-        self._model = Parameter.string(name="model", required=True, value=model, validator=_model_validator)
-        self._api_key = Parameter.string(name="api_key", required=True, value=api_key)
-        self._timeout = Parameter.int(name="timeout", required=False, default=timeout, validator=_positive_validator)
-        self._temperature = Parameter.float(name="temperature", required=False, default=temperature, validator=_tv)
+        self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("claude-"))
+        self._api_key = Parameter.string(
+            name="api_key", required=True, value=api_key, validator=prefix_validator("sk-")
+        )
+        self._timeout = Parameter.int(
+            name="timeout", required=False, default=timeout, validator=greater_than_validator(0)
+        )
+        self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
         self._top_p = Parameter.float(name="top_p", required=False, validator=_tv)
-        self._top_k = Parameter.int(name="top_k", required=False, validator=_positive_validator)
+        self._top_k = Parameter.int(name="top_k", required=False, validator=greater_than_validator(0))
         self._max_tokens = Parameter.int(
-            name="max_tokens", required=True, value=max_tokens, validator=_positive_validator
+            name="max_tokens", required=True, value=max_tokens, validator=greater_than_validator(0)
         )
 
     def read_optional_env(self):
@@ -125,8 +115,8 @@ class AnthropicLLMConfiguration:
 
     @staticmethod
     def from_env() -> AnthropicLLMConfiguration:
-        model = read_env_str(_env_var_prefix + "MODEL").unwrap()
         api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
+        model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
         max_tokens = read_env_int(_env_var_prefix + "LLM_MAX_TOKENS", required=False, default=300).unwrap()
         config = AnthropicLLMConfiguration(model=model, api_key=api_key, max_tokens=max_tokens)
         config.read_optional_env()

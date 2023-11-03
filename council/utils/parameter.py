@@ -7,6 +7,22 @@ Validator = Callable[[T], None]
 _Converter = Callable[[str, bool], T]
 
 
+def greater_than_validator(value: int) -> Validator:
+    def validator(x: int):
+        if x <= value:
+            raise ValueError(f"must be greater than {value}")
+
+    return validator
+
+
+def prefix_validator(value: str) -> Validator:
+    def validator(x: str):
+        if not x.startswith(value):
+            raise ValueError(f"must start with `{value}`")
+
+    return validator
+
+
 class Undefined:
     """
     A class used to distinguish between an undefined value and a defined Optional value set to None
