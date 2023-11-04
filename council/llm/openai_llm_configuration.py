@@ -61,10 +61,11 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env(model: Optional[str] = None) -> "OpenAILLMConfiguration":
+        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
         if model is None:
             model = read_env_str(_env_var_prefix + "LLM_MODEL", required=False, default="gpt-3.5-turbo").unwrap()
-        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
         timeout = read_env_int(_env_var_prefix + "LLM_TIMEOUT", required=False, default=_DEFAULT_TIMEOUT).unwrap()
+
         config = OpenAILLMConfiguration(model=model, api_key=api_key, timeout=timeout)
         config.read_env(_env_var_prefix)
         return config

@@ -23,6 +23,11 @@ def prefix_validator(value: str) -> Validator:
     return validator
 
 
+def not_empty_validator(x: str):
+    if len(x.strip()) == 0:
+        raise ValueError(f"must not be empty")
+
+
 class Undefined:
     """
     A class used to distinguish between an undefined value and a defined Optional value set to None
