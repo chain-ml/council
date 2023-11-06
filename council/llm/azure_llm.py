@@ -21,7 +21,7 @@ class AzureOpenAIChatCompletionsModelProvider:
         )
 
     def post_request(self, payload: dict[str, Any]) -> httpx.Response:
-        headers = {"api-key": self.config.api_key.value, "Content-Type": "application/json"}
+        headers = {"api-key": self.config.api_key.unwrap(), "Content-Type": "application/json"}
         params = {"api-version": self.config.api_version.value}
 
         timeout = self.config.timeout.value
