@@ -1,12 +1,12 @@
 hatch==1.7.0
 
 # Lint
-black == 23.9.1
-mypy==1.5.1
-ruff==0.0.288
+black==23.10.1
+mypy==1.6.1
+ruff==0.1.4
 
 # Test
-ipykernel==6.24.0
-nbconvert==7.6.0
-nbformat==5.9.1
-pytest==7.4.2
+ipykernel==6.26.0
+nbconvert==7.10.0
+nbformat==5.9.2
+pytest==7.4.3
