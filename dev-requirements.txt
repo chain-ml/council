@@ -7,6 +7,6 @@ ruff==0.1.4
 
 # Test
 ipykernel==6.26.0
-nbconvert==7.10.0
+nbconvert==7.11.0
 nbformat==5.9.2
 pytest==7.4.3
