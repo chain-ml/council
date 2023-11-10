@@ -32,7 +32,7 @@ class TestTestSuite(unittest.TestCase):
         fake_skill = LLMSkill(llm=llm, system_prompt=fake_prompt)
         fake_chain = Chain(name="fake", description="Can answer all questions", runners=[fake_skill])
 
-        controller = LLMController(chains=[finance_chain, game_chain, fake_chain], llm=llm, response_threshold=5)
+        controller = LLMController(chains=[finance_chain, game_chain, fake_chain], llm=llm, top_k=2)
         evaluator = LLMEvaluator(llm=llm)
 
         self.llm = llm
