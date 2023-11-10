@@ -26,4 +26,4 @@ integration-test:
 	pytest tests/integration
 
 notebook-test:
-	pytest tests/notebook
+	pytest tests/notebooks
