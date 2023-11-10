@@ -38,7 +38,9 @@ class Specialist:
         return self._justification
 
     def __str__(self):
-        return f"The specialist {self._name} was scored {self._score} with the justification {self._justification}"
+        return (
+            f"The specialist `{self._name}` was scored `{self._score}` with the justification `{self._justification}`"
+        )
 
 
 class LLMController(ControllerBase):
