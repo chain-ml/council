@@ -16,13 +16,13 @@ class TestBase(unittest.TestCase):
         expected = 8
         gn = GoogleNewsSearchEngine(period="90d", suffix="Finance")
         resp = gn.execute(query="USD", nb_results=expected)
-        self.assertEquals(len(resp), expected)
+        self.assertEqual(len(resp), expected)
 
     def test_gsearch(self):
         expected = 8
         gn = GoogleSearchEngine.from_env()
         resp = gn.execute(query="USD", nb_results=expected)
-        self.assertEquals(len(resp), expected)
+        self.assertEqual(len(resp), expected)
 
     def test_gnews_skill(self):
         context = ChainContext.from_user_message("USD", Budget(duration=10))
