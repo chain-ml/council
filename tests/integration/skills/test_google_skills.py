@@ -42,7 +42,7 @@ class TestBase(unittest.TestCase):
 
     def test_gsearch_skill(self):
         context = ChainContext.from_user_message("USD", budget=Budget(duration=10))
-        
+
         skill = GoogleSearchSkill()
         result = skill.execute(SkillContext.from_chain_context(context, Option.none()))
         self.assertTrue(result.is_ok)
