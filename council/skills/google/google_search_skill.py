@@ -15,13 +15,14 @@ class GoogleSearchSkill(SkillBase):
 
     """
 
-    def __init__(self):
+    def __init__(self, nb_results=5):
         super().__init__("gsearch")
         self.gs = GoogleSearchEngine.from_env()
+        self.nb_results = nb_results
 
     def execute(self, context: SkillContext) -> ChatMessage:
         prompt = context.chat_history.try_last_user_message.unwrap("no user message")
-        resp = self.gs.execute(query=prompt.message, nb_results=5)
+        resp = self.gs.execute(query=prompt.message, nb_results=self.nb_results)
         response_count = len(resp)
         if response_count > 0:
             return self.build_success_message(

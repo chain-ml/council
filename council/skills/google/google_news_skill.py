@@ -11,14 +11,14 @@ class GoogleNewsSkill(SkillBase):
 
     """
 
-    def __init__(self, suffix: str = ""):
+    def __init__(self, period="90d", nb_results=5, suffix: str = ""):
         super().__init__("gnews")
-        self.gn = GoogleNewsSearchEngine(period="90d", suffix=suffix)
+        self.gn = GoogleNewsSearchEngine(period=period, suffix=suffix)
+        self.nb_results = nb_results
 
     def execute(self, context: SkillContext) -> ChatMessage:
         prompt = context.chat_history.try_last_user_message.unwrap("no user message")
-
-        resp = self.gn.execute(query=prompt.message, nb_results=5)
+        resp = self.gn.execute(query=prompt.message, nb_results=self.nb_results)
         response_count = len(resp)
         if response_count > 0:
             return self.build_success_message(
