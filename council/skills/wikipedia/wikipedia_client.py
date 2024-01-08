@@ -121,7 +121,7 @@ class WikipediaClient:
             if content is None:
                 continue
             if normalized_text in content.lower():
-                return WikipediaPageSection(title=section, content=content, page_id=page_id)
+                return WikipediaPageSection(title=section or "", content=content, page_id=page_id)
         return None
 
     def _get_page_by_id(self, page_id: int) -> Optional[MediaWikiPage]:
