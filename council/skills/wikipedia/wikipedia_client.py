@@ -118,7 +118,7 @@ class WikipediaClient:
             return None
         for section in [None] + page.sections:
             content = page.section(section)
-            if section is None:
+            if content is None:
                 continue
             if normalized_text in content.lower():
                 return WikipediaPageSection(title=section, content=content, page_id=page_id)
