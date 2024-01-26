@@ -124,10 +124,8 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             tokens_per_message = 3
             tokens_per_name = 1
         elif model in {
-            "gpt-4",
             "gpt-4-0314",
             "gpt-4-0613",
-            "gpt-4-32k",
             "gpt-4-32k-0314",
             "gpt-4-32k-0613",
         }:
@@ -152,6 +150,9 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
         elif "gpt-4" in model:
             logger.warning("gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
             return OpenAITokenCounter.from_model(model="gpt-4-0613")
+        elif "gpt-4-32k" in model:
+            logger.warning("gpt-4-32k may change over time. Returning num tokens assuming gpt-4-32k-0613.")
+            return OpenAITokenCounter.from_model(model="gpt-4-32k-0613")
         else:
             return None
 

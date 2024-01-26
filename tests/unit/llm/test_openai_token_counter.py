@@ -4,12 +4,17 @@ from council.llm import LLMMessage, OpenAITokenCounter, LLMTokenLimitException
 
 
 class TestLlmOpenAI(unittest.TestCase):
-    def test_token_counter(self):
+    def test_token_counter_gpt_35(self):
         model = "gpt-3.5-turbo"
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
 
         self.assertEqual(129, counter.count_messages_token(messages))
+
+    def test_token_counter_gpt_4_turbo(self):
+        model = "gpt-4-turbo-preview"
+        counter = OpenAITokenCounter.from_model(model)
+        self.assertEqual(counter.token_limit, 128000)
 
     def test_token_counter_exception(self):
         model = "gpt-4"
