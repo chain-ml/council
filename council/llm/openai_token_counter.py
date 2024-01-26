@@ -165,6 +165,6 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
         )
 
     @staticmethod
-    def _return_alias(alias: str, last: str) -> OpenAITokenCounter:
+    def _return_alias(alias: str, last: str) -> Optional[OpenAITokenCounter]:
         logger.warning(f"{alias} may change over time. Returning num tokens assuming {last}.")
         return OpenAITokenCounter.from_model(model=last)
