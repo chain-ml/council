@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import tiktoken
 
@@ -13,6 +14,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
     """
     See https://github.com/openai/openai-python/blob/main/chatml.md for information on
         how messages are converted to tokens.
+        https://platform.openai.com/docs/models/overview for tokens
     """
 
     def __init__(
@@ -105,7 +107,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
         return self._limit
 
     @staticmethod
-    def from_model(model: str) -> Optional["OpenAITokenCounter"]:
+    def from_model(model: str) -> Optional[OpenAITokenCounter]:
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
@@ -113,19 +115,31 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             encoding = tiktoken.get_encoding("cl100k_base")
 
         if model in {
+            "gpt-3.5-turbo-16k",
             "gpt-3.5-turbo-0613",
+            "gpt-3.5-turbo-1106",
             "gpt-3.5-turbo-16k-0613",
         }:
-            tokens_limit = 16384 if "-16k-" in model else 4096
+            tokens_limit = 16384 if ("-16k-" in model) or ("-1106" in model) else 4096
             tokens_per_message = 3
             tokens_per_name = 1
         elif model in {
+            "gpt-4",
             "gpt-4-0314",
             "gpt-4-0613",
+            "gpt-4-32k",
             "gpt-4-32k-0314",
             "gpt-4-32k-0613",
         }:
             tokens_limit = 32768 if "-32k-" in model else 8192
+            tokens_per_message = 3
+            tokens_per_name = 1
+        elif model in {
+            "gpt-4-1106-preview",
+            "gpt-4-0125-preview",
+            "gpt-4-turbo-preview",
+        }:
+            tokens_limit = 128000
             tokens_per_message = 3
             tokens_per_name = 1
         elif model == "gpt-3.5-turbo-0301":
