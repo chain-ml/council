@@ -27,7 +27,7 @@ The framework provides connectivity to a wide variety of Large Language Models (
 * 🤝 **Ecosystem Connectivity**: Connected with a growing AI Agent ecosystem, integrated with LangChain, LlamaIndex and leading AI models.
 * 👮 **Scalable Oversight**: Built-in tooling to manage, version, monitor, evaluate and control deployed Agents.
 
-Note: Some of the features listed above are work-in-progress and due in a future release (refer to [Roadmap](https://github.com/chain-ml/council#roadmap) section below).
+Note: Some of the features listed above are work-in-progress and due in a future release.
 
 # Key Concepts
 
@@ -159,22 +159,6 @@ Use `black .` to automatically reformat files.
 # Documentation
 
 A detailed documentation of Council can be found at <a href="https://council.dev">council.dev</a>.
-
-# Roadmap
-
-We have big plans and an ambitious roadmap for the framework with incremental releases scheduled every two weeks. 
-
-Major milestones the core team is working towards are shown below. The roadmap is subject to frequent changes as community needs emerge. Breaking changes to our APIs are still to be expected.
-
-**Q3 2023**
-- [x] **Framework Core**: Key features and interfaces
-- [ ] **Conversational Automation**: Expand upon framework core with advanced filtering, evaluation and budgeting for agents
-- [ ] **Ecosystem Integration**: Integrate with tools and frameworks in the broader LLM ecosystem
-
-**Q4 2023**
-- [ ] **Application Templates**: Provide reusable templates for LLM-enabled applications that allow fast creation of Agents addressing common use cases
-- [ ] **Deployment Platform Integration**: Package, deploy and operate agents at scale in production via integration with popular deployment platforms
-- [ ] **Quality & Evaluation Framework**: Automated and human-supervised test suites (via tool integration), enable management of reusable test cases 
 
 # Support
 
