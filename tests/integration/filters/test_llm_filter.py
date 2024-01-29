@@ -2,7 +2,6 @@ import dotenv
 import unittest
 from typing import List
 
-from council import AzureLLM
 from council.contexts import (
     AgentContext,
     Budget,
@@ -10,14 +9,14 @@ from council.contexts import (
     ChatMessage,
 )
 from council.filters import LLMFilter
+from .. import get_test_default_llm
 
 
 class TestLLMFilter(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM.from_env()
         self.context = AgentContext.from_user_message("bla", Budget(20))
-        self.llm = llm
+        self.llm = get_test_default_llm()
 
         self.aggressive = self._build_scored_message("Do this immediately!!!", 8)
         self.polite = self._build_scored_message("Please consider to do this. Thanks in advance", 7)

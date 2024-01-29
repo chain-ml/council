@@ -59,7 +59,7 @@ class MyTestCase(unittest.TestCase):
         )
 
         agent = Agent.from_chain(chain)
-        limit_tokens = Consumption(1500, "token", "gpt-35-turbo")
+        limit_tokens = Consumption(1500, "token", "gpt-35-turbo:total_tokens")
         limit_calls = Consumption(3, "call", "LLMSkill")
         budget = Budget(6000, limits=[limit_tokens, limit_calls])
         result = agent.execute_from_user_message(message="corporate finance", budget=budget)

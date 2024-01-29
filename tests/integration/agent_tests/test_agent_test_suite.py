@@ -9,15 +9,16 @@ from council.controllers import LLMController
 from council.chains import Chain
 from council.evaluators import LLMEvaluator
 from council.filters import BasicFilter
-from council.llm import AzureLLM
 from council.scorers import LLMSimilarityScorer
 from council.skills import LLMSkill
+
+from .. import get_test_default_llm
 
 
 class TestTestSuite(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM.from_env()
+        llm = get_test_default_llm()
 
         prompt = "you are an assistant expert in Finance. When asked about something else, say you don't know"
         finance_skill = LLMSkill(llm=llm, system_prompt=prompt)
@@ -31,7 +32,7 @@ class TestTestSuite(unittest.TestCase):
         fake_skill = LLMSkill(llm=llm, system_prompt=fake_prompt)
         fake_chain = Chain(name="fake", description="Can answer all questions", runners=[fake_skill])
 
-        controller = LLMController(chains=[finance_chain, game_chain, fake_chain], llm=llm, response_threshold=5)
+        controller = LLMController(chains=[finance_chain, game_chain, fake_chain], llm=llm, top_k=2)
         evaluator = LLMEvaluator(llm=llm)
 
         self.llm = llm

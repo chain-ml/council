@@ -10,6 +10,8 @@ from council.llm import AzureLLM, LLMMessage
 from council.mocks import MockLLM
 from council.skills.llm_skill import LLMSkill
 
+from .. import get_test_default_llm
+
 
 def first_llm_message_content_to_str(messages: Sequence[LLMMessage]) -> Sequence[str]:
     return [messages[0].content]
@@ -20,9 +22,8 @@ class TestLlmSkill(unittest.TestCase):
 
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        llm = AzureLLM.from_env()
         system_prompt = "You are an agent developed with Council framework and you are a Finance expert."
-        llm_skill = LLMSkill(llm=llm, system_prompt=system_prompt)
+        llm_skill = LLMSkill(llm=get_test_default_llm(), system_prompt=system_prompt)
         self.agent = Agent.from_skill(llm_skill, "Answer to an user prompt about finance using gpt4")
 
     def test_basic_prompt(self):

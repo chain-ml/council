@@ -34,7 +34,7 @@ class SpecialistGrade:
         return self._justification
 
     def __str__(self):
-        return f"Message {self._index} graded {self._grade} with the justification {self._justification}"
+        return f"Message `{self._index}` graded `{self._grade}` with the justification: `{self._justification}`"
 
 
 class LLMEvaluator(EvaluatorBase):
@@ -95,7 +95,7 @@ class LLMEvaluator(EvaluatorBase):
             raise LLMParsingException("None of your grade could be parsed. Follow exactly formatting instructions.")
 
         scored_messages = []
-        missing = []
+        missing_indexes = []
         for idx, message in enumerate(chain_results):
             try:
                 grade = next(filter(lambda item: item.index == (idx + 1), grades))
@@ -103,12 +103,17 @@ class LLMEvaluator(EvaluatorBase):
                     ChatMessage.agent(message=message.message, data=message.data), grade.grade
                 )
                 scored_messages.append(scored_message)
-                context.logger.debug(f"{grade} {message.message}")
+                context.logger.debug(f"{grade} Graded message: `{message.message}`")
             except StopIteration:
-                missing.append(idx)
+                missing_indexes.append(idx + 1)
 
-        if len(missing) > 0:
-            raise EvaluatorException(f"Grade ALL {len(chain_results)} answers. Missing grade for {missing} answers.")
+        if len(missing_indexes) > 1:
+            missing_msg = f"Missing grade for the answers with indexes {missing_indexes}."
+            raise EvaluatorException(f"Grade ALL {len(chain_results)} answers. {missing_msg}")
+
+        if len(missing_indexes) > 0:
+            missing_msg = f"Missing grade for the answer with index {missing_indexes[0]}."
+            raise EvaluatorException(f"Grade ALL {len(chain_results)} answers. {missing_msg}")
 
         return scored_messages
 

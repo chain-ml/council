@@ -59,7 +59,7 @@ class LLMBase(Monitorable, abc.ABC):
                 context.budget.add_consumptions(result.consumptions)
                 return result
         except Exception as e:
-            context.logger.exception('message="failed execution of llm request"')
+            context.logger.exception(f'message="failed execution of llm request" exception="{e}" ')
             raise e
         finally:
             context.logger.debug('message="done execution of llm request"')

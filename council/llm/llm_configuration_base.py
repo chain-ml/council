@@ -3,6 +3,8 @@ from typing import Any
 
 from council.utils.parameter import Parameter
 
+_DEFAULT_TIMEOUT = 30
+
 
 def _tv(x: float):
     """
@@ -10,7 +12,7 @@ def _tv(x: float):
     Sampling temperature to use, between 0. and 2.
     """
     if x < 0.0 or x > 2.0:
-        raise Exception("must be in the range [0.0..2.0]")
+        raise ValueError("must be in the range [0.0..2.0]")
 
 
 def _pv(x: float):
@@ -19,7 +21,7 @@ def _pv(x: float):
     Penalty must be between -2.0 and 2.0
     """
     if x < -2.0 or x > 2.0:
-        raise Exception("must be in the range [-2.0..2.0]")
+        raise ValueError("must be in the range [-2.0..2.0]")
 
 
 def _mtv(x: int):
@@ -28,38 +30,74 @@ def _mtv(x: int):
     Must be positive
     """
     if x <= 0:
-        raise Exception("must be positive")
+        raise ValueError("must be positive")
 
 
 class LLMConfigurationBase(abc.ABC):
     """
     Configuration for OpenAI LLM Chat Completion GPT Model
-
-    Args:
-        temperature (float): optional temperature settings for the LLM
-        max_tokens (int): optional limit on number of tokens
-        top_p (int): optional he model only takes into account the tokens with the highest probability mass
-        n (int): optional How many completions to generate for each prompt
-        presence_penalty (float): optional, impacts how the model penalizes new tokens based on whether
-            they have appeared in the text so far
-        frequency_penalty (float): optional, impacts how the model penalizes new tokens based on their existing
-            frequency in the text.
     """
 
-    temperature: Parameter[float]
-    max_tokens: Parameter[int]
-    top_p: Parameter[float]
-    n: Parameter[int]
-    presence_penalty: Parameter[float]
-    frequency_penalty: Parameter[float]
-
     def __init__(self):
-        self.temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
-        self.max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
-        self.top_p = Parameter.float(name="top_p", required=False)
-        self.n = Parameter.int(name="n", required=False, default=1)
-        self.presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=_pv)
-        self.frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
+        self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
+        self._max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
+        self._top_p = Parameter.float(name="top_p", required=False)
+        self._n = Parameter.int(name="n", required=False, default=1)
+        self._presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=_pv)
+        self._frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
+
+    @property
+    def temperature(self) -> Parameter[float]:
+        """
+        temperature settings for the LLM.
+        Ranges from 0.0 to 2.0.
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-temperature
+        """
+        return self._temperature
+
+    @property
+    def top_p(self) -> Parameter[float]:
+        """
+        The model only takes into account the tokens with the highest probability mass.
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-top_p
+        """
+        return self._top_p
+
+    @property
+    def max_tokens(self) -> Parameter[int]:
+        """
+        Limit on number of tokens
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-max_tokens
+        """
+        return self._max_tokens
+
+    @property
+    def n(self) -> Parameter[int]:
+        """
+        How many completions to generate for each prompt.
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-n
+        """
+        return self._n
+
+    @property
+    def presence_penalty(self) -> Parameter[float]:
+        """
+        Positive values penalize new tokens based on whether they appear in the text so far,
+        increasing the model's likelihood to talk about new topics.
+        Number between -2.0 and 2.0
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-presence_penalty
+        """
+        return self._presence_penalty
+
+    @property
+    def frequency_penalty(self) -> Parameter[float]:
+        """
+        Positive values penalize new tokens based on their existing frequency in the text so far,
+        decreasing the model's likelihood to repeat the same line verbatim.
+        Number between -2.0 and 2.0
+        See: https://platform.openai.com/docs/api-reference/completions/create#completions-create-frequency_penalty
+        """
+        return self._frequency_penalty
 
     def read_env(self, env_var_prefix: str):
         self.temperature.from_env(env_var_prefix + "LLM_TEMPERATURE")
@@ -71,16 +109,15 @@ class LLMConfigurationBase(abc.ABC):
 
     def build_default_payload(self) -> dict[str, Any]:
         payload: dict[str, Any] = {}
-        if self.temperature.is_some():
-            payload.setdefault(self.temperature.name, self.temperature.unwrap())
-        if self.max_tokens.is_some():
-            payload.setdefault(self.max_tokens.name, self.max_tokens.unwrap())
-        if self.top_p.is_some():
-            payload.setdefault(self.top_p.name, self.top_p.unwrap())
-        if self.n.is_some():
-            payload.setdefault(self.n.name, self.n.unwrap())
-        if self.presence_penalty.is_some():
-            payload.setdefault(self.presence_penalty.name, self.presence_penalty.unwrap())
-        if self.frequency_penalty.is_some():
-            payload.setdefault(self.frequency_penalty.name, self.frequency_penalty.unwrap())
+
+        def add_param(parameter: Parameter):
+            if parameter.is_some():
+                payload.setdefault(parameter.name, parameter.unwrap())
+
+        add_param(self._temperature)
+        add_param(self._max_tokens)
+        add_param(self._top_p)
+        add_param(self._n)
+        add_param(self._presence_penalty)
+        add_param(self._frequency_penalty)
         return payload
