@@ -1,11 +1,10 @@
-import os
 import unittest
 
 import dotenv
 
 from council.contexts import LLMContext
-from council.llm import AzureLLM, LLMMessage, LLMException
-from council.utils import ParameterValueException
+from council.llm import AzureLLM, LLMMessage, LLMException, LLMCallTimeoutException
+from council.utils import ParameterValueException, OsEnviron
 
 
 class TestLlmAzure(unittest.TestCase):
@@ -39,41 +38,29 @@ class TestLlmAzure(unittest.TestCase):
             self.assertIn("censored", str(e))
 
     def test_max_token(self):
-        os.environ["AZURE_LLM_MAX_TOKENS"] = "5"
-
-        try:
+        with OsEnviron("AZURE_LLM_MAX_TOKENS", "5"):
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
             result = llm.post_chat_request(LLMContext.empty(), messages)
             self.assertTrue(len(result.first_choice.replace(" ", "")) <= 5 * 5)
-        finally:
-            del os.environ["AZURE_LLM_MAX_TOKENS"]
-
-        self.assertEquals(os.getenv("AZURE_LLM_MAX_TOKENS"), None)
 
     def test_choices(self):
-        os.environ["AZURE_LLM_N"] = "3"
-        os.environ["AZURE_LLM_TEMPERATURE"] = "1.0"
-
-        try:
+        with OsEnviron("AZURE_LLM_N", "3"), OsEnviron("AZURE_LLM_TEMPERATURE", "1.0"):
             llm = AzureLLM.from_env()
             messages = [LLMMessage.user_message("Give me an example of a currency")]
             result = llm.post_chat_request(LLMContext.empty(), messages)
             self.assertEquals(3, len(result.choices))
             [print("\n- Choice:" + choice) for choice in result.choices]
-        finally:
-            del os.environ["AZURE_LLM_N"]
-            del os.environ["AZURE_LLM_TEMPERATURE"]
-
-        self.assertEquals(os.getenv("AZURE_LLM_N"), None)
-        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
 
     def test_invalid_temperature(self):
-        os.environ["AZURE_LLM_TEMPERATURE"] = "3.5"
+        with OsEnviron("AZURE_LLM_TEMPERATURE", "3.5"):
+            with self.assertRaises(ParameterValueException) as cm:
+                _ = AzureLLM.from_env()
+            print(cm.exception)
 
-        with self.assertRaises(ParameterValueException) as cm:
-            _ = AzureLLM.from_env()
-        print(cm.exception)
-        del os.environ["AZURE_LLM_TEMPERATURE"]
-
-        self.assertEquals(os.getenv("AZURE_LLM_TEMPERATURE"), None)
+    def test_time_out(self):
+        with OsEnviron("AZURE_LLM_TIMEOUT", "1"):
+            llm = AzureLLM.from_env()
+            messages = [LLMMessage.user_message("Give a full explanation of quantum intrication ")]
+            with self.assertRaises(LLMCallTimeoutException):
+                _ = llm.post_chat_request(LLMContext.empty(), messages)
