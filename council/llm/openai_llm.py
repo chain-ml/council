@@ -25,8 +25,7 @@ class OpenAIChatCompletionsModelProvider:
 
         timeout = self.config.timeout.unwrap()
         try:
-            with httpx.Client() as client:
-                client.timeout.read = timeout
+            with httpx.Client(timeout=timeout) as client:
                 return client.post(url=uri, headers=self._headers, json=payload)
         except TimeoutException as e:
             raise LLMCallTimeoutException(timeout) from e

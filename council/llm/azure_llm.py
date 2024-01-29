@@ -26,8 +26,7 @@ class AzureOpenAIChatCompletionsModelProvider:
 
         timeout = self.config.timeout.value
         try:
-            with httpx.Client() as client:
-                client.timeout.read = timeout
+            with httpx.Client(timeout=timeout) as client:
                 return client.post(url=self._uri, headers=headers, params=params, json=payload)
         except TimeoutException as e:
             raise LLMCallTimeoutException(timeout) from e
