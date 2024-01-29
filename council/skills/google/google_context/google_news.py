@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 from typing import Optional, List, Any
@@ -20,11 +21,21 @@ class GoogleNewsSearchEngine(ContextProvider):
 
     suffix: str = ""
 
-    def __init__(self, period: str, suffix: str):
+    def __init__(
+        self, period: Optional[str], suffix: str, start: Optional[datetime] = None, end: Optional[datetime] = None
+    ):
         super().__init__("google name")
-        self.google_news = GoogleNews(period=period)
+        self.google_news = GoogleNews()
+        if period is not None:
+            self.google_news.set_period(period)
+        elif start is not None:
+            if end is None:
+                end = datetime.now()
+            self.google_news.set_time_range(start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+
         self.suffix = suffix
         self.google_news.enableException(enable=True)
+        self._max_page_num = 5
 
     def execute_impl(self, query: str, nb_results: int) -> list[ResponseReference]:
         self.google_news.clear()
@@ -32,7 +43,7 @@ class GoogleNewsSearchEngine(ContextProvider):
         try:
             self.google_news.search(f"{query} {self.suffix}".replace(" ", "+"))
             page_num = 1
-            while len(results) < nb_results:
+            while len(results) < nb_results and page_num <= self._max_page_num:
                 self.google_news.get_page(page_num)
                 google_news_result = self.google_news.results()
                 if len(google_news_result) == 0:
@@ -57,11 +68,16 @@ class GoogleNewsSearchEngine(ContextProvider):
 
     @staticmethod
     def from_result(result: dict) -> Optional[ResponseReference]:
-        title = result.get("title", None)
-        url = result.get("link", None)
-        if title is not None and url is not None:
-            snippet = result.get("desc", None)
-            date = result.get("date", None)
-            return ResponseReference(title=title, url=url, snippet=snippet, date=date)
+        title: Optional[str] = result.get("title", None)
+        if title is None or title == "":
+            return None
+        url: Optional[str] = result.get("link", None)
+        if url is None or url == "":
+            return None
 
-        return None
+        date = result.get("date", None)
+        if date is None or date == "":
+            return None
+
+        snippet = result.get("desc", None)
+        return ResponseReference(title=title, url=url, snippet=snippet, date=date)
