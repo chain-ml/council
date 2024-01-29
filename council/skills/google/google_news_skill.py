@@ -1,3 +1,6 @@
+from typing import Optional
+from datetime import datetime
+
 import json
 
 from council.contexts import ChatMessage, SkillContext
@@ -11,9 +14,16 @@ class GoogleNewsSkill(SkillBase):
 
     """
 
-    def __init__(self, period="90d", nb_results=5, suffix: str = ""):
+    def __init__(
+        self,
+        suffix: str = "",
+        nb_results=5,
+        period: Optional[str] = "90d",
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
+    ):
         super().__init__("gnews")
-        self.gn = GoogleNewsSearchEngine(period=period, suffix=suffix)
+        self.gn = GoogleNewsSearchEngine(period=period, suffix=suffix, start=start, end=end)
         self.nb_results = nb_results
 
     def execute(self, context: SkillContext) -> ChatMessage:

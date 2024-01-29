@@ -44,6 +44,29 @@ class TestBase(unittest.TestCase):
             self.assertEqual(len(d["snippet"]), 0)
             self.assertTrue(is_within_period(d["date"], 15))
 
+    def test_gnews_skill_range(self):
+        context = ChainContext.from_user_message("launch of Space Shuttle Endeavour", Budget(duration=10))
+        context.chat_history.add_user_message("STS-134")
+
+        expected_result_count = 4
+        skill = GoogleNewsSkill(
+            suffix="Space",
+            nb_results=expected_result_count,
+            period=None,
+            start=datetime(2011, 5, 1),
+            end=datetime(2011, 5, 30),
+        )
+        result = skill.execute(SkillContext.from_chain_context(context, Option.none()))
+        self.assertTrue(result.is_ok)
+
+        json_loads = json.loads(result.data)
+        self.assertLessEqual(expected_result_count, len(json_loads))
+        for d in json_loads:
+            self.assertGreater(len(d["title"]), 0)
+            self.assertGreater(len(d["url"]), 0)
+            self.assertEqual(len(d["snippet"]), 0)
+            # self.assertTrue(is_within_period(d["date"], 15))
+
     def test_gsearch_skill(self):
         context = ChainContext.from_user_message("USD", budget=Budget(duration=10))
 
