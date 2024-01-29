@@ -83,7 +83,7 @@ class ExecutionLogEntry:
         }
 
         if self._error is not None:
-            result["error"] = self._error
+            result["error"] = f"{self._error.__class__.__name__}: {self._error}"
 
         if self._node is not None:
             result["node"] = self._node.render_as_dict(include_children=False)
