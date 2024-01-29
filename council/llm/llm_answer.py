@@ -1,6 +1,6 @@
 from __future__ import annotations
 import inspect
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -126,6 +126,17 @@ class LLMAnswer:
         if len(missing_keys) > 0:
             raise LLMParsingException(f"Missing {missing_keys} in response.")
         return properties_dict
+
+    def parse_yaml_list(self, bloc: str) -> List[Dict[str, Any]]:
+        result = []
+        d = yaml.safe_load(bloc)
+        for item in d:
+            properties_dict = {**item}
+            missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
+            if len(missing_keys) > 0:
+                raise LLMParsingException(f"Missing {missing_keys} in response.")
+            result.append(properties_dict)
+        return result
 
     def parse_yaml_bloc(self, bloc: str) -> Dict[str, Any]:
         code_bloc = CodeParser.find_first(language="yaml", text=bloc)

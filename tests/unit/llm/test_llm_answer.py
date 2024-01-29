@@ -26,11 +26,25 @@ class TestLLMFallBack(unittest.TestCase):
         llma = LLMAnswer(Specialist)
 
         bloc = """
-    ```yaml
-    ControllerScore:
-      name: first
-      score: 10
-      instructions: do this
-      justification: because
-    ```"""
-        print(llma.parse_yaml_bloc(bloc))
+```yaml
+name: first
+score: 10
+instructions: do this
+justification: because
+```
+"""
+        result = llma.parse_yaml_bloc(bloc)
+        instance = Specialist(**result)
+        self.assertEqual(instance.name, "first")
+
+    def test_parse_dict(self):
+        instance = LLMAnswer(Specialist)
+        bloc = """
+- name: first
+  score: 10
+  instructions:
+  - do
+  - this 
+  justification: because
+"""
+        print(instance.parse_yaml_list(bloc))
