@@ -45,7 +45,7 @@ class TestBase(unittest.TestCase):
             self.assertTrue(is_within_period(d["date"], 15))
 
     def test_gnews_skill_range(self):
-        context = ChainContext.from_user_message("launch of Space Shuttle Endeavour", Budget(duration=10))
+        context = ChainContext.from_user_message("last launch of Space Shuttle Endeavour", Budget(duration=10))
         context.chat_history.add_user_message("STS-134")
 
         expected_result_count = 4
@@ -65,7 +65,6 @@ class TestBase(unittest.TestCase):
             self.assertGreater(len(d["title"]), 0)
             self.assertGreater(len(d["url"]), 0)
             self.assertEqual(len(d["snippet"]), 0)
-            # self.assertTrue(is_within_period(d["date"], 15))
 
     def test_gsearch_skill(self):
         context = ChainContext.from_user_message("USD", budget=Budget(duration=10))
