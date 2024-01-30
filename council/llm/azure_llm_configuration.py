@@ -88,9 +88,9 @@ class AzureLLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_spec(spec: LLMConfigSpec) -> AzureLLMConfiguration:
-        api_key = spec.provider.get_value("apiKey", required=True)
-        deployment_name = spec.provider.get_value("deploymentName", required=True)
-        api_base = spec.provider.get_value("apiBase", required=True)
+        api_key: str = spec.provider.must_get_value("apiKey")
+        deployment_name: str = spec.provider.must_get_value("deploymentName")
+        api_base: str = spec.provider.must_get_value("apiBase")
         config = AzureLLMConfiguration(api_key=api_key, api_base=str(api_base), deployment_name=str(deployment_name))
 
         if spec.parameters is not None:

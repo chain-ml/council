@@ -74,8 +74,8 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_spec(spec: LLMConfigSpec) -> OpenAILLMConfiguration:
-        api_key = spec.provider.get_value("apiKey", required=True)
-        model = spec.provider.get_value("model", required=True)
+        api_key: str = spec.provider.must_get_value("apiKey")
+        model: str = spec.provider.must_get_value("model")
 
         config = OpenAILLMConfiguration(api_key=api_key, model=str(model))
         if spec.parameters is not None:

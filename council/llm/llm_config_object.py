@@ -55,6 +55,9 @@ class LLMProvider:
             result[LLMProviders.Anthropic] = self._specs
         return result
 
+    def must_get_value(self, key: str) -> Any:
+        return self.get_value(key=key, required=True)
+
     def get_value(self, key: str, required: bool = False) -> Optional[Any]:
         maybe_value = self._specs.get(key, None)
         if maybe_value is None and required:

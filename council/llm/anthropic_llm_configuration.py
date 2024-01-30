@@ -126,9 +126,9 @@ class AnthropicLLMConfiguration:
 
     @staticmethod
     def from_spec(spec: LLMConfigSpec) -> AnthropicLLMConfiguration:
-        api_key = spec.provider.get_value("apiKey", required=True)
-        model = spec.provider.get_value("model", required=True)
-        max_tokens = spec.provider.get_value("maxTokens", required=True)
+        api_key = spec.provider.must_get_value("apiKey")
+        model = spec.provider.must_get_value("model")
+        max_tokens = spec.provider.must_get_value("maxTokens")
         config = AnthropicLLMConfiguration(model=str(model), api_key=str(api_key), max_tokens=int(max_tokens))
 
         if spec.parameters is not None:
