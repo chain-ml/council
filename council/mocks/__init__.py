@@ -50,9 +50,10 @@ class MockTokenCounter(LLMessageTokenCounterBase):
         result = 0
         for msg in messages:
             result += len(msg.content)
-
-        if 0 < self._limit < result:
-            raise LLMTokenLimitException(token_count=result, limit=self._limit, model="mock")
+            if 0 < self._limit < result:
+                raise LLMTokenLimitException(
+                    token_count=result, limit=self._limit, model="mock", llm_name=f"{self.__class__.__name__}"
+                )
         return result
 
 
@@ -106,7 +107,7 @@ class MockLLM(LLMBase):
 
 
 class MockErrorLLM(LLMBase):
-    def __init__(self, exception: LLMException = LLMException("From Mock")):
+    def __init__(self, exception: LLMException = LLMException("From Mock", "mock")):
         super().__init__()
         self.exception = exception
 

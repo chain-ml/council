@@ -25,7 +25,7 @@ class TestLLMFallBack(unittest.TestCase):
         self.assertEqual("Test", r.first_choice)
 
     def test_fallback_with_retryable_error(self):
-        m = MockErrorLLM(exception=LLMCallException(503, "Service unavailable"))
+        m = MockErrorLLM(exception=LLMCallException(503, "Service unavailable", "mock-503"))
         fb = MockLLM.from_response("FallBack")
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=3)
@@ -34,7 +34,7 @@ class TestLLMFallBack(unittest.TestCase):
         self.assertEqual("FallBack", r.first_choice)
 
     def test_fallback_with_non_retryable_error(self):
-        m = MockErrorLLM(exception=LLMCallException(401, "Unauthorized"))
+        m = MockErrorLLM(exception=LLMCallException(401, "Unauthorized", "mock-401"))
         fb = MockLLM.from_response("FallBack")
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=1000)
@@ -43,8 +43,8 @@ class TestLLMFallBack(unittest.TestCase):
         self.assertEqual("FallBack", r.first_choice)
 
     def test_error(self):
-        m = MockErrorLLM(exception=LLMCallException(401, "Unauthorized"))
-        fb = MockErrorLLM(exception=LLMCallException(403, "Forbidden"))
+        m = MockErrorLLM(exception=LLMCallException(401, "Unauthorized", "mock-401"))
+        fb = MockErrorLLM(exception=LLMCallException(403, "Forbidden", "mock-403"))
 
         fb_llm = LLMFallback(m, fb, retry_before_fallback=1000)
 

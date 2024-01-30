@@ -14,10 +14,11 @@ class OpenAIChatCompletionsModelProvider:
     Represents an OpenAI language model hosted on Azure.
     """
 
-    def __init__(self, config: OpenAILLMConfiguration):
+    def __init__(self, config: OpenAILLMConfiguration, name: Optional[str] = None) -> None:
         self.config = config
         bearer = f"Bearer {config.api_key.unwrap()}"
         self._headers = {"Authorization": bearer, "Content-Type": "application/json"}
+        self._name = name
 
     def post_request(self, payload: dict[str, Any]) -> httpx.Response:
         uri = "https://api.openai.com/v1/chat/completions"
@@ -27,9 +28,9 @@ class OpenAIChatCompletionsModelProvider:
             with httpx.Client(timeout=timeout) as client:
                 return client.post(url=uri, headers=self._headers, json=payload)
         except TimeoutException as e:
-            raise LLMCallTimeoutException(timeout) from e
+            raise LLMCallTimeoutException(timeout=timeout, llm_name=self._name) from e
         except HTTPStatusError as e:
-            raise LLMCallException(code=e.response.status_code, error=e.response.text) from e
+            raise LLMCallException(code=e.response.status_code, error=e.response.text, llm_name=self._name) from e
 
 
 class OpenAILLM(OpenAIChatCompletionsModel):
@@ -38,9 +39,10 @@ class OpenAILLM(OpenAIChatCompletionsModel):
     """
 
     def __init__(self, config: OpenAILLMConfiguration, name: Optional[str] = None):
+        name = name or f"{self.__class__.__name__}"
         super().__init__(
             config,
-            OpenAIChatCompletionsModelProvider(config).post_request,
+            OpenAIChatCompletionsModelProvider(config, name).post_request,
             token_counter=OpenAITokenCounter.from_model(config.model.unwrap_or("")),
             name=name,
         )

@@ -15,7 +15,6 @@ def test_openai_from_yaml():
 
         llm = OpenAILLM.from_config(actual)
         assert isinstance(llm, OpenAILLM)
-        # assert llm.config.timeout.value == 60
         assert llm.config.temperature.value == 0.5
         assert llm.config.n.value == 3
 
@@ -29,8 +28,6 @@ def test_azure_from_yaml():
 
         llm = AzureLLM.from_config(actual)
         assert isinstance(llm, AzureLLM)
-        # assert llm.config.timeout.value == 90
-        # assert llm.config.api_base.value == "https://chainml"
 
 
 def test_anthropic_from_yaml():
