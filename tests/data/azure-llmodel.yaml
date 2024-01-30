@@ -1,0 +1,19 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: an-azure-deployed-model
+  labels:
+    provider: Azure
+spec:
+  description: "Model used to do XYZ"
+  provider:
+    name: CML-Azure
+    azureSpec:
+      deploymentName: gpt-35-turbo
+      apiVersion: "2023-05-15"
+      apiBase:
+        fromEnvVar: AZURE_LLM_API_BASE
+      timeout: 90
+      apiKey:
+        fromEnvVar: AZURE_LLM_API_KEY
+  parameters:

@@ -28,9 +28,10 @@ class LLMBase(Monitorable, abc.ABC):
     Abstract base class representing a language model.
     """
 
-    def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None):
-        super().__init__("llm")
+    def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None, name: Optional[str] = None):
+        super().__init__(name or "llm")
         self._token_counter = token_counter
+        self._name = name or f"llm_{self.__class__.__name__}"
 
     def post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         """
@@ -52,17 +53,17 @@ class LLMBase(Monitorable, abc.ABC):
         if self._token_counter is not None:
             _ = self._token_counter.count_messages_token(messages=messages)
 
-        context.logger.debug('message="starting execution of llm request"')
+        context.logger.debug(f'message="starting execution of llm {self._name} request"')
         try:
             with context:
                 result = self._post_chat_request(context, messages, **kwargs)
                 context.budget.add_consumptions(result.consumptions)
                 return result
         except Exception as e:
-            context.logger.exception(f'message="failed execution of llm request" exception="{e}" ')
+            context.logger.exception(f'message="failed execution of llm {self._name} request" exception="{e}" ')
             raise e
         finally:
-            context.logger.debug('message="done execution of llm request"')
+            context.logger.debug(f'message="done execution of llm {self._name} request"')
 
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:

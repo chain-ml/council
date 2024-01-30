@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from typing import Optional, Any
+
+from council.llm import LLMConfigSpec
 from council.utils import read_env_str, Parameter, read_env_int, greater_than_validator, prefix_validator
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
@@ -119,4 +122,27 @@ class AnthropicLLMConfiguration:
         max_tokens = read_env_int(_env_var_prefix + "LLM_MAX_TOKENS", required=False, default=300).unwrap()
         config = AnthropicLLMConfiguration(model=model, api_key=api_key, max_tokens=max_tokens)
         config._read_optional_env()
+        return config
+
+    @staticmethod
+    def from_spec(spec: LLMConfigSpec) -> AnthropicLLMConfiguration:
+        api_key = spec.provider.get_value("apiKey", required=True)
+        model = spec.provider.get_value("model", required=True)
+        max_tokens = spec.provider.get_value("maxTokens", required=True)
+        config = AnthropicLLMConfiguration(model=str(model), api_key=str(api_key), max_tokens=int(max_tokens))
+
+        if spec.parameters is not None:
+            value: Optional[Any] = spec.parameters.get("temperature", None)
+            if value is not None:
+                config.temperature.set(float(value))
+            value = spec.parameters.get("topP", None)
+            if value is not None:
+                config.top_p.set(float(value))
+            value = spec.parameters.get("topK", None)
+            if value is not None:
+                config.top_k.set(int(value))
+
+        timeout = spec.provider.get_value("timeout")
+        if timeout is not None:
+            config.timeout.set(int(timeout))
         return config

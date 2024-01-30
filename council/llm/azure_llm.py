@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Optional
 
 import httpx
@@ -5,14 +6,13 @@ from httpx import TimeoutException, HTTPStatusError
 
 from . import OpenAIChatCompletionsModel, LLMCallTimeoutException, LLMCallException
 from .azure_llm_configuration import AzureLLMConfiguration
+from .llm_config_object import LLMConfigObject, LLMProviders
 
 
 class AzureOpenAIChatCompletionsModelProvider:
     """
     Represents an OpenAI language model hosted on Azure.
     """
-
-    config: AzureLLMConfiguration
 
     def __init__(self, config: AzureLLMConfiguration):
         self.config = config
@@ -39,12 +39,19 @@ class AzureLLM(OpenAIChatCompletionsModel):
     Represents an OpenAI language model hosted on Azure.
     """
 
-    config: AzureLLMConfiguration
-
-    def __init__(self, config: AzureLLMConfiguration):
-        super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config).post_request, None)
+    def __init__(self, config: AzureLLMConfiguration, name: Optional[str] = None):
+        super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config).post_request, None, name)
 
     @staticmethod
-    def from_env(deployment_name: Optional[str] = None) -> "AzureLLM":
+    def from_env(deployment_name: Optional[str] = None) -> AzureLLM:
         config: AzureLLMConfiguration = AzureLLMConfiguration.from_env(deployment_name)
         return AzureLLM(config)
+
+    @staticmethod
+    def from_config(config_object: LLMConfigObject) -> AzureLLM:
+        provider = config_object.spec.provider
+        if not provider.is_of_kind(LLMProviders.Azure):
+            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Azure}")
+
+        config = AzureLLMConfiguration.from_spec(config_object.spec)
+        return AzureLLM(config=config, name=config_object.metadata.name)

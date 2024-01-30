@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Type, Callable, TypeVar
+from typing import Optional, Type, Callable, TypeVar, Any
 
 from council.utils import Option
 
@@ -94,9 +94,9 @@ def _read_env(name: str, required: bool, default: Optional[T], convert: Callable
 
 
 class OsEnviron:
-    def __init__(self, name: str, value: Optional[str] = None):
+    def __init__(self, name: str, value: Optional[Any] = None):
         self.name = name
-        self.value = value
+        self.value = str(value) if value is not None else None
         self.previous_value = None
 
     def __enter__(self):

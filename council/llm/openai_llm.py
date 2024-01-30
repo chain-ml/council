@@ -1,10 +1,11 @@
-import httpx
-
+from __future__ import annotations
 from typing import Any, Optional
 
+import httpx
 from httpx import TimeoutException, HTTPStatusError
 
 from . import OpenAIChatCompletionsModel, OpenAITokenCounter, LLMCallTimeoutException, LLMCallException
+from .llm_config_object import LLMConfigObject, LLMProviders
 from .openai_llm_configuration import OpenAILLMConfiguration
 
 
@@ -12,8 +13,6 @@ class OpenAIChatCompletionsModelProvider:
     """
     Represents an OpenAI language model hosted on Azure.
     """
-
-    config: OpenAILLMConfiguration
 
     def __init__(self, config: OpenAILLMConfiguration):
         self.config = config
@@ -38,16 +37,23 @@ class OpenAILLM(OpenAIChatCompletionsModel):
     Represents an OpenAI large language model hosted on OpenAI.
     """
 
-    config: OpenAILLMConfiguration
-
-    def __init__(self, config: OpenAILLMConfiguration):
+    def __init__(self, config: OpenAILLMConfiguration, name: Optional[str] = None):
         super().__init__(
             config,
             OpenAIChatCompletionsModelProvider(config).post_request,
             token_counter=OpenAITokenCounter.from_model(config.model.unwrap_or("")),
+            name=name,
         )
 
     @staticmethod
-    def from_env(model: Optional[str] = None) -> "OpenAILLM":
+    def from_env(model: Optional[str] = None) -> OpenAILLM:
         config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env(model=model)
         return OpenAILLM(config)
+
+    @staticmethod
+    def from_config(config_object: LLMConfigObject) -> OpenAILLM:
+        provider = config_object.spec.provider
+        if not provider.is_of_kind(LLMProviders.OpenAI):
+            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.OpenAI}")
+        config = OpenAILLMConfiguration.from_spec(config_object.spec)
+        return OpenAILLM(config=config, name=config_object.metadata.name)
