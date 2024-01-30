@@ -3,7 +3,7 @@ from council.llm import get_llm_from_config, LLMFallback
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
-from unit import get_data_filename, LLModels
+from .. import get_data_filename, LLModels
 
 
 def test_openai_from_yaml():
