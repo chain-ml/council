@@ -20,7 +20,7 @@ class LLMFallback(LLMBase):
     _llm: Monitored[LLMBase]
     _fallback: Monitored[LLMBase]
 
-    def __init__(self, llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2):
+    def __init__(self, llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2) -> None:
         super().__init__()
         self._llm = self.new_monitor("primary", llm)
         self._fallback = self.new_monitor("fallback", fallback)
@@ -56,7 +56,7 @@ class LLMFallback(LLMBase):
                     raise e
             except Exception:
                 raise
-        raise LLMException("Main LLM failed")
+        raise LLMException(message=f"Main LLM failed after {retry_count} retries", llm_name=self._llm.name)
 
     @staticmethod
     def _is_retryable(code: int) -> bool:

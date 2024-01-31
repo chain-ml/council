@@ -1,0 +1,20 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: an-openai-deployed-model
+  labels:
+    provider: OpenAI
+spec:
+  description: "Model used to do ABC"
+  provider:
+    name: CML-OpenAI
+    openAISpec:
+      model: gpt-4-1106-preview
+      timeout: 60
+      apiKey: sk-my-api-key
+# Alternatively, get the api key from an environment variable
+#      apiKey:
+#        fromEnvVar: OPENAI_API_KEY
+  parameters:
+    n: 3
+    temperature: 0.5

@@ -1,0 +1,19 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: an-anthropic-deployed-model
+  labels:
+    provider: Anthropic
+spec:
+  description: "Model used to do RST"
+  provider:
+    name: CML-Anthropic
+    anthropicSpec:
+      model: claude-2
+      timeout: 60
+      maxTokens: 8192
+      apiKey:
+        fromEnvVar: ANTHROPIC_API_KEY
+  parameters:
+    temperature: 0.5
+    topK: 8

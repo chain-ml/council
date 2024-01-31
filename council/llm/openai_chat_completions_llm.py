@@ -144,12 +144,14 @@ class OpenAIChatCompletionsModel(LLMBase):
     Represents an OpenAI language model hosted on Azure.
     """
 
-    config: LLMConfigurationBase
-
     def __init__(
-        self, config: LLMConfigurationBase, provider: Provider, token_counter: Optional[LLMessageTokenCounterBase]
+        self,
+        config: LLMConfigurationBase,
+        provider: Provider,
+        token_counter: Optional[LLMessageTokenCounterBase],
+        name: Optional[str] = None,
     ):
-        super().__init__(token_counter)
+        super().__init__(token_counter, name)
         self.config = config
         self._provider = provider
 
@@ -159,15 +161,16 @@ class OpenAIChatCompletionsModel(LLMBase):
         for key, value in kwargs.items():
             payload[key] = value
 
-        context.logger.debug(f'message="Sending chat GPT completions request" payload="{payload}"')
+        context.logger.debug(f'message="Sending chat GPT completions request to {self._name}" payload="{payload}"')
         r = self._post_request(payload)
-        context.logger.debug(f'message="got chat GPT completions result" id="{r.id}" model="{r.model}" {r.usage}')
+        context.logger.debug(
+            f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
+        )
         return LLMResult(choices=[c.message.content for c in r.choices], consumptions=r.to_consumptions())
 
     def _post_request(self, payload) -> OpenAIChatCompletionsResult:
         response = self._provider.__call__(payload)
         if response.status_code != httpx.codes.OK:
-            raise LLMCallException(response.status_code, response.text)
+            raise LLMCallException(response.status_code, response.text, self._name)
 
-        r = OpenAIChatCompletionsResult.from_dict(response.json())
-        return r
+        return OpenAIChatCompletionsResult.from_dict(response.json())

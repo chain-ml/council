@@ -42,7 +42,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
         result += 3  # every reply is primed with <|start|>assistant<|message|>
 
         if 0 < self._limit < result:
-            raise LLMTokenLimitException(token_count=result, limit=self._limit, model=self._model)
+            raise LLMTokenLimitException(token_count=result, limit=self._limit, model=self._model, llm_name=None)
 
         return result
 

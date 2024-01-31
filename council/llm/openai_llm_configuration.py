@@ -1,6 +1,8 @@
+from __future__ import annotations
 from typing import Any, Optional
 
 from council.llm import LLMConfigurationBase
+from council.llm.llm_config_object import LLMConfigSpec
 from council.utils import read_env_str, read_env_int, Parameter, greater_than_validator, prefix_validator
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
@@ -60,7 +62,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         return payload
 
     @staticmethod
-    def from_env(model: Optional[str] = None) -> "OpenAILLMConfiguration":
+    def from_env(model: Optional[str] = None) -> OpenAILLMConfiguration:
         api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
         if model is None:
             model = read_env_str(_env_var_prefix + "LLM_MODEL", required=False, default="gpt-3.5-turbo").unwrap()
@@ -68,4 +70,18 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
 
         config = OpenAILLMConfiguration(model=model, api_key=api_key, timeout=timeout)
         config.read_env(_env_var_prefix)
+        return config
+
+    @staticmethod
+    def from_spec(spec: LLMConfigSpec) -> OpenAILLMConfiguration:
+        api_key: str = spec.provider.must_get_value("apiKey")
+        model: str = spec.provider.must_get_value("model")
+
+        config = OpenAILLMConfiguration(api_key=api_key, model=str(model))
+        if spec.parameters is not None:
+            config.from_dict(spec.parameters)
+
+        timeout = spec.provider.get_value("timeout")
+        if timeout is not None:
+            config.timeout.set(int(timeout))
         return config

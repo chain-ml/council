@@ -1,5 +1,5 @@
 import abc
-from typing import Any
+from typing import Any, Dict, Optional
 
 from council.utils.parameter import Parameter
 
@@ -121,3 +121,24 @@ class LLMConfigurationBase(abc.ABC):
         add_param(self._presence_penalty)
         add_param(self._frequency_penalty)
         return payload
+
+    def from_dict(self, values: Dict[str, Any]):
+        value: Optional[Any] = None
+        value = values.get("temperature", None)
+        if value is not None:
+            self.temperature.set(float(value))
+        value = values.get("n", None)
+        if value is not None:
+            self.n.set(int(value))
+        value = values.get("maxTokens", None)
+        if value is not None:
+            self.max_tokens.set(int(value))
+        value = values.get("topP", None)
+        if value is not None:
+            self.top_p.set(float(value))
+        value = values.get("presencePenalty", None)
+        if value is not None:
+            self.presence_penalty.set(float(value))
+        value = values.get("frequencyPenalty", None)
+        if value is not None:
+            self.frequency_penalty.set(float(value))

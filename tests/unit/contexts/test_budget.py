@@ -1,19 +1,21 @@
-import os
 import time
 import unittest
 
 from council.contexts import Budget, Consumption
+from council.utils import OsEnviron
 
 
 class TestBudget(unittest.TestCase):
     def test_default(self):
-        b = Budget.default()
-        self.assertEqual(30, b.duration)
+        with OsEnviron("COUNCIL_DEFAULT_BUDGET", None):
+            b = Budget.default()
+            self.assertEqual(30, b.duration)
 
     def test_remaining(self):
-        b = Budget.default()
-        time.sleep(0.3)
-        self.assertTrue(b.remaining_duration < 30)
+        with OsEnviron("COUNCIL_DEFAULT_BUDGET", None):
+            b = Budget.default()
+            time.sleep(0.3)
+            self.assertTrue(b.remaining_duration < 30)
 
     def test_remaining_consumption(self):
         consumption = Consumption(10, "unit", "test")
@@ -49,15 +51,9 @@ class TestBudget(unittest.TestCase):
         self.assertTrue(b.is_expired())
 
     def test_default_env_variable(self):
-        os.environ["COUNCIL_DEFAULT_BUDGET"] = "60"
-
-        try:
+        with OsEnviron("COUNCIL_DEFAULT_BUDGET", 60):
             b = Budget.default()
             self.assertEqual(60, b.duration)
-        finally:
-            del os.environ["COUNCIL_DEFAULT_BUDGET"]
-
-        self.assertEquals(None, os.getenv("COUNCIL_DEFAULT_BUDGET", None))
 
     def test_add_consumptions(self):
         first = Consumption(10, "first", "count")

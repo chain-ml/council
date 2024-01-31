@@ -1,6 +1,8 @@
+from __future__ import annotations
 from typing import Optional
 
 from council.llm import LLMConfigurationBase
+from council.llm.llm_config_object import LLMConfigSpec
 from council.utils import Parameter, read_env_str, greater_than_validator, not_empty_validator
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
@@ -73,7 +75,7 @@ class AzureLLMConfiguration(LLMConfigurationBase):
         self._timeout.from_env(_env_var_prefix + "LLM_TIMEOUT")
 
     @staticmethod
-    def from_env(deployment_name: Optional[str] = None) -> "AzureLLMConfiguration":
+    def from_env(deployment_name: Optional[str] = None) -> AzureLLMConfiguration:
         api_key = read_env_str(_env_var_prefix + "LLM_API_KEY").unwrap()
         api_base = read_env_str(_env_var_prefix + "LLM_API_BASE").unwrap()
         if deployment_name is None:
@@ -82,4 +84,18 @@ class AzureLLMConfiguration(LLMConfigurationBase):
         config = AzureLLMConfiguration(api_key=api_key, api_base=api_base, deployment_name=deployment_name)
         config.read_env(env_var_prefix=_env_var_prefix)
         config._read_optional_env()
+        return config
+
+    @staticmethod
+    def from_spec(spec: LLMConfigSpec) -> AzureLLMConfiguration:
+        api_key: str = spec.provider.must_get_value("apiKey")
+        deployment_name: str = spec.provider.must_get_value("deploymentName")
+        api_base: str = spec.provider.must_get_value("apiBase")
+        config = AzureLLMConfiguration(api_key=api_key, api_base=str(api_base), deployment_name=str(deployment_name))
+
+        if spec.parameters is not None:
+            config.from_dict(spec.parameters)
+        timeout = spec.provider.get_value("timeout")
+        if timeout is not None:
+            config.timeout.set(int(timeout))
         return config
