@@ -107,6 +107,10 @@ class LLMConfigSpec(DataObjectSpecBase):
 
 
 class LLMConfigObject(DataObject[LLMConfigSpec]):
+    """
+    Helper class to instantiate an LLM from a YAML file
+    """
+
     @classmethod
     def from_dict(cls, values: Dict[str, Any]) -> LLMConfigObject:
         return super()._from_dict(LLMConfigSpec, values)
