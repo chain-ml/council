@@ -15,29 +15,12 @@ The following code illustrates the way an LLM could be loaded from a YAML file.
 ```{eval-rst}
 .. testcode::
 
-    from council.llm import AzureLLM, LLMConfigObject
+    from council.llm import OpenAILLM, LLMConfigObject
     
-    llm_config = LLMConfigObject.from_yaml("filename.yaml")
-    llm = AzureLLM.from_config(llm_config) 
+    llm_config = LLMConfigObject.from_yaml("data/openai-llm-model.yaml")
+    llm = OpenAILLM.from_config(llm_config) 
 ```
 
-```yaml
-kind: LLMConfig
-version: 0.1
-metadata:
-  name: an-openai-deployed-model
-  labels:
-    provider: OpenAI
-spec:
-  description: "Model used to do ABC"
-  provider:
-    name: CML-OpenAI
-    openAISpec:
-      model: gpt-4-1106-preview
-      timeout: 60
-      apiKey:
-        fromEnvVar: OPENAI_API_KEY
-  parameters:
-    n: 3
-    temperature: 0.5
+```{literalinclude} ../../../data/openai-llm-model.yaml
+:language: yaml
 ```
