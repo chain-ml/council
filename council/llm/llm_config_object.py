@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import os
-import yaml
-
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import yaml
 
 from council.utils import DataObject, DataObjectSpecBase
 

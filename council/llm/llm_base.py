@@ -2,7 +2,8 @@ import abc
 from typing import Any, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext, Monitorable
-from .llm_message import LLMMessage, LLMessageTokenCounterBase
+
+from .llm_message import LLMessageTokenCounterBase, LLMMessage
 
 
 class LLMResult:
