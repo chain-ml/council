@@ -10,8 +10,11 @@
 .. autoclass:: council.llm.LLMConfigObject
 ```
 
+The following code illustrates the way an LLM could be loaded from a YAML file.
+
 ```{eval-rst}
 .. testcode::
+
     from council.llm import AzureLLM, LLMConfigObject
     
     llm_config = LLMConfigObject.from_yaml("filename.yaml")
