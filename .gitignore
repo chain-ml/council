@@ -9,3 +9,5 @@ dist
 
 ## User file
 .env
+*.pyc
+
