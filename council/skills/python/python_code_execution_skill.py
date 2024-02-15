@@ -7,6 +7,8 @@ from council.skills import SkillBase
 
 from .llm_helper import extract_code_block
 
+PYTHON_EXECUTABLE = os.environ.get("COUNCIL_PYTHON_EXECUTABLE", "python")
+
 
 class PythonCodeExecutionSkill(SkillBase):
     """
@@ -35,7 +37,7 @@ class PythonCodeExecutionSkill(SkillBase):
         last_message = context.try_last_message.unwrap("last message")
         python_code = extract_code_block(last_message.message, "python")
         context.logger.debug(f"running python code: \n {python_code}")
-        execution = subprocess.run(["python", "-c", python_code], capture_output=True, env=self._env_var)
+        execution = subprocess.run([PYTHON_EXECUTABLE, "-c", python_code], capture_output=True, env=self._env_var)
 
         return_code = execution.returncode
         stdout_bytes = execution.stdout
