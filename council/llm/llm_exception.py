@@ -58,7 +58,7 @@ class LLMCallException(LLMException):
         Returns:
             None
         """
-        super().__init__(message="Wrong status code: {code}. Reason: {error}", llm_name=llm_name)
+        super().__init__(message=f"Wrong status code: {code}. Reason: {error}", llm_name=llm_name)
         self._code = code
         self._error = error
 

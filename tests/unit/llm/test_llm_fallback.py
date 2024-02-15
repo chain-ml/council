@@ -53,3 +53,4 @@ class TestLLMFallBack(unittest.TestCase):
 
         self.assertEqual(e.exception.code, 403)
         self.assertEqual(e.exception.__cause__.code, 401)
+        self.assertIn("Wrong status code: 403", str(e.exception))
