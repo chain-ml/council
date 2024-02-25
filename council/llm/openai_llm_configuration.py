@@ -8,7 +8,7 @@ from council.utils import (
     read_env_int,
     Parameter,
     greater_than_validator,
-    prefix_validator,
+    not_empty_validator,
 )
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
@@ -33,13 +33,14 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
             timeout (int): seconds to wait for response from OpenAI before timing out
         """
         super().__init__()
-        self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gpt-"))
+        self._model = Parameter.string(name="model", required=True, value=model, validator=not_empty_validator(model))
         self._timeout = Parameter.int(
             name="timeout", required=False, default=timeout, validator=greater_than_validator(0)
         )
         self._api_key = Parameter.string(
-            name="api_key", required=True, value=api_key, validator=prefix_validator("sk-")
+            name="api_key", required=True, value=api_key, validator=not_empty_validator(api_key)
         )
+
         self._api_host = Parameter.string(
             name="api_host",
             required=False,
