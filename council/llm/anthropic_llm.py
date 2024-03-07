@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Sequence, Optional
+from typing import Any, Sequence, Optional, List, Dict
 
 from anthropic import Anthropic, APITimeoutError, APIStatusError
 from anthropic._types import NOT_GIVEN
@@ -56,18 +56,19 @@ class AnthropicLLM(LLMBase):
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         try:
-            prompt = self._to_anthropic_messages(messages)
-            completion = self._client.completions.create(
-                prompt=prompt,
+            messages_formatted = self._to_anthropic_messages_v2(messages)
+            completion = self._client.messages.create(
+                messages=messages_formatted,
                 model=self.config.model.unwrap(),
-                max_tokens_to_sample=self.config.max_tokens.unwrap(),
+                max_tokens=self.config.max_tokens.unwrap(),
                 timeout=self.config.timeout.value,
                 temperature=self.config.temperature.unwrap_or(NOT_GIVEN),
                 top_k=self.config.top_k.unwrap_or(NOT_GIVEN),
                 top_p=self.config.top_p.unwrap_or(NOT_GIVEN),
             )
-            response = completion.completion
-            return LLMResult(choices=[response], consumptions=self.to_consumptions(prompt, response))
+            response = completion.content[0].text
+            prompt_text = "\n".join([msg.content for msg in messages])
+            return LLMResult(choices=[response], consumptions=self.to_consumptions(prompt_text, response))
         except APITimeoutError as e:
             raise LLMCallTimeoutException(self.config.timeout.value, self._name) from e
         except APIStatusError as e:
@@ -83,6 +84,26 @@ class AnthropicLLM(LLMBase):
             Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
             Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
         ]
+
+    @staticmethod
+    def _to_anthropic_messages_v2(messages: Sequence[LLMMessage]) -> List[Dict[str, str]]:
+        result = []
+        temp_content = ""
+        role = "user"
+
+        for message in messages:
+            if message.is_of_role(LLMMessageRole.System):
+                temp_content += message.content
+            else:
+                temp_content += message.content
+                result.append({"role": role, "content": temp_content})
+                temp_content = ""
+                role = "assistant" if role == "user" else "user"
+
+        if temp_content:
+            result.append({"role": role, "content": temp_content})
+
+        return result
 
     @staticmethod
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> str:
