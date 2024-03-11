@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TypeVar, Generic, Optional, Callable
 
 T = TypeVar("T")
@@ -91,7 +93,7 @@ class Option(Generic[T]):
         return not self.is_none()
 
     @staticmethod
-    def some(some: T) -> "Option[T]":
+    def some(some: T) -> Option[T]:
         """
         Create a new instance with some value.
 
@@ -103,7 +105,7 @@ class Option(Generic[T]):
         return Option(some)
 
     @staticmethod
-    def none() -> "Option[T]":
+    def none() -> Option[T]:
         """
         Create a new instance with none
 
