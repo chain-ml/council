@@ -1,5 +1,4 @@
 import unittest
-from typing import Iterable, List
 
 from council.controllers.llm_controller import Specialist
 from council.llm import LLMAnswer, LLMParsingException
