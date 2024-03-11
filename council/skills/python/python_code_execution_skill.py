@@ -30,7 +30,8 @@ class PythonCodeExecutionSkill(SkillBase):
         """
 
         super().__init__("python code runner")
-        self._env_var = os.environ.copy().update(env_var or {})
+        self._env_var = os.environ.copy()
+        self._env_var.update(env_var or {})
         self._decode_stdout = decode_stdout
 
     def execute(self, context: SkillContext) -> ChatMessage:
