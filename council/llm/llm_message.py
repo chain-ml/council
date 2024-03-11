@@ -40,16 +40,16 @@ class LLMMessage:
     _role: LLMMessageRole
     _content: str
 
-    def __init__(self, role: LLMMessageRole, content: str, name: Optional[str] = None):
+    def __init__(self, role: LLMMessageRole, content: str, name: Optional[str] = None) -> None:
         """Initialize a new instance"""
         self._role = role
         self._content = content
         self._name = name
 
     @staticmethod
-    def system_message(content: str, name: Optional[str] = None) -> "LLMMessage":
+    def system_message(content: str, name: Optional[str] = None) -> LLMMessage:
         """
-        Create a new system message
+        Create a new system message instance
 
         Parameters:
             content (str): the message content
@@ -58,9 +58,9 @@ class LLMMessage:
         return LLMMessage(role=LLMMessageRole.System, content=content, name=name)
 
     @staticmethod
-    def user_message(content: str, name: Optional[str] = None) -> "LLMMessage":
+    def user_message(content: str, name: Optional[str] = None) -> LLMMessage:
         """
-        Create a new user message
+        Create a new user message instance
 
         Parameters:
             content (str): the message content
@@ -69,9 +69,9 @@ class LLMMessage:
         return LLMMessage(role=LLMMessageRole.User, content=content, name=name)
 
     @staticmethod
-    def assistant_message(content: str, name: Optional[str] = None) -> "LLMMessage":
+    def assistant_message(content: str, name: Optional[str] = None) -> LLMMessage:
         """
-        Create a new assistant message
+        Create a new assistant message instance
 
         Parameters:
             content (str): the message content
@@ -105,7 +105,7 @@ class LLMMessage:
         return self._role == role
 
     @staticmethod
-    def from_chat_message(chat_message: ChatMessage) -> Optional["LLMMessage"]:
+    def from_chat_message(chat_message: ChatMessage) -> Optional[LLMMessage]:
         """Convert :class:`~.ChatMessage` into :class:`.LLMMessage`"""
         if chat_message.kind == ChatMessageKind.User:
             return LLMMessage.user_message(chat_message.message)
@@ -114,7 +114,7 @@ class LLMMessage:
         return None
 
     @staticmethod
-    def from_chat_messages(messages: Iterable[ChatMessage]) -> List["LLMMessage"]:
+    def from_chat_messages(messages: Iterable[ChatMessage]) -> List[LLMMessage]:
         m = map(LLMMessage.from_chat_message, messages)
         return [msg for msg in m if msg is not None]
 

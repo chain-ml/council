@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 from collections.abc import Set
 from concurrent import futures
@@ -8,14 +10,14 @@ from .runner_executor import RunnerExecutor
 
 
 class RunnerBase(Monitorable, abc.ABC):
-    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor):
+    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor) -> None:
         self.run(context, executor)
 
     """
     Base runner class that handles common execution logic, including error management and timeout
     """
 
-    def fork_run_merge(self, runner: Monitored["RunnerBase"], context: ChainContext, executor: RunnerExecutor):
+    def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor):
         inner = context.fork_for(runner)
         try:
             runner.inner.run(inner, executor)

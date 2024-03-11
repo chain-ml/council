@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from typing import Any, Dict
 
@@ -60,7 +62,7 @@ class ChatMessage:
         self._is_error = is_error
 
     @staticmethod
-    def agent(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+    def agent(message: str, data: Any = None, source: str = "", is_error: bool = False) -> ChatMessage:
         """
         Helper function to create message of kind :attr:`ChatMessageKind.Agent`.
           See :meth:`ChatMessage.__init__` for details
@@ -68,7 +70,7 @@ class ChatMessage:
         return ChatMessage(message, ChatMessageKind.Agent, data, source, is_error)
 
     @staticmethod
-    def user(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+    def user(message: str, data: Any = None, source: str = "", is_error: bool = False) -> ChatMessage:
         """
         Helper function to create message of kind :attr:`ChatMessageKind.User`.
           See :meth:`ChatMessage.__init__` for details
@@ -76,7 +78,7 @@ class ChatMessage:
         return ChatMessage(message, ChatMessageKind.User, data, source, is_error)
 
     @staticmethod
-    def skill(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+    def skill(message: str, data: Any = None, source: str = "", is_error: bool = False) -> ChatMessage:
         """
         Helper function to create message of kind :attr:`ChatMessageKind.Skill`.
           See :meth:`ChatMessage.__init__` for details
@@ -84,7 +86,7 @@ class ChatMessage:
         return ChatMessage(message, ChatMessageKind.Skill, data, source, is_error)
 
     @staticmethod
-    def chain(message: str, data: Any = None, source: str = "", is_error: bool = False) -> "ChatMessage":
+    def chain(message: str, data: Any = None, source: str = "", is_error: bool = False) -> ChatMessage:
         """
         Helper function to create message of kind :attr:`ChatMessageKind.Chain`.
           See :meth:`ChatMessage.__init__` for details

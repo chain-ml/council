@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional
 
 from ._monitorable import Monitorable
@@ -20,16 +21,16 @@ class ExecutionContext:
         self._executionLog = execution_log or ExecutionLog()
         self._entry = self._executionLog.new_entry(path, node)
 
-    def _new_path(self, name: str):
+    def _new_path(self, name: str) -> str:
         return name if self._entry.source == "" else f"{self._entry.source}/{name}"
 
-    def new_from_name(self, name: str):
+    def new_from_name(self, name: str) -> ExecutionContext:
         """
         returns a new instance for the given name
         """
         return ExecutionContext(self._executionLog, self._new_path(name))
 
-    def new_for(self, monitored: Monitored) -> "ExecutionContext":
+    def new_for(self, monitored: Monitored) -> ExecutionContext:
         """
         returns a new instance for the given object
         """
