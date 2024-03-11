@@ -65,7 +65,7 @@ def _build_llm(llm_config: LLMConfigObject) -> LLMBase:
         return AzureLLM.from_config(llm_config)
     elif provider.is_of_kind(LLMProviders.OpenAI):
         return OpenAILLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.OpenAI):
-        return OpenAILLM.from_config(llm_config)
+    elif provider.is_of_kind(LLMProviders.Anthropic):
+        return AnthropicLLM.from_config(llm_config)
 
     raise ValueError(f"Provider `{provider.kind}` not supported by Council")
