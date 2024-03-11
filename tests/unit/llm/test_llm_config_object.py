@@ -18,6 +18,9 @@ def test_openai_from_yaml():
         assert llm.config.temperature.value == 0.5
         assert llm.config.n.value == 3
 
+        llm = get_llm_from_config(filename)
+        assert isinstance(llm, OpenAILLM)
+
 
 def test_azure_from_yaml():
     filename = get_data_filename(LLModels.Azure)
@@ -27,6 +30,8 @@ def test_azure_from_yaml():
         assert actual.spec.provider.name == "CML-Azure"
 
         llm = AzureLLM.from_config(actual)
+        assert isinstance(llm, AzureLLM)
+        llm = get_llm_from_config(filename)
         assert isinstance(llm, AzureLLM)
 
 
@@ -38,6 +43,9 @@ def test_anthropic_from_yaml():
         llm = AnthropicLLM.from_config(actual)
         assert isinstance(llm, AnthropicLLM)
         assert llm.config.top_k.value == 8
+
+        llm = get_llm_from_config(filename)
+        assert isinstance(llm, AnthropicLLM)
 
 
 def test_azure_with_openai_fallback_from_yaml():
