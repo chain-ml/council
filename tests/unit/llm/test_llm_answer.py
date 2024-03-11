@@ -1,7 +1,8 @@
 import unittest
+from typing import Iterable, List
 
 from council.controllers.llm_controller import Specialist
-from council.llm import LLMAnswer
+from council.llm import LLMAnswer, LLMParsingException
 
 
 class TestLLMFallBack(unittest.TestCase):
@@ -19,8 +20,12 @@ class TestLLMFallBack(unittest.TestCase):
         print(llma.parse_line("Name: first<->Score: 10<->Instructions: None<->Justification: because"))
         print(llma.parse_line("Instructions: None<->Name: first<->Score: ABC<->Justification: because"))
 
-        cs = llma.to_object("Instructions: None<->nAme: first<->Score: 10<->Justification: because")
-        self.assertEqual(cs.score, 10)
+        cs: Specialist = llma.to_object("Instructions: None<->nAme: first<->Score: 10<->Justification: because")
+        self.assertEqual(10, cs.score)
+
+        with self.assertRaises(LLMParsingException) as e:
+            _ = llma.to_object("Instructions: None<->nAme: first<->Score: 20<->Justification: because")
+        print(f"exception: {e.exception}")
 
     def test_llm_parse_yaml_answer(self):
         llma = LLMAnswer(Specialist)
