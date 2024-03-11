@@ -3,6 +3,7 @@ LLMFilter implementation.
 
 This filter uses the given `LLM` to filter the chain's responses.
 """
+
 from typing import List, Optional
 
 from council.contexts import AgentContext, ScoredChatMessage, ContextBase

@@ -3,6 +3,7 @@ LLMEvaluator implementation.
 
 This evaluator uses the given `LLM` to evaluate the chain's responses.
 """
+
 from typing import List, Optional
 
 from council.contexts import AgentContext, ChatMessage, ScoredChatMessage, ContextBase

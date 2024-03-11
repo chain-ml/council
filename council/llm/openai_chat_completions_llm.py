@@ -10,8 +10,7 @@ from council.contexts import LLMContext, Consumption
 
 
 class Provider(Protocol):
-    def __call__(self, payload: dict[str, Any]) -> httpx.Response:
-        ...
+    def __call__(self, payload: dict[str, Any]) -> httpx.Response: ...
 
 
 class Message:

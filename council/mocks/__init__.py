@@ -34,8 +34,7 @@ class MockMultipleResponses:
 
 
 class LLMMessagesToStr(Protocol):
-    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]:
-        ...
+    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]: ...
 
 
 def llm_message_content_to_str(messages: Sequence[LLMMessage]) -> Sequence[str]:

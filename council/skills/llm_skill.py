@@ -7,8 +7,7 @@ from council.skills import SkillBase
 
 
 class ReturnMessages(Protocol):
-    def __call__(self, context: SkillContext) -> List[LLMMessage]:
-        ...
+    def __call__(self, context: SkillContext) -> List[LLMMessage]: ...
 
 
 def get_chat_history(context: SkillContext) -> List[LLMMessage]:
