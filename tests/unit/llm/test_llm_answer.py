@@ -20,7 +20,7 @@ class TestLLMFallBack(unittest.TestCase):
         print(llma.parse_line("Name: first<->Score: 10<->Instructions: None<->Justification: because"))
         print(llma.parse_line("Instructions: None<->Name: first<->Score: ABC<->Justification: because"))
 
-        cs: Specialist = llma.to_object("Instructions: None<->nAme: first<->Score: 10<->Justification: because")
+        cs = llma.to_object("Instructions: None<->nAme: first<->Score: 10<->Justification: because")
         self.assertEqual(10, cs.score)
 
         with self.assertRaises(LLMParsingException) as e:
