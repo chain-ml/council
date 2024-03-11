@@ -5,11 +5,10 @@ from ..utils import read_env_str
 
 
 from .llm_config_object import LLMProvider, LLMConfigObject, LLMConfigSpec, LLMProviders
-from .llm_answer import llm_property, LLMAnswer, LLMProperty
+from .llm_answer import llm_property, LLMAnswer, LLMProperty, LLMParsingException
 from .llm_exception import LLMException, LLMCallException, LLMCallTimeoutException, LLMTokenLimitException
 from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
 from .llm_base import LLMBase, LLMResult
-from .llm_answer import LLMAnswer, LLMParsingException
 from .monitored_llm import MonitoredLLM
 from .llm_configuration_base import LLMConfigurationBase
 from .llm_fallback import LLMFallback

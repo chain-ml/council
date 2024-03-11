@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 from typing import Optional, Any
 
@@ -51,7 +53,7 @@ class GoogleSearchEngine(ContextProvider, ABC):
         return None
 
     @classmethod
-    def from_env(cls) -> Optional["GoogleSearchEngine"]:
+    def from_env(cls) -> Optional[GoogleSearchEngine]:
         try:
             api_key: str = read_env_str("GOOGLE_API_KEY").unwrap()
             engine_id: str = read_env_str("GOOGLE_SEARCH_ENGINE_ID").unwrap()

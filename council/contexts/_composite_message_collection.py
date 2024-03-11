@@ -17,11 +17,9 @@ class CompositeMessageCollection(MessageCollection):
     @property
     def messages(self) -> Iterable[ChatMessage]:
         for collection in self._collections:
-            for message in collection.messages:
-                yield message
+            yield from collection.messages
 
     @property
     def reversed(self) -> Iterable[ChatMessage]:
         for collection in reversed(self._collections):
-            for message in collection.reversed:
-                yield message
+            yield from collection.reversed

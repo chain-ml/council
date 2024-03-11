@@ -25,7 +25,7 @@ class Consumption:
 
     """
 
-    def __init__(self, value: float, unit: str, kind: str):
+    def __init__(self, value: float, unit: str, kind: str) -> None:
         """
         Initializes a Consumption instance.
 
@@ -54,16 +54,28 @@ class Consumption:
     def __str__(self):
         return f"{self._kind} consumption: {self._value} {self.unit}"
 
-    def add(self, value: float) -> "Consumption":
+    def add(self, value: float) -> Consumption:
+        """
+        Returns a new Consumption instance with the value incremented by the specified value.
+        """
         return Consumption(self._value + value, self.unit, self._kind)
 
-    def subtract(self, value: float) -> "Consumption":
+    def subtract(self, value: float) -> Consumption:
+        """
+        Returns a new Consumption instance with the value decremented by the specified value.
+        """
         return Consumption(self._value - value, self.unit, self._kind)
 
     def add_value(self, value: float) -> None:
+        """
+        Increments the value of the consumption by the specified value.
+        """
         self._value += value
 
     def subtract_value(self, value: float) -> None:
+        """
+        Decrements the value of the consumption by the specified value.
+        """
         self._value -= value
 
     def to_dict(self) -> Dict[str, Any]:
@@ -160,7 +172,7 @@ class Budget:
         return f"Budget({self._duration})"
 
     @staticmethod
-    def default() -> "Budget":
+    def default() -> Budget:
         """
         Helper function that create a new Budget with a default value.
 

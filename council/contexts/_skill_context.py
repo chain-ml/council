@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Iterable
 
 from council.utils import Option
@@ -13,7 +15,7 @@ class IterationContext:
     Provides context information when running inside a loop.
     """
 
-    def __init__(self, index: int, value: Any):
+    def __init__(self, index: int, value: Any) -> None:
         self._index = index
         self._value = value
 
@@ -59,7 +61,7 @@ class SkillContext(ChainContext):
         budget: Budget,
         messages: Iterable[ChatMessage],
         iteration: Option[IterationContext],
-    ):
+    ) -> None:
         super().__init__(store, execution_context, name, budget, messages)
         self._iteration = iteration
 
@@ -74,7 +76,7 @@ class SkillContext(ChainContext):
         return self._iteration
 
     @staticmethod
-    def from_chain_context(context: ChainContext, iteration: Option[IterationContext]) -> "SkillContext":
+    def from_chain_context(context: ChainContext, iteration: Option[IterationContext]) -> SkillContext:
         return SkillContext(
             context._store,
             context._execution_context,

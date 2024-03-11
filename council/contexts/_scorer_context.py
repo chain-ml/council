@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from ._agent_context_store import AgentContextStore
@@ -17,14 +19,14 @@ class ScorerContext(ContextBase):
         super().__init__(store, execution_context, budget)
 
     @staticmethod
-    def from_context(context: ContextBase, monitored: Monitored, budget: Optional[Budget] = None) -> "ScorerContext":
+    def from_context(context: ContextBase, monitored: Monitored, budget: Optional[Budget] = None) -> ScorerContext:
         """
         creates a new instance from the given context, adjusting the execution appropriately
         """
         return ScorerContext(context._store, context._execution_context.new_for(monitored), budget or context._budget)
 
     @staticmethod
-    def empty() -> "ScorerContext":
+    def empty() -> ScorerContext:
         """
         helper function that creates a new empty instance
 
@@ -32,7 +34,7 @@ class ScorerContext(ContextBase):
         """
         return ScorerContext(AgentContextStore(ChatHistory()), ExecutionContext(), InfiniteBudget())
 
-    def new_for(self, monitored: Monitored) -> "ScorerContext":
+    def new_for(self, monitored: Monitored) -> ScorerContext:
         """
         returns a new instance for the given object, adjusting the execution context appropriately
         """

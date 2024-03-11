@@ -29,9 +29,9 @@ class ScorerBase(Monitorable, abc.ABC):
         """
         try:
             return self._score(context, message)
-        except Exception:
+        except Exception as e:
             context.logger.exception('message="execution failed"')
-            raise ScorerException
+            raise ScorerException from e
 
     @abc.abstractmethod
     def _score(self, context: ScorerContext, message: ChatMessage) -> float:
@@ -42,6 +42,6 @@ class ScorerBase(Monitorable, abc.ABC):
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Serialize the instance into a dictionary. May need to be overriden in derived classes
+        Serialize the instance into a dictionary. May need to be overridden in derived classes
         """
         return {"type": self.__class__.__name__}
