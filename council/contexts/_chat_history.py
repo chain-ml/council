@@ -1,3 +1,4 @@
+from __future__ import annotations
 from ._message_list import MessageList
 
 
@@ -7,7 +8,7 @@ class ChatHistory(MessageList):
     """
 
     @staticmethod
-    def from_user_message(message: str) -> "ChatHistory":
+    def from_user_message(message: str) -> ChatHistory:
         """
         helpers function that returns a new instance containing one user message
         """

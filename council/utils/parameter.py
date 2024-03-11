@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable, TypeVar, Optional, Generic, Any, Union
 
 from council.utils import Option, read_env_int, read_env_float, read_env_str
@@ -86,12 +88,12 @@ class Parameter(Generic[T]):
 
         self._read_env = converter
 
-    def from_env(self, env_var: str):
+    def from_env(self, env_var: str) -> None:
         v = self._read_env(env_var, self._required)
         if v.is_some():
             self.set(v.unwrap())
 
-    def set(self, value: Optional[T]):
+    def set(self, value: Optional[T]) -> None:
         try:
             self._validator(value)
             self._value = Option(value)
@@ -99,7 +101,7 @@ class Parameter(Generic[T]):
             raise ParameterValueException(self._name, value=value, message=e)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
@@ -143,7 +145,7 @@ class Parameter(Generic[T]):
         value: OptionalOrUndefined[str] = _undefined,
         default: OptionalOrUndefined[str] = _undefined,
         validator: Optional[Validator] = None,
-    ) -> "Parameter[str]":
+    ) -> Parameter[str]:
         return Parameter(
             name=name,
             required=required,
@@ -160,7 +162,7 @@ class Parameter(Generic[T]):
         value: OptionalOrUndefined[int] = _undefined,
         default: OptionalOrUndefined[int] = _undefined,
         validator: Optional[Validator] = None,
-    ) -> "Parameter[int]":
+    ) -> Parameter[int]:
         return Parameter(
             name=name,
             required=required,
@@ -177,7 +179,7 @@ class Parameter(Generic[T]):
         value: OptionalOrUndefined[float] = _undefined,
         default: OptionalOrUndefined[float] = _undefined,
         validator: Optional[Validator] = None,
-    ) -> "Parameter[float]":
+    ) -> Parameter[float]:
         return Parameter(
             name=name,
             required=required,

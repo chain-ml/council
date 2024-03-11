@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 from concurrent import futures
 from typing import Dict, List, Optional, Sequence
@@ -165,7 +167,7 @@ class Agent(Monitorable):
             context.logger.info(f'message="chain execution ended" chain="{chain.name}" execution_unit="{unit.name}"')
 
     @staticmethod
-    def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> "Agent":
+    def from_skill(skill: SkillBase, chain_description: Optional[str] = None) -> Agent:
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
             :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`
@@ -182,7 +184,7 @@ class Agent(Monitorable):
     @staticmethod
     def from_chain(
         chain: ChainBase, evaluator: EvaluatorBase = BasicEvaluator(), filter: FilterBase = BasicFilter()
-    ) -> "Agent":
+    ) -> Agent:
         """
         Helper function to create a new agent with a  :class:`.BasicController`, a
             :class:`.BasicEvaluator` and a single :class:`.SkillBase` wrapped into a :class:`.Chain`

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 from enum import Enum
 from typing import List, Dict, Any, Sequence, Optional
@@ -186,7 +188,7 @@ class AgentTestSuite:
         else:
             self._test_cases = []
 
-    def add_test_case(self, prompt: str, scorers: List[ScorerBase]) -> "AgentTestSuite":
+    def add_test_case(self, prompt: str, scorers: List[ScorerBase]) -> AgentTestSuite:
         self._test_cases.append(AgentTestCase(prompt, scorers))
         return self
 
