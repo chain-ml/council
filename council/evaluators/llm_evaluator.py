@@ -9,7 +9,7 @@ from typing import List, Optional
 from council.contexts import AgentContext, ChatMessage, ScoredChatMessage, ContextBase
 from council.evaluators import EvaluatorBase, EvaluatorException
 from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
-from council.llm.llm_answer import LLMParsingException
+from council.llm.llm_answer import LLMParsingException, llm_class_validator
 from council.utils import Option
 
 
@@ -37,6 +37,10 @@ class SpecialistGrade:
     def __str__(self):
         return f"Message `{self._index}` graded `{self._grade}` with the justification: `{self._justification}`"
 
+    @llm_class_validator
+    def validate(self):
+        if self._grade < 0.0 or self._grade > 10.0:
+            raise LLMParsingException(f"Grade `{self._grade}` is invalid, value must be between 0.0 and 10.0")
 
 class LLMEvaluator(EvaluatorBase):
     """Evaluator using an `LLM` to evaluate chain responses."""

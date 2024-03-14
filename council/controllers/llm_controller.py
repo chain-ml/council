@@ -45,7 +45,7 @@ class Specialist:
     @llm_class_validator
     def validate(self):
         if self._score < 0 or self._score > 10:
-            raise LLMParsingException(f"Score {self._score} is invalid, value must be between 0 and 10.")
+            raise LLMParsingException(f"Specialist's score `{self._score}` is invalid, value must be between 0 and 10.")
 
 
 class LLMController(ControllerBase):
