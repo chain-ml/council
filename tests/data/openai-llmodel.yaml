@@ -13,6 +13,8 @@ spec:
       timeout: 60
       apiKey:
         fromEnvVar: OPENAI_API_KEY
+      apiHost:
+        fromEnvVar: OPENAI_API_HOST
   parameters:
     n: 3
     temperature: 0.5

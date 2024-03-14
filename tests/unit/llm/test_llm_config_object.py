@@ -1,5 +1,5 @@
 from council import OpenAILLM, AzureLLM, AnthropicLLM
-from council.llm import get_llm_from_config, LLMFallback
+from council.llm import get_llm_from_config, LLMFallback, OpenAILLMConfiguration
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
@@ -9,14 +9,18 @@ from .. import get_data_filename, LLModels
 def test_openai_from_yaml():
     filename = get_data_filename(LLModels.OpenAI)
 
-    with OsEnviron("OPENAI_API_KEY", "sk-key"):
+    with OsEnviron("OPENAI_API_KEY", "sk-key"), OsEnviron("OPENAI_API_HOST", "https://openai.com"):
         actual = LLMConfigObject.from_yaml(filename)
         assert actual.spec.provider.name == "CML-OpenAI"
 
         llm = OpenAILLM.from_config(actual)
         assert isinstance(llm, OpenAILLM)
-        assert llm.config.temperature.value == 0.5
-        assert llm.config.n.value == 3
+
+        assert isinstance(llm.config, OpenAILLMConfiguration)
+        config: OpenAILLMConfiguration = llm.config
+        assert config.temperature == 0.5
+        assert config.n == 3
+        assert config.api_host == "https://openai.com"
 
         llm = get_llm_from_config(filename)
         assert isinstance(llm, OpenAILLM)

@@ -8,7 +8,7 @@ from council.utils import (
     read_env_int,
     Parameter,
     greater_than_validator,
-    not_empty_validator,
+    prefix_validator,
 )
 from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 
@@ -33,12 +33,12 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
             timeout (int): seconds to wait for response from OpenAI before timing out
         """
         super().__init__()
-        self._model = Parameter.string(name="model", required=True, value=model, validator=not_empty_validator(model))
+        self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gpt-"))
         self._timeout = Parameter.int(
             name="timeout", required=False, default=timeout, validator=greater_than_validator(0)
         )
         self._api_key = Parameter.string(
-            name="api_key", required=True, value=api_key, validator=not_empty_validator(api_key)
+            name="api_key", required=True, value=api_key, validator=prefix_validator("sk-")
         )
 
         self._api_host = Parameter.string(
@@ -46,7 +46,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
             required=False,
             value=api_host,
             default="https://api.openai.com",
-            validator=None,
+            validator=prefix_validator("http"),
         )
 
     @property
@@ -103,7 +103,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
     @staticmethod
     def from_spec(spec: LLMConfigSpec) -> OpenAILLMConfiguration:
         api_key: str = spec.provider.must_get_value("apiKey")
-        api_host: Any = spec.provider.get_value("apiHost")
+        api_host: str = spec.provider.get_value("apiHost") or "https://api.openai.com"
         model: str = spec.provider.must_get_value("model")
 
         config = OpenAILLMConfiguration(api_key=api_key, api_host=api_host, model=str(model))

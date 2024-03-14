@@ -138,6 +138,16 @@ class Parameter(Generic[T]):
         default = f" Default value `{self._default}`." if not isinstance(self._default, Undefined) else ""
         return f"Parameter{opt} `{self._name}` with {val}.{default}"
 
+    def __eq__(self, other: Any) -> bool:
+        if self.is_none():
+            if isinstance(other, Parameter):
+                return other.is_none()
+            return False
+
+        if isinstance(other, Parameter):
+            return self.unwrap() == other.unwrap()
+        return self.unwrap() == other
+
     @staticmethod
     def string(
         name: str,

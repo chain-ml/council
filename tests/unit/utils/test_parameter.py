@@ -1,7 +1,7 @@
 import unittest
 
 from council.utils import MissingEnvVariableException, EnvVariableValueException, OsEnviron
-from council.utils.parameter import ParameterValueException, Parameter
+from council.utils.parameter import ParameterValueException, Parameter, Undefined
 
 
 def tv(x: float):
@@ -68,3 +68,15 @@ class TestParameter(unittest.TestCase):
         with OsEnviron("TEST_LLM_TEMPERATURE", "9876.54321"):
             temperature.from_env("TEST_LLM_TEMPERATURE")
         self.assertEqual(temperature.unwrap(), 9876.54321)
+
+    def test_equal(self) -> None:
+        temperature1: Parameter[float] = Parameter.float(name="temperature1", required=False, value=12.34)
+        temperature2: Parameter[float] = Parameter.float(name="temperature2", required=True, value=12.34)
+        temperature3: Parameter[float] = Parameter.float(name="temperature3", required=True, value=43.21)
+
+        self.assertTrue(temperature1 == temperature2)
+        self.assertTrue(temperature1 == 12.34)
+
+        self.assertFalse(temperature1 == temperature3)
+        self.assertFalse(temperature1 == 43.21)
+        self.assertFalse(temperature1 == Undefined())
