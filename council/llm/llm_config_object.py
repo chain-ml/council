@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 import yaml
 
 from council.utils import DataObject, DataObjectSpecBase
+from council.utils.parameter import Undefined
 
 
 class LLMProviders(str, Enum):
@@ -58,17 +59,20 @@ class LLMProvider:
     def must_get_value(self, key: str) -> Any:
         return self.get_value(key=key, required=True)
 
-    def get_value(self, key: str, required: bool = False) -> Optional[Any]:
+    def get_value(self, key: str, required: bool = False, default: Optional[Any] = Undefined()) -> Optional[Any]:
         maybe_value = self._specs.get(key, None)
-        if maybe_value is None and required:
-            raise Exception(f"{key} is required")
+        if maybe_value is None:
+            if not isinstance(default, Undefined):
+                return default
 
         if isinstance(maybe_value, dict):
-            name: Optional[str] = maybe_value.get("fromEnvVar", None)
-            if name is not None:
-                value = os.environ.get(name)
-                return value
+            default_value: Optional[str] = maybe_value.get("default", None)
+            env_var_name: Optional[str] = maybe_value.get("fromEnvVar", None)
+            if env_var_name is not None:
+                maybe_value = os.environ.get(env_var_name, default_value)
 
+        if maybe_value is None and required:
+            raise Exception(f"LLMProvider {self.name} - A required key {key} is missing.")
         return maybe_value
 
     def __str__(self):

@@ -77,15 +77,16 @@ class Parameter(Generic[T]):
         self._name = name
         self._required = required
         self._validator: Validator = validator if validator is not None else lambda x: None
+        self._default = default
         if isinstance(value, Undefined):
-            self._value: Option[T] = Option.none()
+            if not isinstance(default, Undefined):
+                self.set(default)
+            else:
+                self._value: Option[T] = Option.none()
         else:
             self.set(value)
 
         self._read_env = converter
-        self._default = default
-        if not isinstance(default, Undefined):
-            self.set(default)
 
     def from_env(self, env_var: str) -> None:
         v = self._read_env(env_var, self._required)
@@ -137,6 +138,16 @@ class Parameter(Generic[T]):
         default = f" Default value `{self._default}`." if not isinstance(self._default, Undefined) else ""
         return f"Parameter{opt} `{self._name}` with {val}.{default}"
 
+    def __eq__(self, other: Any) -> bool:
+        if self.is_none():
+            if isinstance(other, Parameter):
+                return other.is_none()
+            return False
+
+        if isinstance(other, Parameter):
+            return self.unwrap() == other.unwrap()
+        return self.unwrap() == other
+
     @staticmethod
     def string(
         name: str,
@@ -146,7 +157,12 @@ class Parameter(Generic[T]):
         validator: Optional[Validator] = None,
     ) -> Parameter[str]:
         return Parameter(
-            name=name, required=required, value=value, converter=read_env_str, default=default, validator=validator
+            name=name,
+            required=required,
+            value=value,
+            converter=read_env_str,
+            default=default,
+            validator=validator,
         )
 
     @staticmethod
@@ -158,7 +174,12 @@ class Parameter(Generic[T]):
         validator: Optional[Validator] = None,
     ) -> Parameter[int]:
         return Parameter(
-            name=name, required=required, value=value, converter=read_env_int, default=default, validator=validator
+            name=name,
+            required=required,
+            value=value,
+            converter=read_env_int,
+            default=default,
+            validator=validator,
         )
 
     @staticmethod
@@ -170,5 +191,10 @@ class Parameter(Generic[T]):
         validator: Optional[Validator] = None,
     ) -> Parameter[float]:
         return Parameter(
-            name=name, required=required, value=value, converter=read_env_float, default=default, validator=validator
+            name=name,
+            required=required,
+            value=value,
+            converter=read_env_float,
+            default=default,
+            validator=validator,
         )
