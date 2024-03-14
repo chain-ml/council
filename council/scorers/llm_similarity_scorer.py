@@ -100,7 +100,7 @@ class LLMSimilarityScorer(ScorerBase):
             "1. Compare the {expected} message and the {actual} message.",
             "2. Score 0 (2 messages are unrelated) to 100 (the 2 messages have the same content).",
             "3. Your score must be fair.",
-            "\n#FORMATTING",
+            "\n# FORMATTING",
             self._llm_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(system_prompt))
