@@ -4,7 +4,7 @@ from . import ScorerException
 from .scorer_base import ScorerBase
 from council.contexts import ChatMessage, ScorerContext, ContextBase
 from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
-from ..llm.llm_answer import LLMParsingException
+from ..llm.llm_answer import LLMParsingException, llm_class_validator
 from ..utils import Option
 
 
@@ -25,6 +25,11 @@ class SimilarityScore:
 
     def __str__(self):
         return f"Similarity score is {self.score} with the justification: {self._justification}"
+
+    @llm_class_validator
+    def validate(self):
+        if self._score < 0 or self._score > 100:
+            raise LLMParsingException(f"Similarity Score `{self._score}` is invalid, value must be between 0 and 100.")
 
 
 class LLMSimilarityScorer(ScorerBase):
@@ -100,7 +105,7 @@ class LLMSimilarityScorer(ScorerBase):
             "1. Compare the {expected} message and the {actual} message.",
             "2. Score 0 (2 messages are unrelated) to 100 (the 2 messages have the same content).",
             "3. Your score must be fair.",
-            "\n#FORMATTING",
+            "\n# FORMATTING",
             self._llm_answer.to_prompt(),
         ]
         return LLMMessage.system_message("\n".join(system_prompt))
