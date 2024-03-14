@@ -42,6 +42,7 @@ class SpecialistGrade:
         if self._grade < 0.0 or self._grade > 10.0:
             raise LLMParsingException(f"Grade `{self._grade}` is invalid, value must be between 0.0 and 10.0")
 
+
 class LLMEvaluator(EvaluatorBase):
     """Evaluator using an `LLM` to evaluate chain responses."""
 
