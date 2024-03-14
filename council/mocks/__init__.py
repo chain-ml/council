@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import random
 import time
-from typing import Any, Callable, List, Optional, Protocol, Sequence
+from typing import Any, Callable, Iterable, List, Optional, Protocol, Sequence
 
 from council.agents import Agent, AgentResult
 from council.contexts import (
@@ -34,8 +36,7 @@ class MockMultipleResponses:
 
 
 class LLMMessagesToStr(Protocol):
-    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]:
-        ...
+    def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]: ...
 
 
 def llm_message_content_to_str(messages: Sequence[LLMMessage]) -> Sequence[str]:
@@ -72,7 +73,7 @@ class MockSkill(SkillBase):
         self._action = lambda context: self.build_success_message(message)
 
     @staticmethod
-    def build_wait_skill(duration: int = 1, message: str = "done") -> "MockSkill":
+    def build_wait_skill(duration: int = 1, message: str = "done") -> MockSkill:
         def wait_a_message(context: SkillContext) -> ChatMessage:
             time.sleep(duration)
             return ChatMessage.skill(message)
@@ -93,15 +94,15 @@ class MockLLM(LLMBase):
         return LLMResult(choices=[f"{self.__class__.__name__}"])
 
     @staticmethod
-    def from_responses(responses: List[str]) -> "MockLLM":
+    def from_responses(responses: List[str]) -> MockLLM:
         return MockLLM(action=(lambda x: responses))
 
     @staticmethod
-    def from_response(response: str) -> "MockLLM":
+    def from_response(response: str) -> MockLLM:
         return MockLLM(action=(lambda x: [response]))
 
     @staticmethod
-    def from_multi_line_response(responses: List[str]) -> "MockLLM":
+    def from_multi_line_response(responses: Iterable[str]) -> MockLLM:
         response = "\n".join(responses)
         return MockLLM(action=(lambda x: [response]))
 

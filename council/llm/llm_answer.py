@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 import yaml
 
@@ -16,6 +16,11 @@ class llm_property(property):
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
         super().__init__(fget, fset, fdel, doc)
         self.rank = inspect.getsourcelines(fget)[1]
+
+
+class llm_class_validator:
+    def __init__(self, func: Callable):
+        self.f = func
 
 
 class LLMProperty:
@@ -66,12 +71,15 @@ class LLMAnswer:
     def __init__(self, schema: Any):
         self._schema = schema
         self._class_name = schema.__name__
+        self._valid_func = None
         properties = []
         getmembers = inspect.getmembers(schema)
         for attr_name, attr_value in getmembers:
             if isinstance(attr_value, llm_property):
                 prop_info = LLMProperty(name=attr_name, prop=attr_value)
                 properties.append(prop_info)
+            if isinstance(attr_value, llm_class_validator):
+                self._valid_func = attr_value.f
         properties.sort(key=lambda item: item.rank)
         self._properties = properties
 
@@ -87,7 +95,7 @@ class LLMAnswer:
         fp = [
             "Use precisely the following template:",
             "```yaml",
-            "{your yaml formatted answer}",
+            f"your yaml formatted answer for the `{self._class_name}` class.",
             "```",
             "\n",
         ]
@@ -98,8 +106,10 @@ class LLMAnswer:
         d = self.parse_line(line, None)
         missing_keys = [key.name for key in self._properties if key.name not in d.keys()]
         if len(missing_keys) > 0:
-            raise LLMParsingException(f"Missing {missing_keys} in response.")
+            raise LLMParsingException(f"Missing `{missing_keys}` in response.")
         t = self._schema(**d)
+        if self._valid_func is not None:
+            self._valid_func(t)
         return t
 
     def parse_line(self, line: str, default: Optional[Any] = "Invalid") -> Dict[str, Any]:
@@ -125,7 +135,7 @@ class LLMAnswer:
         properties_dict = {**d}
         missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
         if len(missing_keys) > 0:
-            raise LLMParsingException(f"Missing {missing_keys} in response.")
+            raise LLMParsingException(f"Missing `{missing_keys}` in response.")
         return properties_dict
 
     def parse_yaml_list(self, bloc: str) -> List[Dict[str, Any]]:
@@ -135,7 +145,7 @@ class LLMAnswer:
             properties_dict = {**item}
             missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
             if len(missing_keys) > 0:
-                raise LLMParsingException(f"Missing {missing_keys} in response.")
+                raise LLMParsingException(f"Missing `{missing_keys}` in response.")
             result.append(properties_dict)
         return result
 

@@ -4,7 +4,12 @@ from typing import Any, Optional
 import httpx
 from httpx import TimeoutException, HTTPStatusError
 
-from . import OpenAIChatCompletionsModel, OpenAITokenCounter, LLMCallTimeoutException, LLMCallException
+from . import (
+    OpenAIChatCompletionsModel,
+    OpenAITokenCounter,
+    LLMCallTimeoutException,
+    LLMCallException,
+)
 from .llm_config_object import LLMConfigObject, LLMProviders
 from .openai_llm_configuration import OpenAILLMConfiguration
 
@@ -21,7 +26,10 @@ class OpenAIChatCompletionsModelProvider:
         self._name = name
 
     def post_request(self, payload: dict[str, Any]) -> httpx.Response:
-        uri = "https://api.openai.com/v1/chat/completions"
+        """
+        Posts a request to the OpenAI chat completions endpoint.
+        """
+        uri = self.config.api_host.unwrap() + "/v1/chat/completions"
 
         timeout = self.config.timeout.unwrap()
         try:
@@ -48,8 +56,8 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         )
 
     @staticmethod
-    def from_env(model: Optional[str] = None) -> OpenAILLM:
-        config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env(model=model)
+    def from_env(model: Optional[str] = None, api_host: Optional[str] = None) -> OpenAILLM:
+        config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env(model=model, api_host=api_host)
         return OpenAILLM(config)
 
     @staticmethod

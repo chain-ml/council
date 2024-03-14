@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Iterable, List, Optional
 
 import more_itertools
@@ -106,7 +108,7 @@ class ChainContext(ContextBase, MessageCollection):
             context._store, context._execution_context.new_for(monitored), name, budget or Budget.default()
         )
 
-    def fork_for(self, monitored: Monitored, budget: Optional[Budget] = None) -> "ChainContext":
+    def fork_for(self, monitored: Monitored, budget: Optional[Budget] = None) -> ChainContext:
         """
         forks the context for the given object, adjust the execution context appropriately
         """
@@ -156,7 +158,7 @@ class ChainContext(ContextBase, MessageCollection):
             self.append(message)
 
     @staticmethod
-    def from_chat_history(history: ChatHistory, budget: Optional[Budget] = None) -> "ChainContext":
+    def from_chat_history(history: ChatHistory, budget: Optional[Budget] = None) -> ChainContext:
         """
         helper function that creates a new instance from a :class:`ChatHistory`.
 
@@ -169,14 +171,14 @@ class ChainContext(ContextBase, MessageCollection):
         return ChainContext.from_agent_context(context, MockMonitored("mock chain"), "mock chain", budget)
 
     @staticmethod
-    def from_user_message(message: str, budget: Optional[Budget] = None) -> "ChainContext":
+    def from_user_message(message: str, budget: Optional[Budget] = None) -> ChainContext:
         """
         creates a new instance from a user message. The :class:`ChatHistory` contains only the user message
         """
         return ChainContext.from_chat_history(ChatHistory.from_user_message(message), budget)
 
     @staticmethod
-    def empty() -> "ChainContext":
+    def empty() -> ChainContext:
         """
         helper function that creates a new empty instance.
 

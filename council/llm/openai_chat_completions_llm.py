@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import httpx
 
 from typing import List, Any, Protocol, Sequence, Optional
@@ -10,8 +12,7 @@ from council.contexts import LLMContext, Consumption
 
 
 class Provider(Protocol):
-    def __call__(self, payload: dict[str, Any]) -> httpx.Response:
-        ...
+    def __call__(self, payload: dict[str, Any]) -> httpx.Response: ...
 
 
 class Message:
@@ -27,7 +28,7 @@ class Message:
         return self._content
 
     @staticmethod
-    def from_dict(obj: Any) -> "Message":
+    def from_dict(obj: Any) -> Message:
         _role = str(obj.get("role"))
         _content = str(obj.get("content"))
         return Message(_role, _content)
@@ -48,7 +49,7 @@ class Choice:
         return self._message
 
     @staticmethod
-    def from_dict(obj: Any) -> "Choice":
+    def from_dict(obj: Any) -> Choice:
         _index = int(obj.get("index"))
         _finish_reason = str(obj.get("finish_reason"))
         _message = Message.from_dict(obj.get("message"))
@@ -81,7 +82,7 @@ class Usage:
         return self._total
 
     @staticmethod
-    def from_dict(obj: Any) -> "Usage":
+    def from_dict(obj: Any) -> Usage:
         _completion_tokens = int(obj.get("completion_tokens"))
         _prompt_tokens = int(obj.get("prompt_tokens"))
         _total_tokens = int(obj.get("total_tokens"))
@@ -129,7 +130,7 @@ class OpenAIChatCompletionsResult:
         ]
 
     @staticmethod
-    def from_dict(obj: Any) -> "OpenAIChatCompletionsResult":
+    def from_dict(obj: Any) -> OpenAIChatCompletionsResult:
         _id = str(obj.get("id"))
         _object = str(obj.get("object"))
         _created = int(obj.get("created"))

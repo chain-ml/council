@@ -7,7 +7,7 @@ from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.utils import Option
 from council.controllers import ControllerBase, ControllerException
 from .execution_unit import ExecutionUnit
-from council.llm.llm_answer import llm_property, LLMAnswer, LLMParsingException
+from council.llm.llm_answer import llm_property, LLMAnswer, LLMParsingException, llm_class_validator
 
 
 class Specialist:
@@ -41,6 +41,11 @@ class Specialist:
         return (
             f"The specialist `{self._name}` was scored `{self._score}` with the justification `{self._justification}`"
         )
+
+    @llm_class_validator
+    def validate(self):
+        if self._score < 0 or self._score > 10:
+            raise LLMParsingException(f"Specialist's score `{self._score}` is invalid, value must be between 0 and 10.")
 
 
 class LLMController(ControllerBase):

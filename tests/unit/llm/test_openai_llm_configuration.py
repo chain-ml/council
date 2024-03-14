@@ -17,7 +17,7 @@ class TestOpenAILLMConfiguration(unittest.TestCase):
             self.assertEqual("gpt-not-default", config.model.value)
 
     def test_default(self):
-        config = OpenAILLMConfiguration(model="gpt-model", api_key="sk-key")
+        config = OpenAILLMConfiguration(model="gpt-model", api_key="sk-key", api_host="https://api.openai.com")
         self.assertEqual(0.0, config.temperature.value)
         self.assertEqual(1, config.n.value)
         self.assertTrue(config.top_p.is_none())
@@ -26,6 +26,8 @@ class TestOpenAILLMConfiguration(unittest.TestCase):
 
     def test_invalid(self):
         with self.assertRaises(ParameterValueException):
-            _ = OpenAILLMConfiguration(model="a-gpt-model", api_key="sk-key")
+            _ = OpenAILLMConfiguration(model="a-gpt-model", api_key="sk-key", api_host="https://api.openai.com")
         with self.assertRaises(ParameterValueException):
-            _ = OpenAILLMConfiguration(model="gpt-model", api_key="a-sk-key")
+            _ = OpenAILLMConfiguration(model="gpt-model", api_key="a-sk-key", api_host="https://api.openai.com")
+        with self.assertRaises(ParameterValueException):
+            _ = OpenAILLMConfiguration(model="gpt-model", api_key="sk-key", api_host="api.openai.com")
