@@ -9,7 +9,7 @@ spec:
   provider:
     name: CML-Anthropic
     anthropicSpec:
-      model: claude-2
+      model: claude-2.1
       timeout: 60
       maxTokens: 8192
       apiKey:

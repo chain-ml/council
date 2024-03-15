@@ -1,6 +1,7 @@
 import unittest
 
-from council.llm import AnthropicLLM, LLMMessage
+from council.llm import LLMMessage
+from council.llm.anthropic_completion_llm import AnthropicCompletionLLM
 
 
 class TestAnthropicLLM(unittest.TestCase):
@@ -12,7 +13,7 @@ Human: Hello
 
 Assistant:"""
 
-        actual = AnthropicLLM._to_anthropic_messages(messages)
+        actual = AnthropicCompletionLLM._to_anthropic_messages(messages)
         assert actual == expected
 
     def test_messages_with_follow_up(self):
@@ -32,7 +33,7 @@ Human: Bye
 
 Assistant:"""
 
-        actual = AnthropicLLM._to_anthropic_messages(messages)
+        actual = AnthropicCompletionLLM._to_anthropic_messages(messages)
         assert actual == expected
 
     def test_messages_with_system_prompt(self):
@@ -45,5 +46,5 @@ Hi
 
 Assistant:"""
 
-        actual = AnthropicLLM._to_anthropic_messages(messages)
+        actual = AnthropicCompletionLLM._to_anthropic_messages(messages)
         assert actual == expected

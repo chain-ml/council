@@ -7,7 +7,7 @@ progressbar==2.5
 tiktoken==0.5.1
 
 # LLMs
-anthropic>=0.5.0
+anthropic>=0.20.0
 
 # Skills
 ## Google
