@@ -12,7 +12,8 @@ _ASSISTANT_TURN = Anthropic.AI_PROMPT
 
 class AnthropicCompletionLLM(AnthropicAPIClientWrapper):
     """
-    Implementation for an Anthropic LLM with LEGACY completion.
+    Implementation for an Anthropic LLM with LEGACY completion API.
+    Needs to used for models like `claude-2` version.
 
     Notes:
         More details: https://docs.anthropic.com/claude/docs

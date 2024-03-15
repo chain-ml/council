@@ -16,7 +16,8 @@ from council.llm.anthropic import AnthropicAPIClientWrapper
 
 class AnthropicMessagesLLM(AnthropicAPIClientWrapper):
     """
-    Implementation for an Anthropic LLM.
+    Implementation for an Anthropic LLM with messages API.
+    Needs to used for models like `claude-2.1` or `claude-3-xyz` versions.
 
     Notes:
         More details: https://docs.anthropic.com/claude/docs
