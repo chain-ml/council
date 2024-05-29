@@ -58,7 +58,7 @@ class ParallelFor(LoopRunnerBase):
             [f.cancel() for f in all_fs]
             context.merge(inner_contexts)
 
-    def _run_skill(self, context: ChainContext, iteration: IterationContext):
+    def _run_skill(self, context: ChainContext, iteration: IterationContext) -> None:
         index = iteration.index
         context.logger.debug(f'message="start iteration" index="{index}"')
         try:

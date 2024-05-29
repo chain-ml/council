@@ -20,7 +20,7 @@ class PythonCodeExecutionSkill(SkillBase):
     The return message data contains a dictionary with the status code, stdout and stderr.
     """
 
-    def __init__(self, env_var: Optional[Mapping[str, str]] = None, decode_stdout: bool = True):
+    def __init__(self, env_var: Optional[Mapping[str, str]] = None, decode_stdout: bool = True) -> None:
         """
         Initialize a new instance
 

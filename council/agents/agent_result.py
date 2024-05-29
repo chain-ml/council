@@ -12,7 +12,7 @@ class AgentResult:
 
     _messages: List[ScoredChatMessage]
 
-    def __init__(self, messages: Optional[List[ScoredChatMessage]] = None):
+    def __init__(self, messages: Optional[List[ScoredChatMessage]] = None) -> None:
         """
         Initialize a new instance.
 

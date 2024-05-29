@@ -26,7 +26,7 @@ class ExecutionUnit:
         initial_state: Optional[ChatMessage] = None,
         name: Optional[str] = None,
         rank: Optional[int] = None,
-    ):
+    ) -> None:
         self._chain = chain
         self._budget = budget
         self._initial_state = initial_state

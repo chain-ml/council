@@ -8,7 +8,7 @@ import yaml
 
 
 class DataObjectMetadata:
-    def __init__(self, name: str, labels: Dict[str, Any], description: Optional[str] = None):
+    def __init__(self, name: str, labels: Dict[str, Any], description: Optional[str] = None) -> None:
         self.name = name
         self.description = description
         self.labels = labels
@@ -56,7 +56,7 @@ class DataObjectSpecBase(abc.ABC):
 
 
 class DataObject(Generic[T]):
-    def __init__(self, kind: str, version: str, metadata: DataObjectMetadata, spec: T):
+    def __init__(self, kind: str, version: str, metadata: DataObjectMetadata, spec: T) -> None:
         self.kind = kind
         self.version = version
         self.metadata = metadata
@@ -82,7 +82,7 @@ class DataObject(Generic[T]):
         spec = inner.from_dict(values["spec"])
         return cls(values["kind"], values["version"], metadata, spec)
 
-    def to_yaml(self, filename: str):
+    def to_yaml(self, filename: str) -> None:
         values = self.to_dict()
         with open(filename, "w", encoding="utf-8") as f:
             yaml.safe_dump(values, f, default_flow_style=False)

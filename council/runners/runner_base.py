@@ -17,18 +17,14 @@ class RunnerBase(Monitorable, abc.ABC):
     Base runner class that handles common execution logic, including error management and timeout
     """
 
-    def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor):
+    def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor) -> None:
         inner = context.fork_for(runner)
         try:
             runner.inner.run(inner, executor)
         finally:
             context.merge([inner])
 
-    def run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         if context.should_stop():
             return
 
@@ -56,9 +52,5 @@ class RunnerBase(Monitorable, abc.ABC):
         [f.result(timeout=0) for f in fs]
 
     @abc.abstractmethod
-    def _run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         pass

@@ -37,13 +37,13 @@ class Specialist:
         """Short and specific explanation of your score to this particular Specialist"""
         return self._justification
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"The specialist `{self._name}` was scored `{self._score}` with the justification `{self._justification}`"
         )
 
     @llm_class_validator
-    def validate(self):
+    def validate(self) -> None:
         if self._score < 0 or self._score > 10:
             raise LLMParsingException(f"Specialist's score `{self._score}` is invalid, value must be between 0 and 10.")
 

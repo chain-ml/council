@@ -9,7 +9,7 @@ from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 _env_var_prefix = "ANTHROPIC_"
 
 
-def _tv(x: float):
+def _tv(x: float) -> None:
     """
     Temperature and Top_p Validators
     Sampling temperature to use, between 0. and 1.
@@ -23,12 +23,7 @@ class AnthropicLLMConfiguration:
     Configuration for :class:AnthropicLLM
     """
 
-    def __init__(
-        self,
-        model: str,
-        api_key: str,
-        max_tokens: int,
-    ):
+    def __init__(self, model: str, api_key: str, max_tokens: int) -> None:
         """
         Initialize a new instance
 
@@ -109,7 +104,7 @@ class AnthropicLLMConfiguration:
         """
         return self._max_tokens
 
-    def _read_optional_env(self):
+    def _read_optional_env(self) -> None:
         self._temperature.from_env(_env_var_prefix + "LLM_TEMPERATURE")
         self._top_p.from_env(_env_var_prefix + "LLM_TOP_P")
         self._top_k.from_env(_env_var_prefix + "LLM_TOP_K")

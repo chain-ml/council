@@ -154,7 +154,7 @@ class Agent(Monitorable):
         return result
 
     @staticmethod
-    def _execute_unit(iteration_context: AgentContext, unit: ExecutionUnit):
+    def _execute_unit(iteration_context: AgentContext, unit: ExecutionUnit) -> None:
         with iteration_context.new_agent_context_for_execution_unit(unit.name) as context:
             chain = unit.chain
             context.logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')

@@ -10,7 +10,7 @@ class ScorerBase(Monitorable, abc.ABC):
     Base class for implementing a Scorer
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("scorer")
 
     def score(self, context: ScorerContext, message: ChatMessage) -> float:

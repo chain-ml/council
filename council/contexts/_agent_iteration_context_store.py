@@ -15,7 +15,7 @@ class AgentIterationContextStore:
     _chains: Dict[str, MonitoredMessageList]
     _evaluator: List[ScoredChatMessage]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._chains = {}
         self._evaluator = []
 

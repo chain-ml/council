@@ -58,7 +58,7 @@ class PythonCodeVerificationSkill(SkillBase):
 
     """
 
-    def __init__(self, code_template: str = ""):
+    def __init__(self, code_template: str = "") -> None:
         """
         initialize a new instance
 
@@ -130,6 +130,6 @@ class PythonCodeVerificationSkill(SkillBase):
             raise Exception("\n".join(errors))
 
     @staticmethod
-    def normalize_code(code):
+    def normalize_code(code: str) -> str:
         module = ast.parse(code, type_comments=True)
         return ast.unparse(module).strip() + "\n"

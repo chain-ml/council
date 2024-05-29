@@ -111,5 +111,5 @@ class OsEnviron:
         if value is not None:
             os.environ[self.name] = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Env var:`{self.name}` value:{self.value} (previous value: {self.previous_value})"

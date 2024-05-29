@@ -9,7 +9,7 @@ class WikipediaPageSection:
     Represents partial content from a Wikipedia Page
     """
 
-    def __init__(self, title: str, content: str, page_id: int):
+    def __init__(self, title: str, content: str, page_id: int) -> None:
         self._title = title
         self._content = content
         self._page_id = page_id

@@ -75,7 +75,7 @@ class LLMProvider:
             raise Exception(f"LLMProvider {self.name} - A required key {key} is missing.")
         return maybe_value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self._kind}: {self.name} ({self.description})"
 
 
@@ -106,7 +106,7 @@ class LLMConfigSpec(DataObjectSpecBase):
             result["fallback_provider"] = self.fallback_provider
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.description}"
 
 

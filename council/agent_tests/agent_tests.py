@@ -22,7 +22,7 @@ class AgentTestCaseOutcome(str, Enum):
 
 
 class ScorerResult:
-    def __init__(self, scorer: ScorerBase, score: float):
+    def __init__(self, scorer: ScorerBase, score: float) -> None:
         self._scorer = scorer
         self._score = score
 
@@ -50,7 +50,7 @@ class AgentTestCaseResult:
     _error: str
     _error_message: str
 
-    def __init__(self, prompt: str, scorers: List[ScorerBase]):
+    def __init__(self, prompt: str, scorers: List[ScorerBase]) -> None:
         self._actual = ""
         self._execution_time = 0
         self._outcome = AgentTestCaseOutcome.Unknown
@@ -84,18 +84,20 @@ class AgentTestCaseResult:
     def error_message(self) -> str:
         return self._error_message
 
-    def set_success(self, actual: str, execution_time: float, scores: List[float]):
+    def set_success(self, actual: str, execution_time: float, scores: List[float]) -> None:
         self.set_result(actual, execution_time, scores, AgentTestCaseOutcome.Success)
 
-    def set_error(self, error: Exception, execution_time: float):
+    def set_error(self, error: Exception, execution_time: float) -> None:
         self.set_result("", execution_time, [], AgentTestCaseOutcome.Error)
         self._error = error.__class__.__name__
         self._error_message = str(error)
 
-    def set_inconclusive(self, execution_time: float):
+    def set_inconclusive(self, execution_time: float) -> None:
         self.set_result("", execution_time, [], AgentTestCaseOutcome.Inconclusive)
 
-    def set_result(self, actual: str, execution_time: float, scores: List[float], outcome: AgentTestCaseOutcome):
+    def set_result(
+        self, actual: str, execution_time: float, scores: List[float], outcome: AgentTestCaseOutcome
+    ) -> None:
         self._actual = actual
         self._execution_time = execution_time
         self._outcome = outcome
@@ -120,7 +122,7 @@ class AgentTestCase:
     _prompt: str
     _scorers: List[ScorerBase]
 
-    def __init__(self, prompt: str, scorers: List[ScorerBase]):
+    def __init__(self, prompt: str, scorers: List[ScorerBase]) -> None:
         self._prompt = prompt
         self._scorers = scorers
 
@@ -161,8 +163,8 @@ class AgentTestCase:
 class AgentTestSuiteResult:
     _results: List[AgentTestCaseResult]
 
-    def __init__(self):
-        self._results = []
+    def __init__(self) -> None:
+        self._results: List[AgentTestCaseResult] = []
 
     @property
     def results(self) -> Sequence[AgentTestCaseResult]:

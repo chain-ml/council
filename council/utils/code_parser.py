@@ -5,7 +5,7 @@ from typing import Optional, List, Iterable
 
 
 class CodeBlock:
-    def __init__(self, language: Optional[str], code: str):
+    def __init__(self, language: Optional[str], code: str) -> None:
         self._language = language
         self._code = code
 

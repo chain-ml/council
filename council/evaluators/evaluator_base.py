@@ -15,7 +15,7 @@ class EvaluatorBase(Monitorable, ABC):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("evaluator")
 
     def execute(self, context: AgentContext) -> List[ScoredChatMessage]:

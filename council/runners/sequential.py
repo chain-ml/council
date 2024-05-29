@@ -10,15 +10,11 @@ class Sequential(RunnerBase):
     Runner that executes a list of :class:`.RunnerBase` in sequence
     """
 
-    def __init__(self, *runners: RunnerBase):
+    def __init__(self, *runners: RunnerBase) -> None:
         super().__init__("sequenceRunner")
         self._runners = self.new_monitors("sequence", runners)
 
-    def _run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         for runner in self._runners:
             if context.should_stop():
                 return

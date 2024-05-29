@@ -17,11 +17,11 @@ class GoogleNewsSkill(SkillBase):
     def __init__(
         self,
         suffix: str = "",
-        nb_results=5,
+        nb_results: int = 5,
         period: Optional[str] = "90d",
         start: Optional[datetime] = None,
         end: Optional[datetime] = None,
-    ):
+    ) -> None:
         super().__init__("gnews")
         self.gn = GoogleNewsSearchEngine(period=period, suffix=suffix, start=start, end=end)
         self.nb_results = nb_results

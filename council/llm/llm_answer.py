@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 
@@ -19,12 +19,12 @@ class llm_property(property):
 
 
 class llm_class_validator:
-    def __init__(self, func: Callable):
+    def __init__(self, func: Callable) -> None:
         self.f = func
 
 
 class LLMProperty:
-    def __init__(self, name: str, prop: llm_property):
+    def __init__(self, name: str, prop: llm_property) -> None:
         self._name = name
         self._type = prop.fget.__annotations__.get("return", str)
         self._description = prop.__doc__
@@ -38,7 +38,7 @@ class LLMProperty:
     def rank(self) -> int:
         return self._rank
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self._name}: {{{self._description}, expected response type `{self._type.__name__}`}}"
 
     def can_parse(self, value: Any) -> bool:
@@ -68,7 +68,7 @@ class LLMProperty:
 
 
 class LLMAnswer:
-    def __init__(self, schema: Any):
+    def __init__(self, schema: Any) -> None:
         self._schema = schema
         self._class_name = schema.__name__
         self._valid_func = None

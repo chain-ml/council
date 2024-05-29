@@ -11,7 +11,7 @@ class ExecutionLogEntry:
     represents one entry in the :class:`ExecutionLog`
     """
 
-    def __init__(self, source: str, node: Optional[Monitorable]):
+    def __init__(self, source: str, node: Optional[Monitorable]) -> None:
         self._source = source
         self._node = node
         self._start = datetime.now(timezone.utc)
@@ -62,7 +62,7 @@ class ExecutionLogEntry:
         self._duration = (datetime.now(timezone.utc) - self._start).total_seconds()
         self._error = exc_val
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "ExecutionLogEntry("
             f"source={self._source}, start={self._start}, duration={self._duration}, error={self._error}"

@@ -13,7 +13,7 @@ class AgentChain(ChainBase):
 
     _agent: Monitored[Agent]
 
-    def __init__(self, name: str, description: str, agent: Agent):
+    def __init__(self, name: str, description: str, agent: Agent) -> None:
         """
         Initialize a new instance.
 

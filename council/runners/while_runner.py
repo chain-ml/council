@@ -17,7 +17,7 @@ class While(RunnerBase):
         self._predicate = predicate
         self._body = self.new_monitor("whileBody", runner)
 
-    def _run(self, context: ChainContext, executor: RunnerExecutor):
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         while self.check_predicate(context):
             self._body.inner.run(context, executor)
 

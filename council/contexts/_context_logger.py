@@ -5,7 +5,7 @@ from ._execution_log_entry import ExecutionLogEntry
 
 
 class ContextLogger:
-    def __init__(self, log_entry: ExecutionLogEntry):
+    def __init__(self, log_entry: ExecutionLogEntry) -> None:
         self._log_entry = log_entry
 
     def debug(self, message: str, *args: Any) -> None:

@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from ._monitorable import Monitorable
 from ._execution_log_entry import ExecutionLogEntry
@@ -11,8 +11,8 @@ class ExecutionLog:
     :class:`~council.chains.Chain`, :class:`~council.skills.SkillBase` ...)
     """
 
-    def __init__(self):
-        self._entries = []
+    def __init__(self) -> None:
+        self._entries: List[ExecutionLogEntry] = []
 
     def new_entry(self, name: str, node: Optional[Monitorable]) -> ExecutionLogEntry:
         """

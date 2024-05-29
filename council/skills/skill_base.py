@@ -87,8 +87,8 @@ class SkillBase(SkillRunnerBase):
             )
         return skill_message
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"SkillBase({self.name})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Skill {self.name}"

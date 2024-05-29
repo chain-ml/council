@@ -10,7 +10,7 @@ _Converter = Callable[[str, bool], T]
 
 
 def greater_than_validator(value: int) -> Validator:
-    def validator(x: int):
+    def validator(x: int) -> None:
         if x <= value:
             raise ValueError(f"must be greater than {value}")
 
@@ -18,14 +18,14 @@ def greater_than_validator(value: int) -> Validator:
 
 
 def prefix_validator(value: str) -> Validator:
-    def validator(x: str):
+    def validator(x: str) -> None:
         if not x.startswith(value):
             raise ValueError(f"must start with `{value}`")
 
     return validator
 
 
-def not_empty_validator(x: str):
+def not_empty_validator(x: str) -> None:
     if len(x.strip()) == 0:
         raise ValueError("must not be empty")
 

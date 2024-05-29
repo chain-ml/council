@@ -30,7 +30,7 @@ class ChainContext(ContextBase, MessageCollection):
         name: str,
         budget: Budget,
         messages: Optional[Iterable[ChatMessage]] = None,
-    ):
+    ) -> None:
         super().__init__(store, execution_context, budget)
         self._name = name
         self._current_messages = MessageList()

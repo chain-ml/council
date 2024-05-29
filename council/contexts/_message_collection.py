@@ -106,7 +106,7 @@ class MessageCollection(abc.ABC):
             Optional[ChatMessage]:
         """
 
-        def predicate(message: ChatMessage):
+        def predicate(message: ChatMessage) -> bool:
             return message.is_of_kind(ChatMessageKind.Skill) and message.is_from_source(skill_name)
 
         return self._last_message_filter(predicate)
