@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Dict, Generic, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 import yaml
-from typing_extensions import Self
+
+
+Label = Optional[Union[str, List[str]]]
 
 
 class DataObjectMetadata:
@@ -21,11 +23,26 @@ class DataObjectMetadata:
             return self.labels[label]
         return None
 
-    def is_matching_labels(self, labels: Dict[str, Any]) -> bool:
-        for label in labels:
-            value = self.get_label_value(label)
-            if value != labels[label]:
+    def is_matching_labels(self, labels: Dict[str, Label]) -> bool:
+        """
+        Returns true if the test_case_object satisfies any of the following:
+            - if value_to_check is None, check if the label exists
+            - exact match of label-value pair
+            - when a label maps to a list, check if value_to_check is in the list of values for that label
+        """
+        for label, value_to_check in labels.items():
+            if not self.has_label(label):
                 return False
+
+            value = self.get_label_value(label)
+            if value_to_check is not None:
+                if type(value_to_check) is not type(value):
+                    return False
+                elif isinstance(value_to_check, str) and isinstance(value, str) and value_to_check != value:
+                    return False
+                elif isinstance(value_to_check, list) and isinstance(value, list):
+                    if not all(v in value for v in value_to_check):
+                        return False
         return True
 
     def to_dict(self) -> Dict[str, Any]:
