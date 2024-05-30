@@ -15,9 +15,7 @@ class Option(Generic[T]):
     Convenient class to manage optional values.
     """
 
-    _some: Optional[T]
-
-    def __init__(self, some: Optional[T]):
+    def __init__(self, some: Optional[T]) -> None:
         """
         Initialize a new instance
 

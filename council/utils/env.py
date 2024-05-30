@@ -9,7 +9,7 @@ class MissingEnvVariableException(Exception):
     Custom exception raised when a required environment variable is missing.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """
         Initializes an instance of MissingEnvVariableError.
 

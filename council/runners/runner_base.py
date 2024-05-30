@@ -48,7 +48,7 @@ class RunnerBase(Monitorable, abc.ABC):
             context.logger.debug("done running %s", self.__class__.__name__)
 
     @staticmethod
-    def rethrow_if_exception(fs: Set[futures.Future]):
+    def rethrow_if_exception(fs: Set[futures.Future]) -> None:
         [f.result(timeout=0) for f in fs]
 
     @abc.abstractmethod

@@ -49,7 +49,7 @@ class ParameterValueException(Exception):
     Custom exception raised when a required environment variable is missing.
     """
 
-    def __init__(self, name: str, value: Any, message: Exception):
+    def __init__(self, name: str, value: Any, message: Exception) -> None:
         """
         Initializes an instance of ParameterValueException.
 
@@ -73,7 +73,7 @@ class Parameter(Generic[T]):
         value: OptionalOrUndefined[T] = _undefined,
         default: OptionalOrUndefined[T] = _undefined,
         validator: Optional[Validator] = None,
-    ):
+    ) -> None:
         self._name = name
         self._required = required
         self._validator: Validator = validator if validator is not None else lambda x: None

@@ -30,7 +30,7 @@ class ParallelFor(LoopRunnerBase):
         the order of results.
     """
 
-    def __init__(self, generator: RunnerGenerator, skill: SkillRunnerBase, parallelism: int = 5):
+    def __init__(self, generator: RunnerGenerator, skill: SkillRunnerBase, parallelism: int = 5) -> None:
         """
         Initialize a new instance
 
