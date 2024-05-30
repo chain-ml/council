@@ -57,11 +57,7 @@ class ChainBase(Monitorable, abc.ABC):
             self._execute(context, executor)
 
     @abc.abstractmethod
-    def _execute(
-        self,
-        context: ChainContext,
-        executor: Optional[RunnerExecutor] = None,
-    ) -> None:
+    def _execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         pass
 
     def __repr__(self) -> str:

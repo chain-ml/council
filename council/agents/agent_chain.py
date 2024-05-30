@@ -29,11 +29,7 @@ class AgentChain(ChainBase):
     def agent(self) -> Agent:
         return self._agent.inner
 
-    def _execute(
-        self,
-        context: ChainContext,
-        _executor: Optional[RunnerExecutor] = None,
-    ) -> Any:
+    def _execute(self, context: ChainContext, _executor: Optional[RunnerExecutor] = None) -> None:
         result = self.agent.execute(AgentContext.from_chat_history(context.chat_history))
         maybe_message = result.try_best_message
         if maybe_message.is_some():

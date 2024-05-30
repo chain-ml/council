@@ -41,22 +41,14 @@ class ScorerResult:
 
 
 class AgentTestCaseResult:
-    _actual: str
-    _execution_time: float
-    _outcome: AgentTestCaseOutcome
-    _prompt: str
-    _scorers: List[ScorerBase]
-    _scorer_results: List[ScorerResult]
-    _error: str
-    _error_message: str
 
     def __init__(self, prompt: str, scorers: List[ScorerBase]) -> None:
         self._actual = ""
-        self._execution_time = 0
+        self._execution_time = 0.0
         self._outcome = AgentTestCaseOutcome.Unknown
         self._prompt = prompt
-        self._scorers = scorers
-        self._scorer_results = []
+        self._scorers: List[ScorerBase] = scorers
+        self._scorer_results: List[ScorerResult] = []
         self._error = ""
         self._error_message = ""
 
