@@ -5,7 +5,6 @@ from enum import Enum
 from typing import Any, Dict, Optional
 
 import yaml
-
 from council.utils import DataObject, DataObjectSpecBase
 from council.utils.parameter import Undefined
 

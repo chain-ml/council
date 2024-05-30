@@ -5,6 +5,7 @@ from collections.abc import Set
 from concurrent import futures
 
 from council.contexts import ChainContext, Monitorable, Monitored
+
 from .errrors import RunnerError, RunnerTimeoutError
 from .runner_executor import RunnerExecutor
 

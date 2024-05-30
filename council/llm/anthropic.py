@@ -1,6 +1,6 @@
 import abc
 from abc import ABC
-from typing import Sequence, List
+from typing import List, Sequence
 
 from council.llm import LLMMessage
 

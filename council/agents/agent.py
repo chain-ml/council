@@ -11,6 +11,7 @@ from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.filters import BasicFilter, FilterBase
 from council.runners import new_runner_executor
 from council.skills import SkillBase
+
 from .agent_result import AgentResult
 
 

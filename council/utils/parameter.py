@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Callable, TypeVar, Optional, Generic, Any, Union
+from typing import Any, Callable, Generic, Optional, TypeVar, Union
 
-from council.utils import Option, read_env_int, read_env_float, read_env_str
+from council.utils import Option, read_env_float, read_env_int, read_env_str
 
 T = TypeVar("T")
 Validator = Callable[[T], None]

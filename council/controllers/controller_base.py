@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import List, Sequence, Optional
+from typing import List, Optional, Sequence
 
 from council.chains import ChainBase
 from council.contexts import AgentContext, Monitorable
+
 from .execution_unit import ExecutionUnit
 
 

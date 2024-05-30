@@ -1,11 +1,11 @@
 import abc
 
-from council.contexts import SkillContext, IterationContext, ChatMessage, ChainContext
-from . import RunnerSkillError
+from council.contexts import ChainContext, ChatMessage, IterationContext, SkillContext
 
+from ..utils import Option
+from . import RunnerSkillError
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
-from ..utils import Option
 
 
 class SkillRunnerBase(RunnerBase):

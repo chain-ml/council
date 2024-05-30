@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Any
+from typing import Any, Callable, Iterable
 
 from council.contexts import ChainContext
 

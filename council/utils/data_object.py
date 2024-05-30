@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing_extensions import Self
 
 import abc
-from typing import Any, Dict, TypeVar, Generic, Type, Optional
+from typing import Any, Dict, Generic, Optional, Type, TypeVar
 
 import yaml
+from typing_extensions import Self
 
 
 class DataObjectMetadata:

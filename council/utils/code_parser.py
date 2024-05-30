@@ -1,7 +1,9 @@
 from __future__ import annotations
-from more_itertools import first, last
+
 import re
-from typing import Optional, List, Iterable
+from typing import Iterable, List, Optional
+
+from more_itertools import first, last
 
 
 class CodeBlock:

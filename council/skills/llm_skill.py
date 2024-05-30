@@ -1,6 +1,6 @@
 from typing import List, Protocol
 
-from council.contexts import SkillContext, ChatMessage
+from council.contexts import ChatMessage, SkillContext
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
 from council.prompt import PromptBuilder
 from council.skills import SkillBase

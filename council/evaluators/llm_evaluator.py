@@ -6,9 +6,9 @@ This evaluator uses the given `LLM` to evaluate the chain's responses.
 
 from typing import List, Optional
 
-from council.contexts import AgentContext, ChatMessage, ScoredChatMessage, ContextBase
+from council.contexts import AgentContext, ChatMessage, ContextBase, ScoredChatMessage
 from council.evaluators import EvaluatorBase, EvaluatorException
-from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
+from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
 from council.llm.llm_answer import LLMParsingException, llm_class_validator
 from council.utils import Option
 

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Optional, Any
+from typing import Any, Optional
 
-from council.utils import OptionException, read_env_str, MissingEnvVariableException
+from council.utils import MissingEnvVariableException, OptionException, read_env_str
+from googleapiclient.discovery import build
 
 from .context_provider import ContextProvider
 from .schemas import ResponseReference
-
-from googleapiclient.discovery import build
 
 
 class GoogleSearchEngine(ContextProvider, ABC):

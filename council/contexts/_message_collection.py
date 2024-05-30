@@ -4,8 +4,8 @@ from typing import Callable, Iterable, Optional
 from more_itertools import first
 from typing_extensions import TypeGuard
 
-from ._chat_message import ChatMessage, ChatMessageKind
 from ..utils import Option
+from ._chat_message import ChatMessage, ChatMessageKind
 
 
 class MessageCollection(abc.ABC):

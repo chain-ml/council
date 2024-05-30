@@ -1,8 +1,8 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from ._monitorable import Monitorable
 from ._execution_log_entry import ExecutionLogEntry
+from ._monitorable import Monitorable
 
 
 class ExecutionLog:

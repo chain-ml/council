@@ -4,7 +4,6 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional
 
 import yaml
-
 from council.utils import CodeParser
 
 

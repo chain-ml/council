@@ -2,6 +2,7 @@ import abc
 from typing import Any, Dict
 
 from council.contexts import ChatMessage, Monitorable, ScorerContext
+
 from .scorer_exception import ScorerException
 
 

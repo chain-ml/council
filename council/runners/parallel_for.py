@@ -1,16 +1,15 @@
 from concurrent import futures
 from typing import Iterable
 
-from more_itertools import batched
-
-from council.contexts import IterationContext, ChainContext
+from council.contexts import ChainContext, IterationContext
 from council.utils import Option
+from more_itertools import batched
 
 from .errrors import RunnerGeneratorError
 from .loop_runner_base import LoopRunnerBase
 from .runner_executor import RunnerExecutor
-from .types import RunnerGenerator
 from .skill_runner_base import SkillRunnerBase
+from .types import RunnerGenerator
 
 
 class ParallelFor(LoopRunnerBase):

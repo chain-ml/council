@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import time
 from enum import Enum
-from typing import List, Dict, Any, Sequence, Optional
-import progressbar  # type: ignore
+from typing import Any, Dict, List, Optional, Sequence
 
+import progressbar  # type: ignore
 from council.agents import Agent
+from council.contexts import AgentContext, Budget, ScorerContext
 from council.scorers import ScorerBase, ScorerException
-from council.contexts import (
-    AgentContext,
-    Budget,
-    ScorerContext,
-)
 
 
 class AgentTestCaseOutcome(str, Enum):

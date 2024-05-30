@@ -1,4 +1,4 @@
-from typing import Union, Optional, Any
+from typing import Any, Optional, Union
 
 
 class Ok:

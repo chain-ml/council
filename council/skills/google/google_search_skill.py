@@ -1,8 +1,9 @@
 import json
 
 from council.contexts import ChatMessage, SkillContext
-from .google_context import GoogleSearchEngine
+
 from .. import SkillBase
+from .google_context import GoogleSearchEngine
 
 
 class GoogleSearchSkill(SkillBase):

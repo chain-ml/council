@@ -1,6 +1,6 @@
 from typing import Optional
 
-from council.contexts import ChatMessage, ChainContext
+from council.contexts import ChainContext, ChatMessage
 
 from .errrors import RunnerPredicateError
 from .runner_base import RunnerBase

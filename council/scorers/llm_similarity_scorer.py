@@ -1,11 +1,12 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
-from . import ScorerException
-from .scorer_base import ScorerBase
-from council.contexts import ChatMessage, ScorerContext, ContextBase
-from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
+from council.contexts import ChatMessage, ContextBase, ScorerContext
+from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
+
 from ..llm.llm_answer import LLMParsingException, llm_class_validator
 from ..utils import Option
+from . import ScorerException
+from .scorer_base import ScorerBase
 
 
 class SimilarityScore:

@@ -6,7 +6,6 @@ from council.contexts import SkillContext
 from council.llm import LLMBase, LLMMessage
 from council.skills import LLMSkill
 
-
 instruction = """
 # Instructions
 You are a coding assistant generating python code.

@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from ._monitorable import Monitorable
 from ._budget import Consumption
 from ._chat_message import ChatMessage
+from ._monitorable import Monitorable
 
 
 class ExecutionLogEntry:

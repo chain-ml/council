@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Any, Optional
 
 import httpx
-from httpx import TimeoutException, HTTPStatusError
+from httpx import HTTPStatusError, TimeoutException
 
-from . import OpenAIChatCompletionsModel, LLMCallTimeoutException, LLMCallException
+from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel
 from .azure_llm_configuration import AzureLLMConfiguration
 from .llm_config_object import LLMConfigObject, LLMProviders
 

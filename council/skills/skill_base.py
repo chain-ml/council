@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
 from abc import abstractmethod
+from typing import Any
 
-from council.contexts import SkillContext, ChatMessage
+from council.contexts import ChatMessage, SkillContext
 from council.runners import SkillRunnerBase
 
 

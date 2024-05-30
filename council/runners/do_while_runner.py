@@ -1,5 +1,5 @@
 from council.contexts import ChainContext, ChatMessage
-from council.runners import RunnerBase, RunnerPredicate, RunnerExecutor, RunnerPredicateError
+from council.runners import RunnerBase, RunnerExecutor, RunnerPredicate, RunnerPredicateError
 
 
 class DoWhile(RunnerBase):

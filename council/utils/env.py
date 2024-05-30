@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Type, Callable, TypeVar, Any
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from council.utils import Option
 
