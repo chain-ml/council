@@ -113,7 +113,7 @@ class PythonCodeVerificationSkill(SkillBase):
             context.logger.debug(error)
             return self.build_error_message(error)
 
-    def _validate_code(self, code: str):
+    def _validate_code(self, code: str) -> None:
         errors = []
         code_lines = self.normalize_snippet(code)
         if self._code_before_line_count > 0:
