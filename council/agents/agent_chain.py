@@ -1,8 +1,9 @@
-from typing import Any, Optional
+from typing import Optional
 
 from council.chains import ChainBase
 from council.contexts import AgentContext, ChainContext, ChatMessage, Monitored
 from council.runners import RunnerExecutor
+
 from .agent import Agent
 
 
@@ -13,7 +14,7 @@ class AgentChain(ChainBase):
 
     _agent: Monitored[Agent]
 
-    def __init__(self, name: str, description: str, agent: Agent):
+    def __init__(self, name: str, description: str, agent: Agent) -> None:
         """
         Initialize a new instance.
 
@@ -29,11 +30,7 @@ class AgentChain(ChainBase):
     def agent(self) -> Agent:
         return self._agent.inner
 
-    def _execute(
-        self,
-        context: ChainContext,
-        _executor: Optional[RunnerExecutor] = None,
-    ) -> Any:
+    def _execute(self, context: ChainContext, _executor: Optional[RunnerExecutor] = None) -> None:
         result = self.agent.execute(AgentContext.from_chat_history(context.chat_history))
         maybe_message = result.try_best_message
         if maybe_message.is_some():

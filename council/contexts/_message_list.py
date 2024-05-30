@@ -11,7 +11,7 @@ class MessageList(MessageCollection):
 
     _messages: List[ChatMessage] = []
 
-    def __init__(self, messages: Optional[Iterable[ChatMessage]] = None):
+    def __init__(self, messages: Optional[Iterable[ChatMessage]] = None) -> None:
         """
         initialize a new instance
         """
@@ -28,7 +28,7 @@ class MessageList(MessageCollection):
     def reversed(self) -> Iterable[ChatMessage]:
         return reversed(self._messages)
 
-    def add_user_message(self, message: str, data: Optional[Any] = None):
+    def add_user_message(self, message: str, data: Optional[Any] = None) -> None:
         """
         adds a user :class:`ChatMessage` into the history
 
@@ -39,7 +39,7 @@ class MessageList(MessageCollection):
 
         self._messages.append(ChatMessage.user(message, data))
 
-    def add_agent_message(self, message: str, data: Any = None):
+    def add_agent_message(self, message: str, data: Any = None) -> None:
         """
         adds an agent class:`ChatMessage` into the history
 
@@ -50,8 +50,11 @@ class MessageList(MessageCollection):
 
         self._messages.append(ChatMessage.agent(message, data))
 
-    def add_message(self, message: ChatMessage):
+    def add_message(self, message: ChatMessage) -> None:
         self._messages.append(message)
 
-    def add_messages(self, messages: Iterable[ChatMessage]):
+    def add_messages(self, messages: Iterable[ChatMessage]) -> None:
         self._messages.extend(messages)
+
+    def __len__(self):
+        return len(self._messages)

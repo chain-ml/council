@@ -1,11 +1,12 @@
 from __future__ import annotations
-import logging
-import tiktoken
 
+import logging
 from typing import List, Optional, Sequence
+
+import tiktoken
 from tiktoken import Encoding
 
-from . import LLMMessage, LLMessageTokenCounterBase, LLMTokenLimitException
+from . import LLMessageTokenCounterBase, LLMMessage, LLMTokenLimitException
 
 logger = logging.getLogger(__name__)
 

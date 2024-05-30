@@ -51,7 +51,7 @@ class Consumption:
     def kind(self) -> str:
         return self._kind
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self._kind} consumption: {self._value} {self.unit}"
 
     def add(self, value: float) -> Consumption:
@@ -156,7 +156,7 @@ class Budget:
         """
         self._add_consumption(Consumption(value=value, unit=unit, kind=kind))
 
-    def _add_consumption(self, consumption: Consumption):
+    def _add_consumption(self, consumption: Consumption) -> None:
         for limit in self._remaining:
             if limit.unit == consumption.unit and limit.kind == consumption.kind:
                 limit.subtract_value(consumption.value)
@@ -168,7 +168,7 @@ class Budget:
         for consumption in consumptions:
             self._add_consumption(consumption)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Budget({self._duration})"
 
     @staticmethod
@@ -188,7 +188,7 @@ class InfiniteBudget(Budget):
     Helper class representing a budget with no duration and no limits
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(10000)
 
     def is_expired(self) -> bool:

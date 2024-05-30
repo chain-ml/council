@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ._message_list import MessageList
 
 

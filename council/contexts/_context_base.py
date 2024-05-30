@@ -18,7 +18,7 @@ class ContextBase:
     The actual data are stored in the underlying `class`:AgentContextStore`.
     """
 
-    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget):
+    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget) -> None:
         self._store = store
         self._execution_context = execution_context
         self._budget = MonitoredBudget(execution_context.entry, budget)

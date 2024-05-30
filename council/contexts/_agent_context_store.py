@@ -14,7 +14,7 @@ class AgentContextStore:
     Actual data storage used during the execution of an :class:`council.agents.Agent`
     """
 
-    def __init__(self, chat_history: ChatHistory):
+    def __init__(self, chat_history: ChatHistory) -> None:
         self._cancellation_token = CancellationToken()
         self._chat_history = chat_history
         self._iterations: List[AgentIterationContextStore] = []

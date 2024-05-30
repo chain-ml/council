@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import List, Sequence, Optional
+from typing import List, Optional, Sequence
 
 from council.chains import ChainBase
 from council.contexts import AgentContext, Monitorable
+
 from .execution_unit import ExecutionUnit
 
 
 class ControllerException(Exception):
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         super().__init__(message)
 
 
@@ -16,7 +17,7 @@ class ControllerBase(Monitorable, ABC):
     Abstract base class for an agent controller.
     """
 
-    def __init__(self, chains: Sequence[ChainBase], parallelism: bool = False):
+    def __init__(self, chains: Sequence[ChainBase], parallelism: bool = False) -> None:
         """
         Args:
             chains (List[Chain]): The list of chains available for execution.

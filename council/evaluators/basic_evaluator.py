@@ -1,10 +1,7 @@
 from typing import List
 
-from council.contexts import (
-    AgentContext,
-    ScoredChatMessage,
-    ChatMessage,
-)
+from council.contexts import AgentContext, ChatMessage, ScoredChatMessage
+
 from .evaluator_base import EvaluatorBase
 
 

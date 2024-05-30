@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 from council.utils import Option
+
 from ._agent_context_store import AgentContextStore
 from ._budget import Budget
 from ._chain_context import ChainContext

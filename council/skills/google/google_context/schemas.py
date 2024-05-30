@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
 
 class ResponseReference:
@@ -15,8 +15,9 @@ class ResponseReference:
         self.snippet = snippet
         self.date = date
 
-    def __str__(self):
-        return "ResponseReference(title=" + str(self.title) + " ,url=" + self.url + ", date=" + self.date + " )"
+    def __str__(self) -> str:
+        date = self.date or "Undefined"
+        return f"ResponseReference(title={self.title} ,url={self.url}, date={date})"
 
     def dict(self) -> Dict[str, Any]:
         return {

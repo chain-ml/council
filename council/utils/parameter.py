@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Callable, TypeVar, Optional, Generic, Any, Union
+from typing import Any, Callable, Generic, Optional, TypeVar, Union
 
-from council.utils import Option, read_env_int, read_env_float, read_env_str
+from council.utils import Option, read_env_float, read_env_int, read_env_str
 
 T = TypeVar("T")
 Validator = Callable[[T], None]
@@ -10,7 +10,7 @@ _Converter = Callable[[str, bool], T]
 
 
 def greater_than_validator(value: int) -> Validator:
-    def validator(x: int):
+    def validator(x: int) -> None:
         if x <= value:
             raise ValueError(f"must be greater than {value}")
 
@@ -18,14 +18,14 @@ def greater_than_validator(value: int) -> Validator:
 
 
 def prefix_validator(value: str) -> Validator:
-    def validator(x: str):
+    def validator(x: str) -> None:
         if not x.startswith(value):
             raise ValueError(f"must start with `{value}`")
 
     return validator
 
 
-def not_empty_validator(x: str):
+def not_empty_validator(x: str) -> None:
     if len(x.strip()) == 0:
         raise ValueError("must not be empty")
 
@@ -49,7 +49,7 @@ class ParameterValueException(Exception):
     Custom exception raised when a required environment variable is missing.
     """
 
-    def __init__(self, name: str, value: Any, message: Exception):
+    def __init__(self, name: str, value: Any, message: Exception) -> None:
         """
         Initializes an instance of ParameterValueException.
 
@@ -73,7 +73,7 @@ class Parameter(Generic[T]):
         value: OptionalOrUndefined[T] = _undefined,
         default: OptionalOrUndefined[T] = _undefined,
         validator: Optional[Validator] = None,
-    ):
+    ) -> None:
         self._name = name
         self._required = required
         self._validator: Validator = validator if validator is not None else lambda x: None

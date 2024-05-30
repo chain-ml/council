@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Type, Callable, TypeVar, Any
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from council.utils import Option
 
@@ -9,7 +9,7 @@ class MissingEnvVariableException(Exception):
     Custom exception raised when a required environment variable is missing.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """
         Initializes an instance of MissingEnvVariableError.
 
@@ -111,5 +111,5 @@ class OsEnviron:
         if value is not None:
             os.environ[self.name] = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Env var:`{self.name}` value:{self.value} (previous value: {self.previous_value})"

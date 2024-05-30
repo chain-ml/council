@@ -14,7 +14,7 @@ class ChainBase(Monitorable, abc.ABC):
     _description: str
     _instructions: bool
 
-    def __init__(self, name: str, description: str, support_instructions: bool = False):
+    def __init__(self, name: str, description: str, support_instructions: bool = False) -> None:
         super().__init__("chain")
         self._name = name
         self._description = description
@@ -57,15 +57,11 @@ class ChainBase(Monitorable, abc.ABC):
             self._execute(context, executor)
 
     @abc.abstractmethod
-    def _execute(
-        self,
-        context: ChainContext,
-        executor: Optional[RunnerExecutor] = None,
-    ) -> None:
+    def _execute(self, context: ChainContext, executor: Optional[RunnerExecutor] = None) -> None:
         pass
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Chain({self.name}, {self.description})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Chain {self.name}, description: {self.description}"

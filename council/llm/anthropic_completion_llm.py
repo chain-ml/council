@@ -1,8 +1,7 @@
-from typing import Sequence, List
+from typing import List, Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
-
 from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
 from council.llm.anthropic import AnthropicAPIClientWrapper
 

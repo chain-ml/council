@@ -1,26 +1,24 @@
-httpx==0.25.1
+httpx~=0.25.1
 requests~=2.31.0
 Jinja2~=3.1.2
-python-dotenv==1.0.0
-more-itertools==10.1.0
-progressbar==2.5
-tiktoken==0.5.1
+python-dotenv~=1.0.0
+more-itertools~=10.1.0
+progressbar~=2.5
+tiktoken~=0.5.1
 
 # LLMs
-anthropic>=0.20.0
+anthropic~=0.20.0
 
 # Skills
 ## Google
-google-api-python-client==2.106.0
+google-api-python-client>=2.106.0
 GoogleNews>=1.6.10
-google-api-python-client-stubs==1.18.0
+
+## Wikipedia
 pymediawiki~=0.7.3
 beautifulsoup4~=4.12.2
-types-beautifulsoup4~=4.12.0.7
-
 
 toml~=0.10.2
-nbformat==5.9.2
-nbconvert==7.11.0
-PyYAML==6.0.1
-types-PyYAML==6.0.12.12
+nbformat~=5.9.2
+nbconvert~=7.11.0
+PyYAML~=6.0.1

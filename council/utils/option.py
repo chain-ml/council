@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, Generic, Optional, Callable
+from typing import Callable, Generic, Optional, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -15,9 +15,7 @@ class Option(Generic[T]):
     Convenient class to manage optional values.
     """
 
-    _some: Optional[T]
-
-    def __init__(self, some: Optional[T]):
+    def __init__(self, some: Optional[T]) -> None:
         """
         Initialize a new instance
 

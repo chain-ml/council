@@ -1,5 +1,4 @@
 import logging
-
 from abc import ABC, abstractmethod
 
 from .schemas import ResponseReference

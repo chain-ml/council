@@ -4,7 +4,7 @@ T = TypeVar("T")
 
 
 class Monitored(Generic[T]):
-    def __init__(self, name: str, monitorable: T):
+    def __init__(self, name: str, monitorable: T) -> None:
         self._name = name
         self._inner = monitorable
 

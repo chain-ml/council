@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import time
 from enum import Enum
-from typing import List, Dict, Any, Sequence, Optional
-import progressbar  # type: ignore
+from typing import Any, Dict, List, Optional, Sequence
 
+import progressbar  # type: ignore
 from council.agents import Agent
+from council.contexts import AgentContext, Budget, ScorerContext
 from council.scorers import ScorerBase, ScorerException
-from council.contexts import (
-    AgentContext,
-    Budget,
-    ScorerContext,
-)
 
 
 class AgentTestCaseOutcome(str, Enum):
@@ -22,7 +18,7 @@ class AgentTestCaseOutcome(str, Enum):
 
 
 class ScorerResult:
-    def __init__(self, scorer: ScorerBase, score: float):
+    def __init__(self, scorer: ScorerBase, score: float) -> None:
         self._scorer = scorer
         self._score = score
 
@@ -41,22 +37,14 @@ class ScorerResult:
 
 
 class AgentTestCaseResult:
-    _actual: str
-    _execution_time: float
-    _outcome: AgentTestCaseOutcome
-    _prompt: str
-    _scorers: List[ScorerBase]
-    _scorer_results: List[ScorerResult]
-    _error: str
-    _error_message: str
 
-    def __init__(self, prompt: str, scorers: List[ScorerBase]):
+    def __init__(self, prompt: str, scorers: List[ScorerBase]) -> None:
         self._actual = ""
-        self._execution_time = 0
+        self._execution_time = 0.0
         self._outcome = AgentTestCaseOutcome.Unknown
         self._prompt = prompt
-        self._scorers = scorers
-        self._scorer_results = []
+        self._scorers: List[ScorerBase] = scorers
+        self._scorer_results: List[ScorerResult] = []
         self._error = ""
         self._error_message = ""
 
@@ -84,18 +72,20 @@ class AgentTestCaseResult:
     def error_message(self) -> str:
         return self._error_message
 
-    def set_success(self, actual: str, execution_time: float, scores: List[float]):
+    def set_success(self, actual: str, execution_time: float, scores: List[float]) -> None:
         self.set_result(actual, execution_time, scores, AgentTestCaseOutcome.Success)
 
-    def set_error(self, error: Exception, execution_time: float):
+    def set_error(self, error: Exception, execution_time: float) -> None:
         self.set_result("", execution_time, [], AgentTestCaseOutcome.Error)
         self._error = error.__class__.__name__
         self._error_message = str(error)
 
-    def set_inconclusive(self, execution_time: float):
+    def set_inconclusive(self, execution_time: float) -> None:
         self.set_result("", execution_time, [], AgentTestCaseOutcome.Inconclusive)
 
-    def set_result(self, actual: str, execution_time: float, scores: List[float], outcome: AgentTestCaseOutcome):
+    def set_result(
+        self, actual: str, execution_time: float, scores: List[float], outcome: AgentTestCaseOutcome
+    ) -> None:
         self._actual = actual
         self._execution_time = execution_time
         self._outcome = outcome
@@ -120,7 +110,7 @@ class AgentTestCase:
     _prompt: str
     _scorers: List[ScorerBase]
 
-    def __init__(self, prompt: str, scorers: List[ScorerBase]):
+    def __init__(self, prompt: str, scorers: List[ScorerBase]) -> None:
         self._prompt = prompt
         self._scorers = scorers
 
@@ -161,8 +151,8 @@ class AgentTestCase:
 class AgentTestSuiteResult:
     _results: List[AgentTestCaseResult]
 
-    def __init__(self):
-        self._results = []
+    def __init__(self) -> None:
+        self._results: List[AgentTestCaseResult] = []
 
     @property
     def results(self) -> Sequence[AgentTestCaseResult]:

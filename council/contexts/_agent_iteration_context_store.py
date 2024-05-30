@@ -12,12 +12,9 @@ class AgentIterationContextStore:
     Data storage for the execution of iteration
     """
 
-    _chains: Dict[str, MonitoredMessageList]
-    _evaluator: List[ScoredChatMessage]
-
-    def __init__(self):
-        self._chains = {}
-        self._evaluator = []
+    def __init__(self) -> None:
+        self._chains: Dict[str, MonitoredMessageList] = {}
+        self._evaluator: List[ScoredChatMessage] = []
 
     @property
     def chains(self) -> Mapping[str, MessageCollection]:

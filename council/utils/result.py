@@ -1,11 +1,11 @@
-from typing import Union, Optional, Any
+from typing import Any, Optional, Union
 
 
 class Ok:
-    def __init__(self, value: Optional[Any] = None):
+    def __init__(self, value: Optional[Any] = None) -> None:
         self.value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Ok({self.value})"
 
     @staticmethod
@@ -18,10 +18,10 @@ class Ok:
 
 
 class Err:
-    def __init__(self, error):
+    def __init__(self, error) -> None:
         self.error = error
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Err({self.error})"
 
     @staticmethod

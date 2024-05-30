@@ -2,6 +2,7 @@ import abc
 from typing import Any, Dict
 
 from council.contexts import ChatMessage, Monitorable, ScorerContext
+
 from .scorer_exception import ScorerException
 
 
@@ -10,7 +11,7 @@ class ScorerBase(Monitorable, abc.ABC):
     Base class for implementing a Scorer
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("scorer")
 
     def score(self, context: ScorerContext, message: ChatMessage) -> float:

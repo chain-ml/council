@@ -1,7 +1,7 @@
 import yaml
-
 from council import ChatMessage, SkillContext
 from council.skills import SkillBase
+
 from .wikipedia_client import WikipediaClient
 
 

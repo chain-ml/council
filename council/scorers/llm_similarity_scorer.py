@@ -1,15 +1,16 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
-from . import ScorerException
-from .scorer_base import ScorerBase
-from council.contexts import ChatMessage, ScorerContext, ContextBase
-from council.llm import LLMBase, LLMMessage, MonitoredLLM, llm_property, LLMAnswer
+from council.contexts import ChatMessage, ContextBase, ScorerContext
+from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
+
 from ..llm.llm_answer import LLMParsingException, llm_class_validator
 from ..utils import Option
+from . import ScorerException
+from .scorer_base import ScorerBase
 
 
 class SimilarityScore:
-    def __init__(self, score: float, justification: str):
+    def __init__(self, score: float, justification: str) -> None:
         self._score = score
         self._justification = justification
 
@@ -23,11 +24,11 @@ class SimilarityScore:
         """Short, helpful and specific explanation your score"""
         return self._justification
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Similarity score is {self.score} with the justification: {self._justification}"
 
     @llm_class_validator
-    def validate(self):
+    def validate(self) -> None:
         if self._score < 0 or self._score > 100:
             raise LLMParsingException(f"Similarity Score `{self._score}` is invalid, value must be between 0 and 100.")
 

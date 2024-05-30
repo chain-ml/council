@@ -11,6 +11,7 @@ from council.evaluators import BasicEvaluator, EvaluatorBase
 from council.filters import BasicFilter, FilterBase
 from council.runners import new_runner_executor
 from council.skills import SkillBase
+
 from .agent_result import AgentResult
 
 
@@ -124,14 +125,12 @@ class Agent(Monitorable):
         try:
             for group in self._group_units(plan):
                 fs = [executor.submit(self._execute_unit, iteration_context, unit) for unit in group]
-                dones, not_dones = futures.wait(
-                    fs, iteration_context.budget.remaining_duration, futures.FIRST_EXCEPTION
-                )
-
+                dones, _ = futures.wait(fs, iteration_context.budget.remaining_duration, futures.FIRST_EXCEPTION)
                 # rethrow exception if any
                 [d.result(0) for d in dones]
         finally:
-            [f.cancel() for f in fs]
+            for f in fs:
+                f.cancel()
 
     @staticmethod
     def _group_units(plan: Sequence[ExecutionUnit]) -> List[List[ExecutionUnit]]:
@@ -154,7 +153,7 @@ class Agent(Monitorable):
         return result
 
     @staticmethod
-    def _execute_unit(iteration_context: AgentContext, unit: ExecutionUnit):
+    def _execute_unit(iteration_context: AgentContext, unit: ExecutionUnit) -> None:
         with iteration_context.new_agent_context_for_execution_unit(unit.name) as context:
             chain = unit.chain
             context.logger.info(f'message="chain execution started" chain="{chain.name}" execution_unit="{unit.name}"')

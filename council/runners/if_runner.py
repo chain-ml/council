@@ -1,6 +1,6 @@
 from typing import Optional
 
-from council.contexts import ChatMessage, ChainContext
+from council.contexts import ChainContext, ChatMessage
 
 from .errrors import RunnerPredicateError
 from .runner_base import RunnerBase
@@ -25,11 +25,7 @@ class If(RunnerBase):
         self._then = self.new_monitor("then", runner)
         self._maybe_else = self.new_monitor("else", else_runner) if else_runner is not None else None
 
-    def _run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         try:
             result = self._predicate(context)
         except Exception as e:

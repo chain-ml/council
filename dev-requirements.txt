@@ -1,9 +1,19 @@
+# requirements for developers and CI
+-r requirements.txt
+
 hatch==1.7.0
 
+# Types
+types-PyYAML==6.0.12.20240311
+google-api-python-client-stubs==1.26.0
+types-beautifulsoup4~=4.12.0.7
+
 # Lint
-black==24.2.0
-mypy==1.9.0
-ruff==0.1.4
+black==24.4.2
+mypy==1.10.0
+ruff==0.4.6
+pylint==3.2.2
+isort==5.13.2
 
 # Test
 ipykernel==6.26.0

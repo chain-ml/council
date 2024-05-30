@@ -5,6 +5,7 @@ from collections.abc import Set
 from concurrent import futures
 
 from council.contexts import ChainContext, Monitorable, Monitored
+
 from .errrors import RunnerError, RunnerTimeoutError
 from .runner_executor import RunnerExecutor
 
@@ -17,18 +18,14 @@ class RunnerBase(Monitorable, abc.ABC):
     Base runner class that handles common execution logic, including error management and timeout
     """
 
-    def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor):
+    def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor) -> None:
         inner = context.fork_for(runner)
         try:
             runner.inner.run(inner, executor)
         finally:
             context.merge([inner])
 
-    def run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         if context.should_stop():
             return
 
@@ -52,13 +49,9 @@ class RunnerBase(Monitorable, abc.ABC):
             context.logger.debug("done running %s", self.__class__.__name__)
 
     @staticmethod
-    def rethrow_if_exception(fs: Set[futures.Future]):
+    def rethrow_if_exception(fs: Set[futures.Future]) -> None:
         [f.result(timeout=0) for f in fs]
 
     @abc.abstractmethod
-    def _run(
-        self,
-        context: ChainContext,
-        executor: RunnerExecutor,
-    ) -> None:
+    def _run(self, context: ChainContext, executor: RunnerExecutor) -> None:
         pass

@@ -9,7 +9,7 @@ class BasicFilter(FilterBase):
     a basic filter that filters messages based on a score threshold.
     """
 
-    def __init__(self, score_threshold: Optional[float] = None, top_k: Optional[int] = None):
+    def __init__(self, score_threshold: Optional[float] = None, top_k: Optional[int] = None) -> None:
         """
         Args:
             score_threshold: minimum score value for a message to be kept

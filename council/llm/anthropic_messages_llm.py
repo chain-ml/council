@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from typing import Sequence, List, Iterable, Literal
+from typing import Iterable, List, Literal, Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
 from anthropic.types import MessageParam
-
-from council.llm import (
-    LLMMessage,
-    LLMMessageRole,
-    AnthropicLLMConfiguration,
-)
+from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
 from council.llm.anthropic import AnthropicAPIClientWrapper
 
 

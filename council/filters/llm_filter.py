@@ -6,9 +6,9 @@ This filter uses the given `LLM` to filter the chain's responses.
 
 from typing import List, Optional
 
-from council.contexts import AgentContext, ScoredChatMessage, ContextBase
+from council.contexts import AgentContext, ContextBase, ScoredChatMessage
 from council.filters import FilterBase, FilterException
-from council.llm import LLMBase, MonitoredLLM, llm_property, LLMAnswer, LLMMessage
+from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
 from council.llm.llm_answer import LLMParsingException
 from council.utils import Option
 
@@ -34,7 +34,7 @@ class FilterResult:
         """Short, helpful and specific explanation your response"""
         return self._justification
 
-    def __str__(self):
+    def __str__(self) -> str:
         t = " " if self._filtered else " not "
         return f"Message {self._index} is{t}filtered with the justification: {self._justification}"
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
 from abc import abstractmethod
+from typing import Any
 
-from council.contexts import SkillContext, ChatMessage
+from council.contexts import ChatMessage, SkillContext
 from council.runners import SkillRunnerBase
 
 
@@ -87,8 +87,8 @@ class SkillBase(SkillRunnerBase):
             )
         return skill_message
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"SkillBase({self.name})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Skill {self.name}"

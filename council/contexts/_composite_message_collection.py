@@ -11,7 +11,7 @@ class CompositeMessageCollection(MessageCollection):
 
     _collections: List[MessageCollection]
 
-    def __init__(self, collections: List[MessageCollection]):
+    def __init__(self, collections: List[MessageCollection]) -> None:
         self._collections = collections
 
     @property

@@ -41,7 +41,7 @@ class TestBase(unittest.TestCase):
         for d in json_loads:
             self.assertGreater(len(d["title"]), 0)
             self.assertGreater(len(d["url"]), 0)
-            self.assertEqual(len(d["snippet"]), 0)
+            self.assertGreater(len(d["snippet"]), 0)
             self.assertTrue(is_within_period(d["date"], 15))
 
     def test_gnews_skill_range(self):
@@ -64,7 +64,7 @@ class TestBase(unittest.TestCase):
         for d in json_loads:
             self.assertGreater(len(d["title"]), 0)
             self.assertGreater(len(d["url"]), 0)
-            self.assertEqual(len(d["snippet"]), 0)
+            self.assertGreater(len(d["snippet"]), 0)
 
     def test_gsearch_skill(self):
         context = ChainContext.from_user_message("USD", budget=Budget(duration=10))

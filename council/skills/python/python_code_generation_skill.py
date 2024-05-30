@@ -6,7 +6,6 @@ from council.contexts import SkillContext
 from council.llm import LLMBase, LLMMessage
 from council.skills import LLMSkill
 
-
 instruction = """
 # Instructions
 You are a coding assistant generating python code.
@@ -38,7 +37,7 @@ class PythonCodeGenerationSkill(LLMSkill):
 
     SKILL_NAME: str = "PythonCodeGenSkill"
 
-    def __init__(self, llm: LLMBase, code_template: str = "", additional_instructions: str = ""):
+    def __init__(self, llm: LLMBase, code_template: str = "", additional_instructions: str = "") -> None:
         system_prompt = instruction.format(code_template=code_template, additional_instructions=additional_instructions)
         super().__init__(llm, self.SKILL_NAME, system_prompt, context_messages=self.build_messages)
 

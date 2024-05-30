@@ -38,7 +38,7 @@ class LLMConfigurationBase(abc.ABC):
     Configuration for OpenAI LLM Chat Completion GPT Model
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
         self._max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
         self._top_p = Parameter.float(name="top_p", required=False)

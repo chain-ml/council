@@ -6,7 +6,7 @@ class CancellationToken:
     A cancellation token which is initially not set.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._cancelled = False
         self._lock = Lock()
 

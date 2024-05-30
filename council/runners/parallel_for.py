@@ -1,16 +1,15 @@
 from concurrent import futures
 from typing import Iterable
 
-from more_itertools import batched
-
-from council.contexts import IterationContext, ChainContext
+from council.contexts import ChainContext, IterationContext
 from council.utils import Option
+from more_itertools import batched
 
 from .errrors import RunnerGeneratorError
 from .loop_runner_base import LoopRunnerBase
 from .runner_executor import RunnerExecutor
-from .types import RunnerGenerator
 from .skill_runner_base import SkillRunnerBase
+from .types import RunnerGenerator
 
 
 class ParallelFor(LoopRunnerBase):
@@ -30,7 +29,7 @@ class ParallelFor(LoopRunnerBase):
         the order of results.
     """
 
-    def __init__(self, generator: RunnerGenerator, skill: SkillRunnerBase, parallelism: int = 5):
+    def __init__(self, generator: RunnerGenerator, skill: SkillRunnerBase, parallelism: int = 5) -> None:
         """
         Initialize a new instance
 
@@ -58,7 +57,7 @@ class ParallelFor(LoopRunnerBase):
             [f.cancel() for f in all_fs]
             context.merge(inner_contexts)
 
-    def _run_skill(self, context: ChainContext, iteration: IterationContext):
+    def _run_skill(self, context: ChainContext, iteration: IterationContext) -> None:
         index = iteration.index
         context.logger.debug(f'message="start iteration" index="{index}"')
         try:

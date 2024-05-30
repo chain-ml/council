@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 from typing import Optional
 
-from ._monitorable import Monitorable
 from ._execution_log import ExecutionLog
 from ._execution_log_entry import ExecutionLogEntry
+from ._monitorable import Monitorable
 from ._monitored import Monitored
 
 

@@ -1,8 +1,7 @@
 from typing import Any, List, Optional
 
+from council.contexts import ChainContext, ChatMessageKind, ContextBase
 from jinja2 import Template
-
-from council.contexts import ChatMessageKind, ChainContext, ContextBase
 
 
 class PromptBuilder:

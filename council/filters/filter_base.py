@@ -5,7 +5,7 @@ from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 
 class FilterException(Exception):
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         super().__init__(message)
 
 
@@ -14,7 +14,7 @@ class FilterBase(Monitorable, ABC):
     Abstract base class for an agent filter.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("filter")
 
     def execute(self, context: AgentContext) -> List[ScoredChatMessage]:

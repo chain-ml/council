@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import Any, Dict, Iterable, List, TypeVar
 
@@ -9,7 +11,7 @@ T_monitored = TypeVar("T_monitored", bound="Monitored")
 
 
 class Monitorable:
-    def __init__(self, base_type: str):
+    def __init__(self, base_type: str) -> None:
         self._monitor = Monitor(self, base_type)
 
     @property
@@ -26,10 +28,11 @@ class Monitorable:
 
     def new_monitors(self, name: str, items: Iterable[T]) -> List[Monitored[T]]:
         result = [Monitored(f"{name}[{index}]", item) for index, item in enumerate(items)]
-        [self._register_child(item.name, item.inner) for item in result]
+        for item in result:
+            self._register_child(item.name, item.inner)
         return result
 
-    def _register_child(self, relation: str, child: "Monitorable"):
+    def _register_child(self, relation: str, child: Monitorable) -> None:
         self._monitor.register_child(relation, child._monitor)
 
     def render_as_text(self) -> str:

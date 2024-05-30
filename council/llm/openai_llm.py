@@ -1,15 +1,11 @@
 from __future__ import annotations
+
 from typing import Any, Optional
 
 import httpx
-from httpx import TimeoutException, HTTPStatusError
+from httpx import HTTPStatusError, TimeoutException
 
-from . import (
-    OpenAIChatCompletionsModel,
-    OpenAITokenCounter,
-    LLMCallTimeoutException,
-    LLMCallException,
-)
+from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel, OpenAITokenCounter
 from .llm_config_object import LLMConfigObject, LLMProviders
 from .openai_llm_configuration import OpenAILLMConfiguration
 

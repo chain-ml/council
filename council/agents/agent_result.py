@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import List, Optional
 
-from council.contexts import ScoredChatMessage, ChatMessage
+from council.contexts import ChatMessage, ScoredChatMessage
 from council.utils import Option
 
 
@@ -12,7 +12,7 @@ class AgentResult:
 
     _messages: List[ScoredChatMessage]
 
-    def __init__(self, messages: Optional[List[ScoredChatMessage]] = None):
+    def __init__(self, messages: Optional[List[ScoredChatMessage]] = None) -> None:
         """
         Initialize a new instance.
 

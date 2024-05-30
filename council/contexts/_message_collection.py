@@ -4,8 +4,8 @@ from typing import Callable, Iterable, Optional
 from more_itertools import first
 from typing_extensions import TypeGuard
 
-from ._chat_message import ChatMessage, ChatMessageKind
 from ..utils import Option
+from ._chat_message import ChatMessage, ChatMessageKind
 
 
 class MessageCollection(abc.ABC):
@@ -106,7 +106,7 @@ class MessageCollection(abc.ABC):
             Optional[ChatMessage]:
         """
 
-        def predicate(message: ChatMessage):
+        def predicate(message: ChatMessage) -> bool:
             return message.is_of_kind(ChatMessageKind.Skill) and message.is_from_source(skill_name)
 
         return self._last_message_filter(predicate)

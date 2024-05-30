@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import httpx
+from typing import Any, List, Optional, Protocol, Sequence
 
-from typing import List, Any, Protocol, Sequence, Optional
+import httpx
+from council.contexts import Consumption, LLMContext
 
 from . import LLMConfigurationBase
-from .llm_message import LLMMessage, LLMessageTokenCounterBase
-from .llm_exception import LLMCallException
 from .llm_base import LLMBase, LLMResult
-from council.contexts import LLMContext, Consumption
+from .llm_exception import LLMCallException
+from .llm_message import LLMessageTokenCounterBase, LLMMessage
 
 
 class Provider(Protocol):

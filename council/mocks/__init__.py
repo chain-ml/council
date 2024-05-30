@@ -66,7 +66,7 @@ class MockSkill(SkillBase):
     def execute(self, context: SkillContext) -> ChatMessage:
         return self._action(context)
 
-    def empty_message(self, context: SkillContext):
+    def empty_message(self, context: SkillContext) -> ChatMessage:
         return self.build_success_message("")
 
     def set_action_custom_message(self, message: str) -> None:
