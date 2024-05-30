@@ -4,7 +4,7 @@ import abc
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 import yaml
-
+from typing_extensions import Self
 
 Label = Optional[Union[str, List[str]]]
 
