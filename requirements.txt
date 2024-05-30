@@ -13,6 +13,8 @@ anthropic~=0.20.0
 ## Google
 google-api-python-client>=2.106.0
 GoogleNews>=1.6.10
+
+## Wikipedia
 pymediawiki~=0.7.3
 beautifulsoup4~=4.12.2
 
