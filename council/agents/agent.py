@@ -125,14 +125,12 @@ class Agent(Monitorable):
         try:
             for group in self._group_units(plan):
                 fs = [executor.submit(self._execute_unit, iteration_context, unit) for unit in group]
-                dones, not_dones = futures.wait(
-                    fs, iteration_context.budget.remaining_duration, futures.FIRST_EXCEPTION
-                )
-
+                dones, _ = futures.wait(fs, iteration_context.budget.remaining_duration, futures.FIRST_EXCEPTION)
                 # rethrow exception if any
                 [d.result(0) for d in dones]
         finally:
-            [f.cancel() for f in fs]
+            for f in fs:
+                f.cancel()
 
     @staticmethod
     def _group_units(plan: Sequence[ExecutionUnit]) -> List[List[ExecutionUnit]]:

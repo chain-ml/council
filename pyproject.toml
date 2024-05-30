@@ -45,3 +45,11 @@ line-length = 120
 exclude = "(?x)(venv|docs)"
 mypy_path= "./stubs"
 explicit_package_bases = "true"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+py_version=39
+src_paths = ["src"]
+skip = ["__init__.py"]
+skip_glob = ["**/venv/*", "**/docs/*", "**/stubs/*", "**/tests/*"]
