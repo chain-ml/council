@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from council.chains import ChainBase
 from council.contexts import AgentContext, ChainContext, ChatMessage, Monitored
