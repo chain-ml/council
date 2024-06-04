@@ -89,7 +89,7 @@ from council.skills import LLMSkill
 from council.llm import OpenAILLM
 ```
 
-Setup API keys in .env file (example in repository) and use it to set up the LLM (here: OpenAILLM).
+Setup API keys in .env file (example in repository) and use it to set up the LLM here: <a href="https://openai.com/">OpenAILLM</a>
 
 ```python
 import dotenv
