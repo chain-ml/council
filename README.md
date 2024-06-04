@@ -67,7 +67,7 @@ Install Council in one of multiple ways:
    - More documentation here: https://pip.pypa.io/en/stable/topics/vcs-support/#git
 3. Install with pip from local copy: 
    - Clone this repository
-   - Navigate to local project root and install via `pip install -e .`
+   - Navigate to local project root and install via `pip install -e git+https://github.com/chain-ml/council.git@<branch_name>.`
 
 Uninstall with: `pip uninstall council-ai`
 
