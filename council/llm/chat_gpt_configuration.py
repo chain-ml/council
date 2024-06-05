@@ -1,9 +1,8 @@
-import abc
+from abc import ABC
 from typing import Any, Dict, Optional
 
-from council.utils.parameter import Parameter
-
-_DEFAULT_TIMEOUT = 30
+from council.llm.llm_base import LLMConfigurationBase
+from council.utils import Parameter
 
 
 def _tv(x: float):
@@ -33,7 +32,7 @@ def _mtv(x: int):
         raise ValueError("must be positive")
 
 
-class LLMConfigurationBase(abc.ABC):
+class ChatGptConfigurationBase(LLMConfigurationBase, ABC):
     """
     Configuration for OpenAI LLM Chat Completion GPT Model
     """
@@ -123,19 +122,22 @@ class LLMConfigurationBase(abc.ABC):
         return payload
 
     def from_dict(self, values: Dict[str, Any]):
-        value: Optional[Any] = None
-        value = values.get("temperature", None)
-        if value is not None:
+        value: Optional[Any] = values.get("temperature", None)
+        if value:
             self.temperature.set(float(value))
+
         value = values.get("n", None)
-        if value is not None:
+        if value:
             self.n.set(int(value))
+
         value = values.get("maxTokens", None)
-        if value is not None:
+        if value:
             self.max_tokens.set(int(value))
+
         value = values.get("topP", None)
-        if value is not None:
+        if value:
             self.top_p.set(float(value))
+
         value = values.get("presencePenalty", None)
         if value is not None:
             self.presence_penalty.set(float(value))

@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Protocol, Sequence
 import httpx
 from council.contexts import Consumption, LLMContext
 
-from . import LLMConfigurationBase
+from . import ChatGptConfigurationBase
 from .llm_base import LLMBase, LLMResult
 from .llm_exception import LLMCallException
 from .llm_message import LLMessageTokenCounterBase, LLMMessage
@@ -140,24 +140,23 @@ class OpenAIChatCompletionsResult:
         return OpenAIChatCompletionsResult(_id, _object, _created, _model, _choices, _usage)
 
 
-class OpenAIChatCompletionsModel(LLMBase):
+class OpenAIChatCompletionsModel(LLMBase[ChatGptConfigurationBase]):
     """
     Represents an OpenAI language model hosted on Azure.
     """
 
     def __init__(
         self,
-        config: LLMConfigurationBase,
+        config: ChatGptConfigurationBase,
         provider: Provider,
         token_counter: Optional[LLMessageTokenCounterBase],
         name: Optional[str] = None,
-    ):
-        super().__init__(token_counter, name)
-        self.config = config
+    ) -> None:
+        super().__init__(configuration=config, token_counter=token_counter, name=name)
         self._provider = provider
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
-        payload = self.config.build_default_payload()
+        payload = self._configuration.build_default_payload()
         payload["messages"] = [message.dict() for message in messages]
         for key, value in kwargs.items():
             payload[key] = value

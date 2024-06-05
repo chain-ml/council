@@ -32,7 +32,7 @@ class AnthropicTokenCounter(LLMessageTokenCounterBase):
         return tokens
 
 
-class AnthropicLLM(LLMBase):
+class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
     def __init__(self, config: AnthropicLLMConfiguration, name: Optional[str] = None) -> None:
         """
         Initialize a new instance.
@@ -40,8 +40,7 @@ class AnthropicLLM(LLMBase):
         Args:
             config(AnthropicLLMConfiguration): configuration for the instance
         """
-        super().__init__(name=name or f"{self.__class__.__name__}")
-        self.config = config
+        super().__init__(name=name or f"{self.__class__.__name__}", configuration=config)
         self._client = Anthropic(api_key=config.api_key.value, max_retries=0)
         self._api = self._get_api_wrapper()
 
@@ -51,12 +50,12 @@ class AnthropicLLM(LLMBase):
             prompt_text = "\n".join([msg.content for msg in messages])
             return LLMResult(choices=response, consumptions=self.to_consumptions(prompt_text, response))
         except APITimeoutError as e:
-            raise LLMCallTimeoutException(self.config.timeout.value, self._name) from e
+            raise LLMCallTimeoutException(self._configuration.timeout.value, self._name) from e
         except APIStatusError as e:
             raise LLMCallException(code=e.status_code, error=e.message, llm_name=self._name) from e
 
     def to_consumptions(self, prompt: str, responses: List[str]) -> Sequence[Consumption]:
-        model = self.config.model.unwrap()
+        model = self._configuration.model_name()
         prompt_tokens = self._client.count_tokens(prompt)
         completion_tokens = sum(self._client.count_tokens(r) for r in responses)
         return [
@@ -67,9 +66,9 @@ class AnthropicLLM(LLMBase):
         ]
 
     def _get_api_wrapper(self) -> AnthropicAPIClientWrapper:
-        if self.config.model.value == "claude-2":
-            return AnthropicCompletionLLM(client=self._client, config=self.config)
-        return AnthropicMessagesLLM(client=self._client, config=self.config)
+        if self._configuration is not None and self._configuration.model_name() == "claude-2":
+            return AnthropicCompletionLLM(client=self._client, config=self.configuration)
+        return AnthropicMessagesLLM(client=self._client, config=self.configuration)
 
     @staticmethod
     def from_env() -> AnthropicLLM:

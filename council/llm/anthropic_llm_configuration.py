@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Final, Optional
 
-from council.llm import LLMConfigSpec
-from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
+from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
 
-_env_var_prefix = "ANTHROPIC_"
+_env_var_prefix: Final = "ANTHROPIC_"
 
 
 def _tv(x: float) -> None:
@@ -18,7 +17,7 @@ def _tv(x: float) -> None:
         raise ValueError("must be in the range [0.0..1.0]")
 
 
-class AnthropicLLMConfiguration:
+class AnthropicLLMConfiguration(LLMConfigurationBase):
     """
     Configuration for :class:AnthropicLLM
     """
@@ -42,11 +41,17 @@ class AnthropicLLMConfiguration:
         )
 
         self._timeout = Parameter.int(
-            name="timeout", required=False, default=_DEFAULT_TIMEOUT, validator=greater_than_validator(0)
+            name="timeout", required=False, default=self.default_timeout, validator=greater_than_validator(0)
         )
         self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
         self._top_p = Parameter.float(name="top_p", required=False, validator=_tv)
         self._top_k = Parameter.int(name="top_k", required=False, validator=greater_than_validator(0))
+
+    def model_name(self) -> str:
+        """
+        Anthropic model name
+        """
+        return self._model.unwrap()
 
     @property
     def model(self) -> Parameter[str]:

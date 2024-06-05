@@ -1,11 +1,26 @@
 import time
 from typing import Any, Sequence
 
-from council.contexts import LLMContext, Monitored
-from council.llm import LLMBase, LLMCallException, LLMException, LLMMessage, LLMResult
+from council.contexts import LLMContext
+from council.llm import LLMBase, LLMCallException, LLMException, LLMMessage, LLMResult, LLMConfigurationBase
+from council.llm.llm_base import T_Configuration
 
 
-class LLMFallback(LLMBase):
+class LLMFallbackConfiguration(LLMConfigurationBase):
+    """
+    A configuration class for the LLMFallback class.
+    """
+
+    def __init__(self, *, llm_config: T_Configuration, llm_fallback_config: T_Configuration) -> None:
+        super().__init__()
+        self._llm_config = llm_config
+        self._llm_fallback_config = llm_fallback_config
+
+    def model_name(self) -> str:
+        return f"{self._llm_config.model_name()} with fallback_{self._llm_fallback_config.model_name()}"
+
+
+class LLMFallback(LLMBase[LLMFallbackConfiguration]):
     """
     A class that combines two language models, using a fallback mechanism upon failure.
 
@@ -17,11 +32,10 @@ class LLMFallback(LLMBase):
 
     """
 
-    _llm: Monitored[LLMBase]
-    _fallback: Monitored[LLMBase]
-
     def __init__(self, llm: LLMBase, fallback: LLMBase, retry_before_fallback: int = 2) -> None:
-        super().__init__()
+        config = LLMFallbackConfiguration(llm_config=llm.configuration, llm_fallback_config=fallback.configuration)
+        super().__init__(configuration=config)
+
         self._llm = self.new_monitor("primary", llm)
         self._fallback = self.new_monitor("fallback", fallback)
         self._retry_before_fallback = retry_before_fallback
