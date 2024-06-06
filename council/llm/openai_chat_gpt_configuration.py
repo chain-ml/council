@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Final, Optional
 
-from council.llm import LLMConfigurationBase
+from council.llm import ChatGPTConfigurationBase
 from council.llm.llm_config_object import LLMConfigSpec
-from council.llm.llm_configuration_base import _DEFAULT_TIMEOUT
 from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
 
-_env_var_prefix = "OPENAI_"
+_env_var_prefix: Final[str] = "OPENAI_"
 
 
-class OpenAILLMConfiguration(LLMConfigurationBase):
+class OpenAIChatGPTConfiguration(ChatGPTConfigurationBase):
     """
     Configuration for :class:OpenAILLM
 
@@ -18,9 +17,12 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         * see https://platform.openai.com/docs/api-reference/chat
     """
 
-    def __init__(self, api_key: str, api_host: str, model: str, timeout: int = _DEFAULT_TIMEOUT):
+    def model_name(self) -> str:
+        return self._model.unwrap()
+
+    def __init__(self, api_key: str, api_host: str, model: str, timeout: Optional[int] = None) -> None:
         """
-        Initialize a new instance of OpenAILLMConfiguration
+        Initialize a new instance of OpenAIChatGPTConfiguration
         Args:
             api_key (str): the OpenAI api key
             api_host (str): the OpenAI Host
@@ -30,7 +32,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         super().__init__()
         self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gpt-"))
         self._timeout = Parameter.int(
-            name="timeout", required=False, default=timeout, validator=greater_than_validator(0)
+            name="timeout", required=False, default=timeout or self.default_timeout, validator=greater_than_validator(0)
         )
         self._api_key = Parameter.string(
             name="api_key", required=True, value=api_key, validator=prefix_validator("sk-")
@@ -79,7 +81,7 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         return payload
 
     @staticmethod
-    def from_env(model: Optional[str] = None, api_host: Optional[str] = None) -> OpenAILLMConfiguration:
+    def from_env(model: Optional[str] = None, api_host: Optional[str] = None) -> OpenAIChatGPTConfiguration:
         api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
         if api_host is None:
             api_host = read_env_str(
@@ -89,19 +91,18 @@ class OpenAILLMConfiguration(LLMConfigurationBase):
         if model is None:
             model = read_env_str(_env_var_prefix + "LLM_MODEL", required=False, default="gpt-3.5-turbo").unwrap()
 
-        timeout = read_env_int(_env_var_prefix + "LLM_TIMEOUT", required=False, default=_DEFAULT_TIMEOUT).unwrap()
-
-        config = OpenAILLMConfiguration(model=model, api_key=api_key, api_host=api_host, timeout=timeout)
+        timeout = read_env_int(_env_var_prefix + "LLM_TIMEOUT", required=False).as_optional()
+        config = OpenAIChatGPTConfiguration(model=model, api_key=api_key, api_host=api_host, timeout=timeout)
         config.read_env(_env_var_prefix)
         return config
 
     @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> OpenAILLMConfiguration:
+    def from_spec(spec: LLMConfigSpec) -> OpenAIChatGPTConfiguration:
         api_key: str = spec.provider.must_get_value("apiKey")
         api_host: str = spec.provider.get_value("apiHost") or "https://api.openai.com"
         model: str = spec.provider.must_get_value("model")
 
-        config = OpenAILLMConfiguration(api_key=api_key, api_host=api_host, model=str(model))
+        config = OpenAIChatGPTConfiguration(api_key=api_key, api_host=api_host, model=str(model))
         if spec.parameters is not None:
             config.from_dict(spec.parameters)
 

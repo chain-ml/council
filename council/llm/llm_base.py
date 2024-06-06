@@ -1,9 +1,25 @@
 import abc
-from typing import Any, Optional, Sequence
+from typing import Any, Final, Generic, Optional, Sequence, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
 from .llm_message import LLMessageTokenCounterBase, LLMMessage
+
+_DEFAULT_TIMEOUT: Final[int] = 30
+
+
+class LLMConfigurationBase(abc.ABC):
+
+    @abc.abstractmethod
+    def model_name(self) -> str:
+        pass
+
+    @property
+    def default_timeout(self) -> int:
+        return _DEFAULT_TIMEOUT
+
+
+T_Configuration = TypeVar("T_Configuration", bound=LLMConfigurationBase)
 
 
 class LLMResult:
@@ -24,15 +40,25 @@ class LLMResult:
         return self._consumptions
 
 
-class LLMBase(Monitorable, abc.ABC):
+class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     """
     Abstract base class representing a language model.
     """
 
-    def __init__(self, token_counter: Optional[LLMessageTokenCounterBase] = None, name: Optional[str] = None):
+    def __init__(
+        self,
+        configuration: T_Configuration,
+        token_counter: Optional[LLMessageTokenCounterBase] = None,
+        name: Optional[str] = None,
+    ) -> None:
         super().__init__(name or "llm")
         self._token_counter = token_counter
         self._name = name or f"llm_{self.__class__.__name__}"
+        self._configuration = configuration
+
+    @property
+    def configuration(self) -> T_Configuration:
+        return self._configuration
 
     def post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         """
