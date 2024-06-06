@@ -5,7 +5,7 @@ from council.contexts import Consumption, LLMContext, Monitorable
 
 from .llm_message import LLMessageTokenCounterBase, LLMMessage
 
-_DEFAULT_TIMEOUT: Final = 30
+_DEFAULT_TIMEOUT: Final[int] = 30
 
 
 class LLMConfigurationBase(abc.ABC):

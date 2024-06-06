@@ -10,7 +10,7 @@ from .llm_exception import LLMException, LLMCallException, LLMCallTimeoutExcepti
 from .llm_message import LLMMessageRole, LLMMessage, LLMessageTokenCounterBase
 from .llm_base import LLMBase, LLMResult, LLMConfigurationBase
 from .monitored_llm import MonitoredLLM
-from .chat_gpt_configuration import ChatGptConfigurationBase
+from .chat_gpt_configuration import ChatGPTConfigurationBase
 from .llm_fallback import LLMFallback
 
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel

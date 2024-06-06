@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Final, Optional
 
-from council.llm import ChatGptConfigurationBase
+from council.llm import ChatGPTConfigurationBase
 from council.llm.llm_config_object import LLMConfigSpec
 from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
 
-_env_var_prefix = "OPENAI_"
+_env_var_prefix: Final[str] = "OPENAI_"
 
 
-class OpenAILLMConfiguration(ChatGptConfigurationBase):
+class OpenAILLMConfiguration(ChatGPTConfigurationBase):
     """
     Configuration for :class:OpenAILLM
 

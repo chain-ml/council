@@ -5,7 +5,7 @@ from typing import Any, Final, Optional
 from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
 
-_env_var_prefix: Final = "ANTHROPIC_"
+_env_var_prefix: Final[str] = "ANTHROPIC_"
 
 
 def _tv(x: float) -> None:

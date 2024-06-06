@@ -32,7 +32,7 @@ def _mtv(x: int):
         raise ValueError("must be positive")
 
 
-class ChatGptConfigurationBase(LLMConfigurationBase, ABC):
+class ChatGPTConfigurationBase(LLMConfigurationBase, ABC):
     """
     Configuration for OpenAI LLM Chat Completion GPT Model
     """

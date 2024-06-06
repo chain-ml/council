@@ -20,7 +20,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
 
     def __init__(
         self, encoding: Encoding, model: str, limit: int = -1, tokens_per_message: int = 0, tokens_per_name: int = 0
-    ):
+    ) -> None:
         self._encoding = encoding
         self._model = model
         self._limit = limit
