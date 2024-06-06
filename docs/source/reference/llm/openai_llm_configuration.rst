@@ -1,4 +1,4 @@
-OpenAILLMConfiguration
-----------------------
+OpenAIChatGPTConfiguration
+--------------------------
 
-.. autoclass:: council.llm.OpenAILLMConfiguration
+.. autoclass:: council.llm.OpenAIChatGPTConfiguration

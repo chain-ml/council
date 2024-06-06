@@ -6,7 +6,7 @@ import httpx
 from httpx import HTTPStatusError, TimeoutException
 
 from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel
-from .azure_llm_configuration import AzureChatGptConfiguration
+from .azure_chat_gpt_configuration import AzureChatGPTConfiguration
 from .llm_config_object import LLMConfigObject, LLMProviders
 
 
@@ -15,7 +15,7 @@ class AzureOpenAIChatCompletionsModelProvider:
     Represents an OpenAI language model hosted on Azure.
     """
 
-    def __init__(self, config: AzureChatGptConfiguration, name: Optional[str]) -> None:
+    def __init__(self, config: AzureChatGPTConfiguration, name: Optional[str]) -> None:
         self.config = config
         self._uri = (
             f"{self.config.api_base.value}/openai/deployments/{self.config.deployment_name.value}/chat/completions"
@@ -41,13 +41,13 @@ class AzureLLM(OpenAIChatCompletionsModel):
     Represents an OpenAI language model hosted on Azure.
     """
 
-    def __init__(self, config: AzureChatGptConfiguration, name: Optional[str] = None) -> None:
+    def __init__(self, config: AzureChatGPTConfiguration, name: Optional[str] = None) -> None:
         name = name or f"{self.__class__.__name__}"
         super().__init__(config, AzureOpenAIChatCompletionsModelProvider(config, name).post_request, None, name)
 
     @staticmethod
     def from_env(deployment_name: Optional[str] = None) -> AzureLLM:
-        config: AzureChatGptConfiguration = AzureChatGptConfiguration.from_env(deployment_name)
+        config: AzureChatGPTConfiguration = AzureChatGPTConfiguration.from_env(deployment_name)
         return AzureLLM(config, deployment_name)
 
     @staticmethod
@@ -56,5 +56,5 @@ class AzureLLM(OpenAIChatCompletionsModel):
         if not provider.is_of_kind(LLMProviders.Azure):
             raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Azure}")
 
-        config = AzureChatGptConfiguration.from_spec(config_object.spec)
+        config = AzureChatGPTConfiguration.from_spec(config_object.spec)
         return AzureLLM(config=config, name=config_object.metadata.name)

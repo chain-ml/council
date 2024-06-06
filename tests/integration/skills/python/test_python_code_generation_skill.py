@@ -4,7 +4,7 @@ import dotenv
 
 from council import DoWhile
 from council.contexts import ChainContext, ChatHistory, ChatMessage, InfiniteBudget, SkillContext
-from council.llm import AzureLLM, AzureChatGptConfiguration
+from council.llm import AzureLLM, AzureChatGPTConfiguration
 from council.runners import If, RunnerBase, Sequential, new_runner_executor
 from council.skills.python.llm_helper import extract_code_block
 from council.utils import Option
@@ -15,7 +15,7 @@ from council.skills.python import PythonCodeGenerationSkill, PythonCodeVerificat
 class TestPythonCodeGenSkill(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        self.llm = AzureLLM(AzureChatGptConfiguration.from_env())
+        self.llm = AzureLLM(AzureChatGPTConfiguration.from_env())
 
     def test_code_gen_say_hi(self):
         chat_history = ChatHistory.from_user_message("write code that says `Hi`")

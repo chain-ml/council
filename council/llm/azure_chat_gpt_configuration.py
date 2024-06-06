@@ -9,7 +9,7 @@ from council.utils import Parameter, greater_than_validator, not_empty_validator
 _env_var_prefix: Final[str] = "AZURE_"
 
 
-class AzureChatGptConfiguration(ChatGPTConfigurationBase):
+class AzureChatGPTConfiguration(ChatGPTConfigurationBase):
     """
     Configuration for :class:AzureLLM
 
@@ -17,12 +17,9 @@ class AzureChatGptConfiguration(ChatGPTConfigurationBase):
         https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     """
 
-    def model_name(self) -> str:
-        return "TODO"
-
-    def __init__(self, api_key: str, api_base: str, deployment_name: str):
+    def __init__(self, api_key: str, api_base: str, deployment_name: str, model_name: Optional[str] = None) -> None:
         """
-        Initialize a new instance of OpenAILLMConfiguration
+        Initialize a new instance of AzureChatGPTConfiguration
         Args:
             api_key (str): the Azure api key
         """
@@ -36,6 +33,10 @@ class AzureChatGptConfiguration(ChatGPTConfigurationBase):
         self._timeout = Parameter.int(
             name="timeout", required=False, default=self.default_timeout, validator=greater_than_validator(0)
         )
+        self._model_name = model_name or deployment_name
+
+    def model_name(self) -> str:
+        return self._model_name
 
     @property
     def api_base(self) -> Parameter[str]:
@@ -78,23 +79,23 @@ class AzureChatGptConfiguration(ChatGPTConfigurationBase):
         self._timeout.from_env(_env_var_prefix + "LLM_TIMEOUT")
 
     @staticmethod
-    def from_env(deployment_name: Optional[str] = None) -> AzureChatGptConfiguration:
+    def from_env(deployment_name: Optional[str] = None) -> AzureChatGPTConfiguration:
         api_key = read_env_str(_env_var_prefix + "LLM_API_KEY").unwrap()
         api_base = read_env_str(_env_var_prefix + "LLM_API_BASE").unwrap()
         if deployment_name is None:
             deployment_name = read_env_str(_env_var_prefix + "LLM_DEPLOYMENT_NAME", required=False).unwrap()
 
-        config = AzureChatGptConfiguration(api_key=api_key, api_base=api_base, deployment_name=deployment_name)
+        config = AzureChatGPTConfiguration(api_key=api_key, api_base=api_base, deployment_name=deployment_name)
         config.read_env(env_var_prefix=_env_var_prefix)
         config._read_optional_env()
         return config
 
     @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> AzureChatGptConfiguration:
+    def from_spec(spec: LLMConfigSpec) -> AzureChatGPTConfiguration:
         api_key: str = spec.provider.must_get_value("apiKey")
         deployment_name: str = spec.provider.must_get_value("deploymentName")
         api_base: str = spec.provider.must_get_value("apiBase")
-        config = AzureChatGptConfiguration(
+        config = AzureChatGPTConfiguration(
             api_key=api_key, api_base=str(api_base), deployment_name=str(deployment_name)
         )
 

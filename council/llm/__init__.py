@@ -16,10 +16,10 @@ from .llm_fallback import LLMFallback
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel
 from .openai_token_counter import OpenAITokenCounter
 
-from .azure_llm_configuration import AzureChatGptConfiguration
+from .azure_chat_gpt_configuration import AzureChatGPTConfiguration
 from .azure_llm import AzureLLM
 
-from .openai_llm_configuration import OpenAILLMConfiguration
+from .openai_chat_gpt_configuration import OpenAIChatGPTConfiguration
 from .openai_llm import OpenAILLM
 
 from .anthropic_llm_configuration import AnthropicLLMConfiguration

@@ -1,16 +1,16 @@
 import unittest
-from council.llm import AzureChatGptConfiguration
+from council.llm import AzureChatGPTConfiguration
 from council.utils import OsEnviron, ParameterValueException
 
 
-class TestAzureLLMConfiguration(unittest.TestCase):
+class TestAzureChatGPTConfiguration(unittest.TestCase):
     def test_from_env_value(self):
         with (
             OsEnviron("AZURE_LLM_API_KEY", "aKeY"),
             OsEnviron("AZURE_LLM_API_BASE", "council"),
             OsEnviron("AZURE_LLM_DEPLOYMENT_NAME", "gpt-4"),
         ):
-            config = AzureChatGptConfiguration.from_env()
+            config = AzureChatGPTConfiguration.from_env()
             self.assertEqual("aKeY", config.api_key.value)
             self.assertEqual("council", config.api_base.value)
             self.assertEqual("gpt-4", config.deployment_name.value)
@@ -21,7 +21,7 @@ class TestAzureLLMConfiguration(unittest.TestCase):
             OsEnviron("AZURE_LLM_API_KEY", "aKeY"),
             OsEnviron("AZURE_LLM_API_BASE", "council"),
         ):
-            config = AzureChatGptConfiguration.from_env(deployment_name="gpt-4")
+            config = AzureChatGPTConfiguration.from_env(deployment_name="gpt-4")
             self.assertEqual("aKeY", config.api_key.value)
             self.assertEqual("council", config.api_base.value)
             self.assertEqual("gpt-4", config.deployment_name.value)
@@ -34,11 +34,11 @@ class TestAzureLLMConfiguration(unittest.TestCase):
             OsEnviron("AZURE_LLM_DEPLOYMENT_NAME", "gpt-4"),
             OsEnviron("AZURE_LLM_TIMEOUT", "90"),
         ):
-            config = AzureChatGptConfiguration.from_env()
+            config = AzureChatGPTConfiguration.from_env()
             self.assertEqual(90, config.timeout.value)
 
     def test_default(self):
-        config = AzureChatGptConfiguration(api_key="aKeY", api_base="council", deployment_name="gpt-4")
+        config = AzureChatGPTConfiguration(api_key="aKeY", api_base="council", deployment_name="gpt-4")
         self.assertEqual("aKeY", config.api_key.value)
         self.assertEqual("council", config.api_base.value)
         self.assertEqual("gpt-4", config.deployment_name.value)
@@ -52,8 +52,8 @@ class TestAzureLLMConfiguration(unittest.TestCase):
 
     def test_invalid(self):
         with self.assertRaises(ParameterValueException):
-            _ = AzureChatGptConfiguration(api_key=" ", api_base="council", deployment_name="gpt-4")
+            _ = AzureChatGPTConfiguration(api_key=" ", api_base="council", deployment_name="gpt-4")
         with self.assertRaises(ParameterValueException):
-            _ = AzureChatGptConfiguration(api_key="aKeY", api_base=" ", deployment_name="gpt-4")
+            _ = AzureChatGPTConfiguration(api_key="aKeY", api_base=" ", deployment_name="gpt-4")
         with self.assertRaises(ParameterValueException):
-            _ = AzureChatGptConfiguration(api_key="aKeY", api_base="council", deployment_name=" ")
+            _ = AzureChatGPTConfiguration(api_key="aKeY", api_base="council", deployment_name=" ")

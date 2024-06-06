@@ -1,5 +1,5 @@
 from council import OpenAILLM, AzureLLM, AnthropicLLM
-from council.llm import get_llm_from_config, LLMFallback, OpenAILLMConfiguration
+from council.llm import get_llm_from_config, LLMFallback, OpenAIChatGPTConfiguration
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
@@ -16,8 +16,8 @@ def test_openai_from_yaml():
         llm = OpenAILLM.from_config(actual)
         assert isinstance(llm, OpenAILLM)
 
-        assert isinstance(llm.configuration, OpenAILLMConfiguration)
-        config: OpenAILLMConfiguration = llm.configuration
+        assert isinstance(llm.configuration, OpenAIChatGPTConfiguration)
+        config: OpenAIChatGPTConfiguration = llm.configuration
         assert config.temperature == 0.5
         assert config.n == 3
         assert config.api_host == "https://openai.com"
