@@ -4,7 +4,7 @@ Jinja2~=3.1.2
 python-dotenv~=1.0.0
 more-itertools~=10.1.0
 progressbar~=2.5
-tiktoken~=0.5.1
+tiktoken~=0.7.0
 
 # LLMs
 anthropic~=0.20.0
