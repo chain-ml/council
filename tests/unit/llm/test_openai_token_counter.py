@@ -16,6 +16,11 @@ class TestLlmOpenAI(unittest.TestCase):
         counter = OpenAITokenCounter.from_model(model)
         self.assertEqual(counter.token_limit, 128000)
 
+    def test_token_counter_gpt_4o(self):
+        model = "gpt-4o"
+        counter = OpenAITokenCounter.from_model(model)
+        self.assertEqual(counter.token_limit, 128000)
+
     def test_token_counter_exception(self):
         model = "gpt-4"
         counter = OpenAITokenCounter.from_model(model)
