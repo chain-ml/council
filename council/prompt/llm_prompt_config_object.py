@@ -15,6 +15,13 @@ class LLMPromptTemplate:
         if self._model is None and self._model_family is None:
             raise ValueError("At least one of `model` or `model-family` must be defined")
 
+        if self._model is not None and self._model_family is not None:
+            if not self._model.startswith(self._model_family):
+                raise ValueError(
+                    f"model `{self._model}` and model-family `{self._model_family}` are not compliant."
+                    f"Please use separate prompt templates"
+                )
+
     @classmethod
     def from_dict(cls, values: Dict[str, Any]) -> LLMPromptTemplate:
         template = values.get("template")

@@ -80,3 +80,17 @@ class TestLLMFallBack(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             _ = LLMPromptConfigSpec.from_dict(values["spec"])
         assert str(e.exception) == "At least one of `model` or `model-family` must be defined"
+
+    def test_no_compliant(self):
+        prompt_config_spec = """
+        spec:
+          system:
+            - model: gpt-4o
+              model-family: claude
+              template: |
+                System prompt template specific for gpt-4o or claude models
+        """
+        values = yaml.safe_load(prompt_config_spec)
+        with self.assertRaises(ValueError) as e:
+            _ = LLMPromptConfigSpec.from_dict(values["spec"])
+        assert str(e.exception).startswith("model `gpt-4o` and model-family `claude` are not compliant")
