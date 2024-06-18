@@ -26,7 +26,7 @@ class LLMPromptTemplate:
         return LLMPromptTemplate(template, model, model_family)
 
     @property
-    def template(self):
+    def template(self) -> str:
         return self._template
 
     def is_compatible(self, model: str) -> bool:
@@ -40,8 +40,8 @@ class LLMPromptTemplate:
 
 class LLMPromptConfigSpec(DataObjectSpecBase):
     def __init__(self, system: Sequence[LLMPromptTemplate], user: Optional[Sequence[LLMPromptTemplate]]) -> None:
-        self.system = list(system)
-        self.user = list(user or [])
+        self.system_prompts = list(system)
+        self.user_prompts = list(user or [])
 
     @classmethod
     def from_dict(cls, values: Mapping[str, Any]) -> LLMPromptConfigSpec:
@@ -58,15 +58,15 @@ class LLMPromptConfigSpec(DataObjectSpecBase):
         return LLMPromptConfigSpec(system, user)
 
     def to_dict(self) -> Dict[str, Any]:
-        result = {"system": self.system}
-        if not self.user:
-            result["user"] = self.user
+        result = {"system": self.system_prompts}
+        if not self.user_prompts:
+            result["user"] = self.user_prompts
         return result
 
     def __str__(self):
-        msg = f"{len(self.system)} system prompt(s)"
-        if self.user is not None:
-            msg += f"; {len(self.user)} user prompt(s)"
+        msg = f"{len(self.system_prompts)} system prompt(s)"
+        if self.user_prompts is not None:
+            msg += f"; {len(self.user_prompts)} user prompt(s)"
         return msg
 
 
@@ -88,15 +88,15 @@ class LLMPromptConfigObject(DataObject[LLMPromptConfigSpec]):
 
     @property
     def has_user_prompt_template(self) -> bool:
-        return self.spec.user is not None
+        return bool(self.spec.user_prompts)
 
     def get_system_prompt_template(self, model: str) -> str:
-        return self._get_prompt_template(self.spec.system, model)
+        return self._get_prompt_template(self.spec.system_prompts, model)
 
     def get_user_prompt_template(self, model: str) -> str:
         if not self.has_user_prompt_template:
             raise ValueError("No user prompt template provided")
-        return self._get_prompt_template(self.spec.user, model)
+        return self._get_prompt_template(self.spec.user_prompts, model)
 
     @staticmethod
     def _get_prompt_template(prompts: List[LLMPromptTemplate], model: str) -> str:
@@ -118,4 +118,4 @@ class LLMPromptConfigObject(DataObject[LLMPromptConfigSpec]):
             try:
                 return next(prompt.template for prompt in prompts if prompt.is_compatible("default"))
             except StopIteration:
-                raise ValueError("No prompt template for a given model or default one")
+                raise ValueError(f"No prompt template for a given model `{model}` nor a default one")

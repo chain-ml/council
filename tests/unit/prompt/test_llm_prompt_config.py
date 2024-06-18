@@ -26,7 +26,7 @@ class TestLLMFallBack(unittest.TestCase):
         assert system_prompt_gpt.rstrip("\n") == "System prompt template for gpt-3.5-turbo and other gpt models"
         with self.assertRaises(ValueError) as e:
             _ = actual.get_system_prompt_template("claude-3-opus-20240229")
-        assert str(e.exception) == "No prompt template for a given model or default one"
+        assert str(e.exception) == "No prompt template for a given model `claude-3-opus-20240229` nor a default one"
 
         user_prompt_gpt4_turbo = actual.get_user_prompt_template("gpt-4-turbo-preview")
         assert user_prompt_gpt4_turbo.rstrip("\n") == "User prompt template for gpt-4-turbo-preview"
