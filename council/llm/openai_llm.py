@@ -7,7 +7,7 @@ from httpx import HTTPStatusError, TimeoutException
 
 from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel, OpenAITokenCounter
 from .llm_config_object import LLMConfigObject, LLMProviders
-from .openai_llm_configuration import OpenAILLMConfiguration
+from .openai_chat_gpt_configuration import OpenAIChatGPTConfiguration
 
 
 class OpenAIChatCompletionsModelProvider:
@@ -15,7 +15,7 @@ class OpenAIChatCompletionsModelProvider:
     Represents an OpenAI language model hosted on Azure.
     """
 
-    def __init__(self, config: OpenAILLMConfiguration, name: Optional[str] = None) -> None:
+    def __init__(self, config: OpenAIChatGPTConfiguration, name: Optional[str] = None) -> None:
         self.config = config
         bearer = f"Bearer {config.api_key.unwrap()}"
         self._headers = {"Authorization": bearer, "Content-Type": "application/json"}
@@ -42,7 +42,7 @@ class OpenAILLM(OpenAIChatCompletionsModel):
     Represents an OpenAI large language model hosted on OpenAI.
     """
 
-    def __init__(self, config: OpenAILLMConfiguration, name: Optional[str] = None):
+    def __init__(self, config: OpenAIChatGPTConfiguration, name: Optional[str] = None):
         name = name or f"{self.__class__.__name__}"
         super().__init__(
             config,
@@ -53,7 +53,7 @@ class OpenAILLM(OpenAIChatCompletionsModel):
 
     @staticmethod
     def from_env(model: Optional[str] = None, api_host: Optional[str] = None) -> OpenAILLM:
-        config: OpenAILLMConfiguration = OpenAILLMConfiguration.from_env(model=model, api_host=api_host)
+        config: OpenAIChatGPTConfiguration = OpenAIChatGPTConfiguration.from_env(model=model, api_host=api_host)
         return OpenAILLM(config)
 
     @staticmethod
@@ -61,5 +61,5 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         provider = config_object.spec.provider
         if not provider.is_of_kind(LLMProviders.OpenAI):
             raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.OpenAI}")
-        config = OpenAILLMConfiguration.from_spec(config_object.spec)
+        config = OpenAIChatGPTConfiguration.from_spec(config_object.spec)
         return OpenAILLM(config=config, name=config_object.metadata.name)

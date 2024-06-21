@@ -1,0 +1,23 @@
+kind: LLMPrompt
+version: 0.1
+metadata:
+  name: "Prompt used to do ABC"
+  description: ""
+  labels:
+    abc: xyz
+spec:
+  system:
+    - model: gpt-4o
+      template: |
+        System prompt template specific for gpt-4o
+    - model: gpt-3.5-turbo
+      model-family: gpt
+      template: |
+        System prompt template for gpt-3.5-turbo and other gpt models
+  user:
+    - model: gpt-4-turbo-preview
+      template: |
+        User prompt template for gpt-4-turbo-preview
+    - model: default
+      template: |
+        User prompt template for default model

@@ -8,5 +8,9 @@ class LLModels:
     AzureWithFallback: str = "azure-with-fallback-llmodel.yaml"
 
 
+class LLMPrompts:
+    sample: str = "prompt-abc.yaml"
+
+
 def get_data_filename(filename: str):
     return os.path.join(os.path.dirname(__file__), "..", "data", filename)

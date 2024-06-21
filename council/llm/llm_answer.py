@@ -8,7 +8,9 @@ from council.utils import CodeParser
 
 
 class LLMParsingException(Exception):
-    pass
+    def __init__(self, message: str = "Your response is not correctly formatted.") -> None:
+        super().__init__(message)
+        self.message = message
 
 
 class llm_property(property):

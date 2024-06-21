@@ -20,7 +20,7 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
 
     def __init__(
         self, encoding: Encoding, model: str, limit: int = -1, tokens_per_message: int = 0, tokens_per_name: int = 0
-    ):
+    ) -> None:
         self._encoding = encoding
         self._model = model
         self._limit = limit
@@ -134,8 +134,11 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             tokens_per_message = 3
             tokens_per_name = 1
         elif model in {
+            "gpt-4o-2024-05-13",
             "gpt-4-1106-preview",
             "gpt-4-0125-preview",
+            "gpt-4-turbo-2024-04-09",
+            "gpt-4-1106-vision-preview",
         }:
             tokens_limit = 128000
             tokens_per_message = 3
@@ -148,11 +151,17 @@ class OpenAITokenCounter(LLMessageTokenCounterBase):
             return OpenAITokenCounter._return_alias(model, "gpt-3.5-turbo-0613")
         elif model == "gpt-3.5-turbo-16k":
             return OpenAITokenCounter._return_alias(model, "gpt-3.5-turbo-16k-0613")
+        elif model == "gpt-4o":
+            return OpenAITokenCounter._return_alias(model, "gpt-4o-2024-05-13")
         elif model == "gpt-4":
             return OpenAITokenCounter._return_alias(model, "gpt-4-0613")
+        elif model == "gpt-4-turbo":
+            return OpenAITokenCounter._return_alias(model, "gpt-4-turbo-2024-04-09")
         elif model == "gpt-4-32k":
             return OpenAITokenCounter._return_alias(model, "gpt-4-32k-0613")
         elif model == "gpt-4-turbo-preview":
+            return OpenAITokenCounter._return_alias(model, "gpt-4-1106-vision-preview")
+        elif model == "gpt-4-vision-preview":
             return OpenAITokenCounter._return_alias(model, "gpt-4-0125-preview")
         else:
             return None

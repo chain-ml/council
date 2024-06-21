@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Protocol, Sequence
 import httpx
 from council.contexts import Consumption, LLMContext
 
-from . import LLMConfigurationBase
+from . import ChatGPTConfigurationBase
 from .llm_base import LLMBase, LLMResult
 from .llm_exception import LLMCallException
 from .llm_message import LLMessageTokenCounterBase, LLMMessage
@@ -16,10 +16,7 @@ class Provider(Protocol):
 
 
 class Message:
-    _role: str
-    _content: str
-
-    def __init__(self, role: str, content: str):
+    def __init__(self, role: str, content: str) -> None:
         self._content = content
         self._role = role
 
@@ -35,11 +32,8 @@ class Message:
 
 
 class Choice:
-    _index: int
-    _finish_reason: str
-    _message: Message
 
-    def __init__(self, index: int, finish_reason: str, message: Message):
+    def __init__(self, index: int, finish_reason: str, message: Message) -> None:
         self._index = index
         self._finish_reason = finish_reason
         self._message = message
@@ -57,11 +51,7 @@ class Choice:
 
 
 class Usage:
-    _completion: int
-    _prompt: int
-    _total: int
-
-    def __init__(self, completion_tokens: int, prompt_tokens: int, total_tokens: int):
+    def __init__(self, completion_tokens: int, prompt_tokens: int, total_tokens: int) -> None:
         self._completion = completion_tokens
         self._prompt = prompt_tokens
         self._total = total_tokens
@@ -90,14 +80,8 @@ class Usage:
 
 
 class OpenAIChatCompletionsResult:
-    _id: str
-    _object: str
-    _created: int
-    _model: str
-    _choices: List[Choice]
-    _usage: Usage
 
-    def __init__(self, id: str, object: str, created: int, model: str, choices: List[Choice], usage: Usage):
+    def __init__(self, id: str, object: str, created: int, model: str, choices: List[Choice], usage: Usage) -> None:
         self._id = id
         self._object = object
         self._usage = usage
@@ -140,24 +124,23 @@ class OpenAIChatCompletionsResult:
         return OpenAIChatCompletionsResult(_id, _object, _created, _model, _choices, _usage)
 
 
-class OpenAIChatCompletionsModel(LLMBase):
+class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
     """
     Represents an OpenAI language model hosted on Azure.
     """
 
     def __init__(
         self,
-        config: LLMConfigurationBase,
+        config: ChatGPTConfigurationBase,
         provider: Provider,
         token_counter: Optional[LLMessageTokenCounterBase],
         name: Optional[str] = None,
-    ):
-        super().__init__(token_counter, name)
-        self.config = config
+    ) -> None:
+        super().__init__(configuration=config, token_counter=token_counter, name=name)
         self._provider = provider
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
-        payload = self.config.build_default_payload()
+        payload = self._configuration.build_default_payload()
         payload["messages"] = [message.dict() for message in messages]
         for key, value in kwargs.items():
             payload[key] = value

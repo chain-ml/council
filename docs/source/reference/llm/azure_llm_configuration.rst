@@ -1,4 +1,4 @@
-AzureLLMConfiguration
----------------------
+AzureChatGPTConfiguration
+-------------------------
 
-.. autoclass:: council.llm.AzureLLMConfiguration
+.. autoclass:: council.llm.AzureChatGPTConfiguration
