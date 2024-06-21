@@ -21,7 +21,7 @@ SP = """
           # Response formatting
  
           Your entire response must be inside the following `json` code block:
-          The JSON response schema must contain the following keys  `solved`, `explanation` and `sql`.
+          The JSON response schema must contain the following keys: `solved`, `explanation` and `sql`.
           
           ```json
           {
