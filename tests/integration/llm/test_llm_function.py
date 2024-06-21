@@ -25,7 +25,7 @@ SP = """
           
           ```json
           {
-            "solved": {Boolean, indicating if given the DB Schema the task is solved or not},
+            "solved": {Boolean, indicating whether the task is solved based on the provided database schema},
             "explanation": {String, concise explanation of the solution if solved or reasoning if not solved},
             "sql": {String, the sql query if the task is solved, otherwise empty}
           }
