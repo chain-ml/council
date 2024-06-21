@@ -21,11 +21,11 @@ SP = """
           # Response formatting
  
           Your entire response must be inside the following `json` code block:
-          The JSON response schema must contain the following keys  `solved`, `explanation` and `sql`.
+          The JSON response schema must contain the following keys: `solved`, `explanation` and `sql`.
           
           ```json
           {
-            "solved": {Boolean, indicating if given the DB Schema the task is solved or not},
+            "solved": {Boolean, indicating whether the task is solved based on the provided database schema},
             "explanation": {String, concise explanation of the solution if solved or reasoning if not solved},
             "sql": {String, the sql query if the task is solved, otherwise empty}
           }
