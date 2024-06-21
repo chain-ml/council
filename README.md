@@ -67,7 +67,7 @@ Install Council in one of multiple ways:
    - More documentation here: https://pip.pypa.io/en/stable/topics/vcs-support/#git
 3. Install with pip from local copy: 
    - Clone this repository
-   - Navigate to local project root and install via `pip install -e .`
+   - Navigate to local project root and install via `pip install -e git+https://github.com/chain-ml/council.git@<branch_name>.`
 
 Uninstall with: `pip uninstall council-ai`
 
@@ -89,7 +89,7 @@ from council.skills import LLMSkill
 from council.llm import OpenAILLM
 ```
 
-Setup API keys in .env file (example in repository) and use it to set up the LLM (here: OpenAILLM).
+Setup API keys in .env file (example in repository) and use it to set up the LLM here: <a href="https://openai.com/">OpenAILLM</a>
 
 ```python
 import dotenv
