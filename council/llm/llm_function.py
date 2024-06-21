@@ -50,11 +50,13 @@ class FunctionOutOfRetryError(LLMFunctionError):
 
 
 class LLMFunction(Generic[T_Response]):
-    def __init__(self, llm: LLMBase, response_parser: LLMResponseParser, system_message: str) -> None:
+    def __init__(
+        self, llm: LLMBase, response_parser: LLMResponseParser, system_message: str, max_retries: int = 3
+    ) -> None:
         self._llm_middleware = LLMMiddlewareChain(llm)
         self._system_message = LLMMessage.system_message(system_message)
         self._response_parser = response_parser
-        self._max_retries = 3
+        self._max_retries = max_retries
         self._context = LLMContext.empty()
 
     def execute(self, user_message: str, **kwargs: Any) -> T_Response:
