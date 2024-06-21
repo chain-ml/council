@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Sequence
 
 
 class LLMException(Exception):
@@ -17,9 +17,8 @@ class LLMException(Exception):
         Returns:
             None
         """
-        super().__init__(
-            f"llm:{llm_name}, message {message}" if llm_name is not None and len(llm_name) > 0 else message
-        )
+        self.message = f"llm:{llm_name}, message {message}" if llm_name is not None and len(llm_name) > 0 else message
+        super().__init__(self.message)
 
 
 class LLMCallTimeoutException(LLMException):
@@ -89,3 +88,17 @@ class LLMTokenLimitException(LLMException):
             None
         """
         super().__init__(f"token_count={token_count} is exceeding model {model} limit of {limit} tokens.", llm_name)
+
+
+class LLMOutOfRetriesException(LLMException):
+    """
+    Custom exception raised when the maximum number of retries is reached.
+    """
+
+    def __init__(
+        self, llm_name: Optional[str], retry_count: int, exceptions: Optional[Sequence[Exception]] = None
+    ) -> None:
+        """
+        Initializes an instance of LLMOutOfRetriesException.
+        """
+        super().__init__(f"Exceeded maximum retries after {retry_count} attempts", llm_name)

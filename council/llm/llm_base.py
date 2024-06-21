@@ -60,6 +60,10 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     def configuration(self) -> T_Configuration:
         return self._configuration
 
+    @property
+    def model_name(self) -> str:
+        return self.configuration.model_name()
+
     def post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         """
         Sends a chat request to the language model.
