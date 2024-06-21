@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "council-ai"
-version = "0.0.17"
+version = "0.0.18"
 description = "Council is an open-source framework for the rapid development and robust deployment of customized generative AI applications"
 readme = "README.md"
 requires-python = ">=3.9"
