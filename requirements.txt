@@ -20,5 +20,4 @@ pymediawiki~=0.7.3
 beautifulsoup4~=4.12.2
 
 toml~=0.10.2
-nbformat~=5.9.2
 PyYAML~=6.0.1
