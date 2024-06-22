@@ -8,6 +8,7 @@ tiktoken~=0.7.0
 
 # LLMs
 anthropic~=0.20.0
+google-generativeai==0.7.0
 
 # Skills
 ## Google

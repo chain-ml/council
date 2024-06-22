@@ -25,6 +25,9 @@ from .openai_llm import OpenAILLM
 from .anthropic_llm_configuration import AnthropicLLMConfiguration
 from .anthropic_llm import AnthropicLLM
 
+from .gemini_llm_configuration import GeminiLLMConfiguration
+from .gemini_llm import GeminiLLM
+
 
 def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
     provider = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
@@ -37,6 +40,8 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
         llm = AzureLLM.from_env()
     elif provider == LLMProviders.Anthropic.lower():
         llm = AnthropicLLM.from_env()
+    elif provider == LLMProviders.Gemini.lower():
+        llm = GeminiLLM.from_env()
 
     if llm is None:
         raise ValueError(f"Provider {provider} not supported by council.")
