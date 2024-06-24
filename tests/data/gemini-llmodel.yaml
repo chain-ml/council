@@ -1,0 +1,17 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: an-gemini-deployed-model
+  labels:
+    provider: Google
+spec:
+  description: "Model used to do RST"
+  provider:
+    name: CML-Gemini
+    googleGeminiSpec:
+      model: gemini-pro
+      apiKey:
+        fromEnvVar: GEMINI_API_KEY
+  parameters:
+    temperature: 0.5
+    topK: 8

@@ -11,12 +11,12 @@ types-beautifulsoup4~=4.12.0.7
 # Lint
 black==24.4.2
 mypy==1.10.0
-ruff==0.4.8
+ruff==0.4.10
 pylint==3.2.3
 isort==5.13.2
 
 # Test
 ipykernel==6.26.0
-nbconvert==7.11.0
-nbformat==5.9.2
+nbconvert==7.16.4
+nbformat==5.10.4
 pytest==7.4.4

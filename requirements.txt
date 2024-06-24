@@ -5,9 +5,12 @@ python-dotenv~=1.0.0
 more-itertools~=10.1.0
 progressbar~=2.5
 tiktoken~=0.7.0
+toml~=0.10.2
+PyYAML~=6.0.1
 
 # LLMs
 anthropic~=0.20.0
+google-generativeai==0.7.0
 
 # Skills
 ## Google
@@ -18,7 +21,3 @@ GoogleNews>=1.6.10
 pymediawiki~=0.7.3
 beautifulsoup4~=4.12.2
 
-toml~=0.10.2
-nbformat~=5.9.2
-nbconvert~=7.11.0
-PyYAML~=6.0.1

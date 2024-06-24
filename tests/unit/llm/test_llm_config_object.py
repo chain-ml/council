@@ -1,4 +1,4 @@
-from council import OpenAILLM, AzureLLM, AnthropicLLM
+from council import OpenAILLM, AzureLLM, AnthropicLLM, GeminiLLM
 from council.llm import get_llm_from_config, LLMFallback, OpenAIChatGPTConfiguration
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
@@ -50,6 +50,19 @@ def test_anthropic_from_yaml():
 
         llm = get_llm_from_config(filename)
         assert isinstance(llm, AnthropicLLM)
+
+
+def test_gemini_from_yaml():
+    filename = get_data_filename(LLModels.Gemini)
+
+    with OsEnviron("GEMINI_API_KEY", "a-key"):
+        actual = LLMConfigObject.from_yaml(filename)
+        llm = GeminiLLM.from_config(actual)
+        assert isinstance(llm, GeminiLLM)
+        assert llm.configuration.top_k.value == 8
+
+        llm = get_llm_from_config(filename)
+        assert isinstance(llm, GeminiLLM)
 
 
 def test_azure_with_openai_fallback_from_yaml():

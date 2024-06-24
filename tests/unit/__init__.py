@@ -6,6 +6,7 @@ class LLModels:
     OpenAI: str = "openai-llmodel.yaml"
     Anthropic: str = "anthropic-llmodel.yaml"
     AzureWithFallback: str = "azure-with-fallback-llmodel.yaml"
+    Gemini: str = "gemini-llmodel.yaml"
 
 
 class LLMPrompts:
