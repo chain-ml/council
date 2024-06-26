@@ -168,7 +168,8 @@ class LLMMessage:
         return self._role
 
     @property
-    def has_image(self) -> bool:
+    def has_data(self) -> bool:
+        """Check if this message has data associated with it"""
         return bool(self._data)
 
     def is_of_role(self, role: LLMMessageRole) -> bool:

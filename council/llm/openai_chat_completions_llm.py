@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Protocol, Sequence
 import httpx
 from council.contexts import Consumption, LLMContext
 
+from ..utils import truncate_dict_values_to_str
 from . import ChatGPTConfigurationBase
 from .llm_base import LLMBase, LLMResult
 from .llm_exception import LLMCallException
@@ -145,7 +146,9 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         for key, value in kwargs.items():
             payload[key] = value
 
-        context.logger.debug(f'message="Sending chat GPT completions request to {self._name}" payload="{payload}"')
+        context.logger.debug(
+            f'message="Sending chat GPT completions request to {self._name}" payload="{truncate_dict_values_to_str(payload, 100)}"'
+        )
         r = self._post_request(payload)
         context.logger.debug(
             f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
