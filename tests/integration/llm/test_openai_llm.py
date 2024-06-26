@@ -27,7 +27,7 @@ class TestLlmOpenAI(unittest.TestCase):
         messages.append(LLMMessage.system_message(result.first_choice))
         messages.append(LLMMessage.user_message("give me another example"))
         result = self.llm.post_chat_request(LLMContext.empty(), messages, model="gpt-4")
-        print(result)
+        print(result.first_choice)
 
     def test_prompt_exceed_token_limit(self):
         messages = [LLMMessage.user_message("what are the largest cities in South America")] * 500

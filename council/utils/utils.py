@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-def truncate_dict_values_to_str(data, max_length=20):
+def truncate_dict_values_to_str(data: Dict, max_length: int = 20):
     """
     Truncates dictionary values that are longer than max_length and returns a string representation.
     The truncated value shows both the start and end of the original value. Handles nested dictionaries recursively.
