@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Protocol, Sequence
+from typing import Any, Dict, List, Optional, Protocol, Sequence
 
 import httpx
 from council.contexts import Consumption, LLMContext
@@ -140,8 +140,8 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         self._provider = provider
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
-        payload = self._configuration.build_default_payload()
-        payload["messages"] = [message.dict() for message in messages]
+
+        payload = self._build_payload(messages)
         for key, value in kwargs.items():
             payload[key] = value
 
@@ -158,3 +158,23 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
             raise LLMCallException(response.status_code, response.text, self._name)
 
         return OpenAIChatCompletionsResult.from_dict(response.json())
+
+    def _build_payload(self, messages: Sequence[LLMMessage]):
+        payload = self._configuration.build_default_payload()
+        msgs = []
+        for message in messages:
+            content: List[Dict[str, Any]] = [{"type": "text", "text": message.content}]
+            result: Dict[str, Any] = {"role": message.role.value}
+            if message.name is not None:
+                result["name"] = message.name
+            for data in message.data:
+                if data.is_image:
+                    content.append(
+                        {"type": "image_url", "image_url": {"url": f"data:{data.mime_type};base64,{data.content}"}}
+                    )
+                elif data.is_url:
+                    content.append({"type": "image_url", "image_url": {"url": f"{data.content}"}})
+            result["content"] = content
+            msgs.append(result)
+        payload["messages"] = msgs
+        return payload

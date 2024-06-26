@@ -13,6 +13,7 @@ from council.llm import (
     LLMProviders,
     LLMResult,
 )
+from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import HarmBlockThreshold  # type: ignore
 
@@ -71,11 +72,30 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         history = []
         for message in messages[:-1]:
             if message.is_of_role(LLMMessageRole.System):
-                history.append({"role": "user", "parts": [{"text": f"System Prompt: {message.content}"}]})
+                history.append({"role": "user", "parts": GeminiLLM._get_parts(message)})
                 history.append({"role": "model", "parts": [{"text": "Understood"}]})
             elif message.is_of_role(LLMMessageRole.User):
-                history.append({"role": "user", "parts": [{"text": message.content}]})
+                history.append({"role": "user", "parts": GeminiLLM._get_parts(message)})
             elif message.is_of_role(LLMMessageRole.Assistant):
                 history.append({"role": "model", "parts": [{"text": message.content}]})
-        last = messages[-1].content
-        return history, last
+
+        last_msg = messages[-1]
+        return history, {"role": "user", "parts": GeminiLLM._get_parts(last_msg)}
+
+    @staticmethod
+    def _get_parts(message: LLMMessage) -> List[Any]:
+        parts: List[Any] = []
+        if message.is_of_role(LLMMessageRole.System):
+            parts.append({"text": f"System Prompt: {message.content}"})
+        elif message.is_of_role(LLMMessageRole.User):
+            parts.append({"text": message.content})
+        elif message.is_of_role(LLMMessageRole.Assistant):
+            parts.append({"text": message.content})
+
+        for data in message.data:
+            if data.is_url:
+                fd = FileData({"mime_type": data.mime_type, "file_uri": data.content})
+                parts.append({"file_data": fd})
+            else:
+                parts.append({"inline_data": {"mime_type": data.mime_type, "data": data.content}})
+        return parts

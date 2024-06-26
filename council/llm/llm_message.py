@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import abc
+import base64
+import mimetypes
 from enum import Enum
 from typing import Iterable, List, Optional, Sequence
 
@@ -28,6 +30,56 @@ class LLMMessageRole(str, Enum):
     """
 
 
+class LLMMessageData:
+    """
+    Represents the data of a message.
+    """
+
+    def __init__(self, content: str, mime_type: str) -> None:
+        self._content = content
+        self._mime_type = mime_type
+
+    @property
+    def content(self) -> str:
+        return self._content
+
+    @property
+    def mime_type(self) -> str:
+        result = self._mime_type.split(":")[-1]
+        return result
+
+    @property
+    def is_image(self) -> bool:
+        return self._mime_type.startswith("image/")
+
+    @property
+    def is_url(self) -> bool:
+        return self._mime_type.startswith("text/url")
+
+    def __str__(self):
+        return f"content length={len(self.content)}, mime_type={self.mime_type})"
+
+    @classmethod
+    def from_file(cls, path: str) -> LLMMessageData:
+        """
+        Add data from file to the message.
+        """
+        mime_type, _ = mimetypes.guess_type(path)
+        if mime_type is None:
+            mime_type = "image/unknown"
+
+        with open(path, "rb") as f:
+            return cls(content=base64.b64encode(f.read()).decode("utf-8"), mime_type=mime_type)
+
+    @classmethod
+    def from_uri(cls, uri: str) -> LLMMessageData:
+        """
+        Add an uri to the message.
+        """
+        mime_type, _ = mimetypes.guess_type(uri)
+        return cls(content=uri, mime_type=f"text/url:{mime_type}")
+
+
 class LLMMessage:
     """
     Represents chat messages. Used in the payload
@@ -45,6 +97,7 @@ class LLMMessage:
         self._role = role
         self._content = content
         self._name = name
+        self._data: List[LLMMessageData] = []
 
     @staticmethod
     def system_message(content: str, name: Optional[str] = None) -> LLMMessage:
@@ -79,11 +132,25 @@ class LLMMessage:
         """
         return LLMMessage(role=LLMMessageRole.Assistant, content=content, name=name)
 
-    def dict(self) -> dict[str, str]:
-        result = {"role": self._role.value, "content": self._content}
-        if self._name is not None:
-            result["name"] = self._name
-        return result
+    @property
+    def data(self) -> Sequence[LLMMessageData]:
+        """
+        Get the list of data associated with this message
+        """
+        return self._data
+
+    def add_content(self, *, path: Optional[str] = None, url: Optional[str] = None) -> None:
+        """
+        Add an image to the message.
+        """
+        data: Optional[LLMMessageData] = None
+        if path is not None:
+            data = LLMMessageData.from_file(path=path)
+        elif url is not None:
+            data = LLMMessageData.from_uri(uri=url)
+
+        if data is not None:
+            self._data.append(data)
 
     @property
     def content(self) -> str:
@@ -99,6 +166,10 @@ class LLMMessage:
     def role(self) -> LLMMessageRole:
         """Retrieve the role of this instance"""
         return self._role
+
+    @property
+    def has_image(self) -> bool:
+        return bool(self._data)
 
     def is_of_role(self, role: LLMMessageRole) -> bool:
         """Check the role of this instance"""
