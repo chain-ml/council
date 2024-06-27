@@ -1,6 +1,3 @@
-import os
-
-
 class LLModels:
     Azure: str = "azure-llmodel.yaml"
     OpenAI: str = "openai-llmodel.yaml"
@@ -11,7 +8,3 @@ class LLModels:
 
 class LLMPrompts:
     sample: str = "prompt-abc.yaml"
-
-
-def get_data_filename(filename: str):
-    return os.path.join(os.path.dirname(__file__), "..", "data", filename)

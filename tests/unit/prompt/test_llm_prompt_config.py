@@ -2,8 +2,10 @@ import unittest
 
 import yaml
 
-from council.prompt.llm_prompt_config_object import LLMPromptConfigObject, LLMPromptConfigSpec
-from tests.unit import get_data_filename, LLMPrompts
+from council.prompt import LLMPromptConfigObject, LLMPromptConfigSpec
+
+from tests import get_data_filename
+from .. import LLMPrompts
 
 
 class TestLLMFallBack(unittest.TestCase):

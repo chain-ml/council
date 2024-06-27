@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Literal, Sequence
+from typing import Any, Iterable, List, Literal, Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
@@ -39,16 +39,25 @@ class AnthropicMessagesLLM(AnthropicAPIClientWrapper):
     @staticmethod
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> Iterable[MessageParam]:
         result: List[MessageParam] = []
-        temp_content = ""
+        temp_content: List[Any] = []
         role: Literal["user", "assistant"] = "user"
 
         for message in messages:
             if message.is_of_role(LLMMessageRole.System):
-                temp_content += message.content
+                temp_content.append({"type": "text", "text": message.content})
             else:
-                temp_content += message.content
+                temp_content.append({"type": "text", "text": message.content})
+                for data in message.data:
+                    if data.is_image:
+                        temp_content.append(
+                            {
+                                "type": "image",
+                                "source": {"type": "base64", "media_type": data.mime_type, "data": data.content},
+                            }
+                        )
+
                 result.append(MessageParam(role=role, content=temp_content))
-                temp_content = ""
+                temp_content = []
                 role = "assistant" if role == "user" else "user"
 
         if temp_content:

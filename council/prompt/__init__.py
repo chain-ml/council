@@ -1,1 +1,2 @@
 from .prompt_builder import PromptBuilder
+from .llm_prompt_config_object import LLMPromptConfigObject, LLMPromptConfigSpec
