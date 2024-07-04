@@ -1,12 +1,14 @@
-from typing import Any, Callable, Generic, List, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generic, Iterable, List, Optional, Sequence, TypeVar, Union
 
-from council import LLMContext
-from council.llm import LLMBase, LLMMessage, LLMParsingException
-from council.llm.llm_middleware import LLMMiddlewareChain, LLMRequest
+from council.contexts import LLMContext
+
+from .llm_answer import LLMParsingException
+from .llm_base import LLMBase, LLMMessage
+from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse
 
 T_Response = TypeVar("T_Response")
 
-LLMResponseParser = Callable[[str], T_Response]
+LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 
 class LLMFunctionError(Exception):
@@ -59,37 +61,46 @@ class LLMFunction(Generic[T_Response]):
         self._max_retries = max_retries
         self._context = LLMContext.empty()
 
-    def execute(self, user_message: str, **kwargs: Any) -> T_Response:
-        messages = [self._system_message, LLMMessage.user_message(user_message)]
+    def execute(
+        self, user_message: Union[str, LLMMessage], messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any
+    ) -> T_Response:
+        um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
+        llm_messages = [self._system_message, um]
+        if messages:
+            llm_messages = llm_messages + list(messages)
         new_messages: List[LLMMessage] = []
         exceptions: List[Exception] = []
 
         retry = 0
         while retry <= self._max_retries:
-            messages = messages + new_messages
-            request = LLMRequest(context=self._context, messages=messages, **kwargs)
+            llm_messages = llm_messages + new_messages
+            request = LLMRequest(context=self._context, messages=llm_messages, **kwargs)
             try:
                 llm_response = self._llm_middleware.execute(request)
-                if llm_response.result is not None:
-                    response = llm_response.result.first_choice
-                    return self._response_parser(response)
+                return self._response_parser(llm_response)
             except LLMParsingException as e:
                 exceptions.append(e)
-                new_messages = self._handle_error(e, response, e.message)
+                new_messages = self._handle_error(e, llm_response, e.message)
             except LLMFunctionError as e:
                 exceptions.append(e)
                 if not e.retryable:
                     raise e
-                new_messages = self._handle_error(e, response, e.message)
+                new_messages = self._handle_error(e, llm_response, e.message)
             except Exception as e:
                 exceptions.append(e)
-                new_messages = self._handle_error(e, response, f"Fix the following exception: `{e}`")
+                new_messages = self._handle_error(e, llm_response, f"Fix the following exception: `{e}`")
 
             retry += 1
 
         raise FunctionOutOfRetryError(self._max_retries, exceptions)
 
-    def _handle_error(self, e: Exception, response: str, user_message: str) -> List[LLMMessage]:
+    def _handle_error(self, e: Exception, response: LLMResponse, user_message: str) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
-        self._context.logger.warning(f"Exception occurred: {error} for response {response}")
-        return [LLMMessage.assistant_message(response), LLMMessage.user_message(f"{user_message} Fix\n{error}")]
+        if response.result is None:
+            self._context.logger.warning(f"Exception occurred: {error} without response.")
+            return [LLMMessage.assistant_message("No response"), LLMMessage.user_message("Please retry.")]
+
+        first_choice = response.result.first_choice
+        error += f"\nResponse: {first_choice}"
+        self._context.logger.warning(f"Exception occurred: {error} for response {first_choice}")
+        return [LLMMessage.assistant_message(first_choice), LLMMessage.user_message(f"{user_message} Fix\n{error}")]
