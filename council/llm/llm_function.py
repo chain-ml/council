@@ -1,8 +1,10 @@
-from typing import Any, Callable, Generic, Iterable, List, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generic, Iterable, List, Optional, Sequence, TypeVar, Union
 
-from council import LLMContext
-from council.llm import LLMBase, LLMMessage, LLMParsingException
-from council.llm.llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse
+from council.contexts import LLMContext
+
+from .llm_answer import LLMParsingException
+from .llm_base import LLMBase, LLMMessage
+from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse
 
 T_Response = TypeVar("T_Response")
 
@@ -59,8 +61,11 @@ class LLMFunction(Generic[T_Response]):
         self._max_retries = max_retries
         self._context = LLMContext.empty()
 
-    def execute(self, user_message: str, messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any) -> T_Response:
-        llm_messages = [self._system_message, LLMMessage.user_message(user_message)]
+    def execute(
+        self, user_message: Union[str, LLMMessage], messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any
+    ) -> T_Response:
+        um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
+        llm_messages = [self._system_message, um]
         if messages:
             llm_messages = llm_messages + list(messages)
         new_messages: List[LLMMessage] = []

@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, List, Optional, Protocol, Sequence
 
-from council import LLMContext
+from council.contexts import LLMContext
 
 from .llm_base import LLMBase, LLMMessage, LLMResult
 from .llm_exception import LLMOutOfRetriesException

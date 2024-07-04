@@ -6,7 +6,8 @@ import unittest
 import dotenv
 
 from council import AzureLLM
-from council.llm import LLMParsingException, LLMFunction, LLMResponse
+from council.llm import LLMParsingException, LLMResponse, LLMMessage
+from council.llm.llm_function import LLMFunction
 from council.utils import CodeParser
 
 SYSTEM_PROMPT = """
@@ -82,7 +83,7 @@ class SQLResult:
         return f"Not solved.\nExplanation: {self.explanation}"
 
 
-class TestLlmAzure(unittest.TestCase):
+class TestLlmFunction(unittest.TestCase):
     """requires an Azure LLM model deployed"""
 
     def setUp(self) -> None:
@@ -92,5 +93,11 @@ class TestLlmAzure(unittest.TestCase):
     def test_basic_prompt(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
         sql_result = llm_func.execute(USER)
+        self.assertIsInstance(sql_result, SQLResult)
+        print("", sql_result, sep="\n")
+
+    def test_message_prompt(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
+        sql_result = llm_func.execute(LLMMessage.user_message(USER))
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
