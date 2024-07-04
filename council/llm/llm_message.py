@@ -87,17 +87,22 @@ class LLMMessage:
     Args:
         role (LLMMessageRole): the role/persona the message is coming from. Could be either user, system or assistant
         content (str): the message content
+        name (str): name of the author of this message
+        data (Sequence[LLMMessageData]): the data associated with this message
     """
 
-    _role: LLMMessageRole
-    _content: str
-
-    def __init__(self, role: LLMMessageRole, content: str, name: Optional[str] = None) -> None:
-        """Initialize a new instance"""
+    def __init__(
+        self,
+        role: LLMMessageRole,
+        content: str,
+        name: Optional[str] = None,
+        data: Optional[Sequence[LLMMessageData]] = None,
+    ) -> None:
+        """Initialize a new instance of LLMMessage"""
         self._role = role
         self._content = content
         self._name = name
-        self._data: List[LLMMessageData] = []
+        self._data: List[LLMMessageData] = [] if data is None else list(data)
 
     @staticmethod
     def system_message(content: str, name: Optional[str] = None) -> LLMMessage:
@@ -111,15 +116,18 @@ class LLMMessage:
         return LLMMessage(role=LLMMessageRole.System, content=content, name=name)
 
     @staticmethod
-    def user_message(content: str, name: Optional[str] = None) -> LLMMessage:
+    def user_message(
+        content: str, name: Optional[str] = None, data: Optional[Sequence[LLMMessageData]] = None
+    ) -> LLMMessage:
         """
         Create a new user message instance
 
         Parameters:
             content (str): the message content
             name (str): name of the author of this message
+            data (Sequence[LLMMessageData]): list of data associated with this message
         """
-        return LLMMessage(role=LLMMessageRole.User, content=content, name=name)
+        return LLMMessage(role=LLMMessageRole.User, content=content, name=name, data=data)
 
     @staticmethod
     def assistant_message(content: str, name: Optional[str] = None) -> LLMMessage:
@@ -138,6 +146,12 @@ class LLMMessage:
         Get the list of data associated with this message
         """
         return self._data
+
+    def add_data(self, data: LLMMessageData) -> None:
+        """
+        Add data to the message.
+        """
+        self._data.append(data)
 
     def add_content(self, *, path: Optional[str] = None, url: Optional[str] = None) -> None:
         """
