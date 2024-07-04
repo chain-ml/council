@@ -92,9 +92,10 @@ class LLMFunction(Generic[T_Response]):
     def _handle_error(self, e: Exception, response: LLMResponse, user_message: str) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
         if response.result is None:
-            error += f"\nResponse: {response}"
-            return [LLMMessage.user_message("Please retry.")]
+            self._context.logger.warning(f"Exception occurred: {error} without response.")
+            return [LLMMessage.assistant_message("No response"), LLMMessage.user_message("Please retry.")]
 
         first_choice = response.result.first_choice
+        error += f"\nResponse: {first_choice}"
         self._context.logger.warning(f"Exception occurred: {error} for response {first_choice}")
         return [LLMMessage.assistant_message(first_choice), LLMMessage.user_message(f"{user_message} Fix\n{error}")]
