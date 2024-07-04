@@ -8,9 +8,10 @@ import dotenv
 from council import AzureLLM
 from council.llm import LLMParsingException
 from council.llm.llm_function import LLMFunction
+from council.llm.llm_middleware import LLMResponse
 from council.utils import CodeParser
 
-SP = """
+SYSTEM_PROMPT = """
           You are a sql expert solving the `Task` leveraging the database schema in the `DATASET` section.
 
           # Instructions
@@ -53,7 +54,7 @@ SP = """
           price: BIGINT: price in dollars
 """
 
-U = "Price distribution by borough"
+USER = "Price distribution by borough"
 
 
 class SQLResult:
@@ -63,16 +64,18 @@ class SQLResult:
         self.sql = sql
 
     @staticmethod
-    def from_response(llm_response: str) -> SQLResult:
+    def from_response(response: LLMResponse) -> SQLResult:
+        llm_response = response.result.first_choice if response.result else ""
         json_bloc = CodeParser.find_first("json", llm_response)
         if json_bloc is None:
             raise LLMParsingException("No json block found in response")
-        response = json.loads(json_bloc.code)
-        sql = response.get("sql")
+
+        code_response = json.loads(json_bloc.code)
+        sql = code_response.get("sql")
         if sql is not None:
             if "LIMIT" not in sql:
                 raise LLMParsingException("Generated SQL query should contain a LIMIT clause")
-            return SQLResult(response["solved"], response["explanation"], sql)
+            return SQLResult(code_response["solved"], code_response["explanation"], sql)
         return SQLResult(False, "No SQL query generated", "")
 
     def __str__(self):
@@ -89,7 +92,7 @@ class TestLlmAzure(unittest.TestCase):
         self.llm = AzureLLM.from_env()
 
     def test_basic_prompt(self):
-        llm_func = LLMFunction(self.llm, SQLResult.from_response, SP)
-        sql_result = llm_func.execute(U)
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
+        sql_result = llm_func.execute(USER)
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
