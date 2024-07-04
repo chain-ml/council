@@ -4,7 +4,7 @@ from typing import Any, Iterable, List, Literal, Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
-from anthropic.types import MessageParam
+from anthropic.types import MessageParam, TextBlock
 from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
 from council.llm.anthropic import AnthropicAPIClientWrapper
 
@@ -34,7 +34,7 @@ class AnthropicMessagesLLM(AnthropicAPIClientWrapper):
             top_k=self._config.top_k.unwrap_or(NOT_GIVEN),
             top_p=self._config.top_p.unwrap_or(NOT_GIVEN),
         )
-        return [content.text for content in completion.content]
+        return [content.text for content in completion.content if isinstance(content, TextBlock)]
 
     @staticmethod
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> Iterable[MessageParam]:
