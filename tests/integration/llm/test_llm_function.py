@@ -6,9 +6,7 @@ import unittest
 import dotenv
 
 from council import AzureLLM
-from council.llm import LLMParsingException
-from council.llm.llm_function import LLMFunction
-from council.llm.llm_middleware import LLMResponse
+from council.llm import LLMParsingException, LLMFunction, LLMResponse
 from council.utils import CodeParser
 
 SYSTEM_PROMPT = """

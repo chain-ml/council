@@ -12,6 +12,7 @@ from .llm_base import LLMBase, LLMResult, LLMConfigurationBase
 from .monitored_llm import MonitoredLLM
 from .chat_gpt_configuration import ChatGPTConfigurationBase
 from .llm_fallback import LLMFallback
+from .llm_function import LLMFunction, LLMResponse, LLMRequest
 
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel
 from .openai_token_counter import OpenAITokenCounter
