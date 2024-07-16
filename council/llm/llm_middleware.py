@@ -43,6 +43,10 @@ class LLMResponse:
         return self._result
 
     @property
+    def value(self, default: str = "") -> str:
+        return self._result.first_choice if self._result is not None else default
+
+    @property
     def duration(self) -> float:
         return self._duration
 

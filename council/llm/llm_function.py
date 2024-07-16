@@ -4,7 +4,7 @@ from council.contexts import LLMContext
 
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase, LLMMessage
-from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse
+from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse, LLMMiddleware
 
 T_Response = TypeVar("T_Response")
 
@@ -53,13 +53,21 @@ class FunctionOutOfRetryError(LLMFunctionError):
 
 class LLMFunction(Generic[T_Response]):
     def __init__(
-        self, llm: LLMBase, response_parser: LLMResponseParser, system_message: str, max_retries: int = 3
+        self,
+        llm: Union[LLMBase, LLMMiddlewareChain],
+        response_parser: LLMResponseParser,
+        system_message: str,
+        max_retries: int = 3,
     ) -> None:
-        self._llm_middleware = LLMMiddlewareChain(llm)
+        self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
+        self._llm_config = llm.configuration
         self._system_message = LLMMessage.system_message(system_message)
         self._response_parser = response_parser
         self._max_retries = max_retries
         self._context = LLMContext.empty()
+
+    def add_middleware(self, middleware: LLMMiddleware) -> None:
+        self._llm_middleware.add_middleware(middleware)
 
     def execute(
         self, user_message: Union[str, LLMMessage], messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any
