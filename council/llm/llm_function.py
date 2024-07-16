@@ -70,10 +70,18 @@ class LLMFunction(Generic[T_Response]):
         self._llm_middleware.add_middleware(middleware)
 
     def execute(
-        self, user_message: Union[str, LLMMessage], messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any
+        self,
+        user_message: Optional[Union[str, LLMMessage]] = None,
+        messages: Optional[Iterable[LLMMessage]] = None,
+        **kwargs: Any,
     ) -> T_Response:
-        um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
-        llm_messages = [self._system_message, um]
+        if user_message is None and messages is None:
+            raise ValueError("At least one of 'user_message', 'messages' is required for LLMFunction.execute")
+
+        llm_messages: List[LLMMessage] = [self._system_message]
+        if user_message:
+            um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
+            llm_messages.append(um)
         if messages:
             llm_messages = llm_messages + list(messages)
         new_messages: List[LLMMessage] = []

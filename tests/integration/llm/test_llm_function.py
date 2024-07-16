@@ -92,13 +92,35 @@ class TestLlmFunction(unittest.TestCase):
 
     def test_basic_prompt(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
-        sql_result = llm_func.execute(USER)
+        sql_result = llm_func.execute(user_message=USER)
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
     def test_message_prompt(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
-        sql_result = llm_func.execute(LLMMessage.user_message(USER))
+        sql_result = llm_func.execute(user_message=LLMMessage.user_message(USER))
+        self.assertIsInstance(sql_result, SQLResult)
+        print("", sql_result, sep="\n")
+
+    def test_both_message_prompt_and_messages(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
+        user_message = LLMMessage.user_message(USER)
+        messages = [
+            LLMMessage.assistant_message("There's not enough information about the dataset to generate SQL"),
+            LLMMessage.user_message("Please pay attention to DATASET section"),
+        ]
+        sql_result = llm_func.execute(user_message=user_message, messages=messages)
+        self.assertIsInstance(sql_result, SQLResult)
+        print("", sql_result, sep="\n")
+
+    def test_messages_only(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
+        messages = [
+            LLMMessage.user_message(USER),
+            LLMMessage.assistant_message("There's not enough information about the dataset to generate SQL"),
+            LLMMessage.user_message("Please pay attention to DATASET section"),
+        ]
+        sql_result = llm_func.execute(messages=messages)
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
