@@ -53,7 +53,7 @@ class FunctionOutOfRetryError(LLMFunctionError):
 
 class LLMFunction(Generic[T_Response]):
     """
-    Represents a function that handles interactions with a Language Learning Model (LLM),
+    Represents a function that handles interactions with an LLM,
     including error handling and retries. It uses middleware to manage the requests and responses.
     """
 
@@ -89,7 +89,7 @@ class LLMFunction(Generic[T_Response]):
         handling errors and retries as configured.
 
         Args:
-            user_message (Union[str, LLMMessage]): The primary message from the user or an LLMMessage object.
+            user_message (Union[str, LLMMessage], optional): The primary message from the user or an LLMMessage object.
             messages (Iterable[LLMMessage], optional): Additional messages to include in the request.
             **kwargs: Additional keyword arguments to be passed to the LLMRequest.
 
