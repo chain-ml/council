@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
-from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProvider
+from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
 
 _env_var_prefix: Final[str] = "ANTHROPIC_"
@@ -114,27 +114,6 @@ class AnthropicLLMConfiguration(LLMConfigurationBase):
         self._top_p.from_env(_env_var_prefix + "LLM_TOP_P")
         self._top_k.from_env(_env_var_prefix + "LLM_TOP_K")
         self._timeout.from_env(_env_var_prefix + "LLM_TIMEOUT")
-
-    def to_spec(self) -> LLMConfigSpec:
-
-        provider = "anthropic"
-        provider_config = {
-            "apiKey": self.api_key.unwrap(),
-            "model": self.model.unwrap(),
-            "maxTokens": self.max_tokens.unwrap(),
-        }
-        timeout = self.timeout.unwrap()
-        parameters = {
-            "temperature": self.temperature.unwrap(),
-            "top_p": self.top_p.unwrap(),
-            "top_k": self.top_k.unwrap(),
-        }
-        return LLMConfigSpec(
-            description="",
-            provider=LLMProvider(provider=provider, provider_config=provider_config),
-            timeout=timeout,
-            parameters=parameters,
-        )
 
     @staticmethod
     def from_env() -> AnthropicLLMConfiguration:

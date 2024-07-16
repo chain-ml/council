@@ -81,6 +81,10 @@ class LLMMiddlewareChain:
             handler = self._wrap_middleware(middleware, handler)
         return handler(request)
 
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm
+
     def _wrap_middleware(self, middleware: LLMMiddleware, handler: ExecuteLLMRequest) -> ExecuteLLMRequest:
         def wrapped(request: LLMRequest) -> LLMResponse:
             return middleware(self._llm, handler, request)

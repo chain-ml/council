@@ -6,7 +6,7 @@ import unittest
 import dotenv
 
 from council import AzureLLM
-from council.llm import LLMParsingException, LLMResponse, LLMMessage, LLMMiddlewareChain
+from council.llm import LLMParsingException, LLMResponse, LLMMessage
 from council.llm.llm_function import LLMFunction
 from council.utils import CodeParser
 
@@ -123,6 +123,3 @@ class TestLlmFunction(unittest.TestCase):
         sql_result = llm_func.execute(messages=messages)
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
-
-    def test_warming(self):
-        middle_ware = LLMMiddlewareChain(self.llm)
