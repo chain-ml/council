@@ -4,7 +4,7 @@ from council.contexts import LLMContext
 
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase, LLMMessage
-from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse
+from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 
 T_Response = TypeVar("T_Response")
 
@@ -13,7 +13,7 @@ LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 class LLMFunctionError(Exception):
     """
-    Exception raised when an error occurs during the execution of a function.
+    Exception raised when an error occurs during the execution of an LLMFunction.
     """
 
     def __init__(self, message: str, retryable: bool = False):
@@ -52,20 +52,60 @@ class FunctionOutOfRetryError(LLMFunctionError):
 
 
 class LLMFunction(Generic[T_Response]):
+    """
+    Represents a function that handles interactions with an LLM,
+    including error handling and retries. It uses middleware to manage the requests and responses.
+    """
+
     def __init__(
-        self, llm: LLMBase, response_parser: LLMResponseParser, system_message: str, max_retries: int = 3
+        self,
+        llm: Union[LLMBase, LLMMiddlewareChain],
+        response_parser: LLMResponseParser,
+        system_message: str,
+        max_retries: int = 3,
     ) -> None:
-        self._llm_middleware = LLMMiddlewareChain(llm)
+        """
+        Initializes the LLMFunction with a middleware chain, response parser, system message, and retry settings.
+        """
+
+        self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
+        self._llm_config = self._llm_middleware.llm.configuration
         self._system_message = LLMMessage.system_message(system_message)
         self._response_parser = response_parser
         self._max_retries = max_retries
         self._context = LLMContext.empty()
 
+    def add_middleware(self, middleware: LLMMiddleware) -> None:
+        self._llm_middleware.add_middleware(middleware)
+
     def execute(
-        self, user_message: Union[str, LLMMessage], messages: Optional[Iterable[LLMMessage]] = None, **kwargs: Any
+        self,
+        user_message: Optional[Union[str, LLMMessage]] = None,
+        messages: Optional[Iterable[LLMMessage]] = None,
+        **kwargs: Any,
     ) -> T_Response:
-        um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
-        llm_messages = [self._system_message, um]
+        """
+        Executes the LLM request with the provided user message and additional messages,
+        handling errors and retries as configured.
+
+        Args:
+            user_message (Union[str, LLMMessage], optional): The primary message from the user or an LLMMessage object.
+            messages (Iterable[LLMMessage], optional): Additional messages to include in the request.
+            **kwargs: Additional keyword arguments to be passed to the LLMRequest.
+
+        Returns:
+            T_Response: The response from the LLM after processing by the response parser.
+
+        Raises:
+            FunctionOutOfRetryError: If all retry attempts fail, this exception is raised with details.
+        """
+        if user_message is None and messages is None:
+            raise ValueError("At least one of 'user_message', 'messages' is required for LLMFunction.execute")
+
+        llm_messages: List[LLMMessage] = [self._system_message]
+        if user_message:
+            um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
+            llm_messages.append(um)
         if messages:
             llm_messages = llm_messages + list(messages)
         new_messages: List[LLMMessage] = []
@@ -82,9 +122,9 @@ class LLMFunction(Generic[T_Response]):
                 exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
             except LLMFunctionError as e:
-                exceptions.append(e)
                 if not e.retryable:
                     raise e
+                exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
             except Exception as e:
                 exceptions.append(e)

@@ -43,6 +43,10 @@ class LLMResponse:
         return self._result
 
     @property
+    def value(self, default: str = "") -> str:
+        return self._result.first_choice if self._result is not None else default
+
+    @property
     def duration(self) -> float:
         return self._duration
 
@@ -76,6 +80,10 @@ class LLMMiddlewareChain:
         for middleware in reversed(self._middlewares):
             handler = self._wrap_middleware(middleware, handler)
         return handler(request)
+
+    @property
+    def llm(self) -> LLMBase:
+        return self._llm
 
     def _wrap_middleware(self, middleware: LLMMiddleware, handler: ExecuteLLMRequest) -> ExecuteLLMRequest:
         def wrapped(request: LLMRequest) -> LLMResponse:
