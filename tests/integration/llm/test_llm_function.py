@@ -101,6 +101,3 @@ class TestLlmFunction(unittest.TestCase):
         sql_result = llm_func.execute(LLMMessage.user_message(USER))
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
-
-    def test_warming(self):
-        middle_ware = LLMMiddlewareChain(self.llm)

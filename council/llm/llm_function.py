@@ -60,7 +60,7 @@ class LLMFunction(Generic[T_Response]):
         max_retries: int = 3,
     ) -> None:
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
-        self._llm_config = llm.configuration
+        self._llm_config = self._llm_middleware.llm.configuration
         self._system_message = LLMMessage.system_message(system_message)
         self._response_parser = response_parser
         self._max_retries = max_retries
