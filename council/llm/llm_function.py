@@ -13,7 +13,7 @@ LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 class LLMFunctionError(Exception):
     """
-    Exception raised when an error occurs during the execution of a function.
+    Exception raised when an error occurs during the execution of an LLMFunction.
     """
 
     def __init__(self, message: str, retryable: bool = False):
@@ -52,6 +52,11 @@ class FunctionOutOfRetryError(LLMFunctionError):
 
 
 class LLMFunction(Generic[T_Response]):
+    """
+    Represents a function that handles interactions with a Language Learning Model (LLM),
+    including error handling and retries. It uses middleware to manage the requests and responses.
+    """
+
     def __init__(
         self,
         llm: Union[LLMBase, LLMMiddlewareChain],
@@ -59,6 +64,10 @@ class LLMFunction(Generic[T_Response]):
         system_message: str,
         max_retries: int = 3,
     ) -> None:
+        """
+        Initializes the LLMFunction with a middleware chain, response parser, system message, and retry settings.
+        """
+
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._llm_config = self._llm_middleware.llm.configuration
         self._system_message = LLMMessage.system_message(system_message)
@@ -75,6 +84,21 @@ class LLMFunction(Generic[T_Response]):
         messages: Optional[Iterable[LLMMessage]] = None,
         **kwargs: Any,
     ) -> T_Response:
+        """
+        Executes the LLM request with the provided user message and additional messages,
+        handling errors and retries as configured.
+
+        Args:
+            user_message (Union[str, LLMMessage]): The primary message from the user or an LLMMessage object.
+            messages (Iterable[LLMMessage], optional): Additional messages to include in the request.
+            **kwargs: Additional keyword arguments to be passed to the LLMRequest.
+
+        Returns:
+            T_Response: The response from the LLM after processing by the response parser.
+
+        Raises:
+            FunctionOutOfRetryError: If all retry attempts fail, this exception is raised with details.
+        """
         if user_message is None and messages is None:
             raise ValueError("At least one of 'user_message', 'messages' is required for LLMFunction.execute")
 
@@ -98,9 +122,9 @@ class LLMFunction(Generic[T_Response]):
                 exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
             except LLMFunctionError as e:
-                exceptions.append(e)
                 if not e.retryable:
                     raise e
+                exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
             except Exception as e:
                 exceptions.append(e)

@@ -155,7 +155,7 @@ class LLMMessage:
 
     def add_content(self, *, path: Optional[str] = None, url: Optional[str] = None) -> None:
         """
-        Add an image to the message.
+        Add content to the message.
         """
         data: Optional[LLMMessageData] = None
         if path is not None:
