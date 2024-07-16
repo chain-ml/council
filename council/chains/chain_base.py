@@ -10,15 +10,11 @@ class ChainBase(Monitorable, abc.ABC):
     base class for implementing a Chain
     """
 
-    _name: str
-    _description: str
-    _instructions: bool
-
     def __init__(self, name: str, description: str, support_instructions: bool = False) -> None:
         super().__init__("chain")
-        self._name = name
-        self._description = description
-        self._instructions = support_instructions
+        self._name: str = name
+        self._description: str = description
+        self._instructions: bool = support_instructions
         self.monitor.name = name
 
     @property

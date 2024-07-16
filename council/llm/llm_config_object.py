@@ -17,7 +17,7 @@ class LLMProviders(str, Enum):
 
 
 class LLMProvider:
-    def __init__(self, name: str, description: str, specs: Dict[str, Any], kind: LLMProviders):
+    def __init__(self, name: str, description: str, specs: Dict[str, Any], kind: LLMProviders) -> None:
         self.name = name
         self.description = description
         self._specs = specs

@@ -13,7 +13,7 @@ class SkillRunnerBase(RunnerBase):
     Runner that executes a :class:`.SkillBase`
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__("skill")
         self.monitor.name = name
         self._name = name

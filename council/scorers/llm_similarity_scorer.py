@@ -38,7 +38,7 @@ class LLMSimilarityScorer(ScorerBase):
     Using an LLM to compute a similarity score between two messages.
     """
 
-    def __init__(self, llm: LLMBase, expected: str):
+    def __init__(self, llm: LLMBase, expected: str) -> None:
         """
         Initialize a new instance
 
@@ -78,7 +78,7 @@ class LLMSimilarityScorer(ScorerBase):
                 assistant_message = f"Your response raised an exception:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
 
-        raise ScorerException("LLMSimilarityScorer failed to execute.")
+        raise ScorerException(f"LLMSimilarityScorer failed to execute after {self._retry} retries.")
 
     @staticmethod
     def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:

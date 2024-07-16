@@ -29,7 +29,7 @@ class EnvVariableValueException(Exception):
     that is inconsistent with its declared data type.
     """
 
-    def __init__(self, name: str, value: str, expected_type: Type):
+    def __init__(self, name: str, value: str, expected_type: Type) -> None:
         """
         Initializes an instance of MissingEnvVariableError.
 

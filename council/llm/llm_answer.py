@@ -14,7 +14,7 @@ class LLMParsingException(Exception):
 
 
 class llm_property(property):
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None) -> None:
         super().__init__(fget, fset, fdel, doc)
         self.rank = inspect.getsourcelines(fget)[1]
 

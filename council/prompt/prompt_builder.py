@@ -22,7 +22,7 @@ class PromptBuilder:
 
     """
 
-    def __init__(self, t: str, instructions: Optional[List[str]] = None):
+    def __init__(self, t: str, instructions: Optional[List[str]] = None) -> None:
         """
         Initializes a PromptBuilder instance.
 

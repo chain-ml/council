@@ -8,7 +8,7 @@ from council.skills import SkillBase
 
 
 class MockSkill(SkillBase):
-    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext], ChatMessage]] = None):
+    def __init__(self, name: str = "mock", action: Optional[Callable[[SkillContext], ChatMessage]] = None) -> None:
         super().__init__(name)
         self._action = action if action is not None else self.empty_message
 

@@ -10,7 +10,7 @@ from .llm_exception import LLMOutOfRetriesException
 
 
 class LLMRequest:
-    def __init__(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any):
+    def __init__(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> None:
         self._context = context
         self._messages = messages
         self._kwargs = kwargs
@@ -33,7 +33,7 @@ class LLMRequest:
 
 
 class LLMResponse:
-    def __init__(self, request: LLMRequest, result: Optional[LLMResult], duration: float):
+    def __init__(self, request: LLMRequest, result: Optional[LLMResult], duration: float) -> None:
         self._request = request
         self._result = result
         self._duration = duration

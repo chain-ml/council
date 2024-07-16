@@ -5,10 +5,9 @@ from .schemas import ResponseReference
 
 
 class ContextProvider(ABC):
-    name: str
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, name: str) -> None:
+        self.name: str = name
 
     def execute(self, query: str, nb_results: int) -> list[ResponseReference]:
         logging.info(f'name="{self.name}" message="start to retrieve results from context provider"')

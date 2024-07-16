@@ -13,14 +13,11 @@ class ExecutionContext:
     context storing the execution information
     """
 
-    _executionLog: ExecutionLog
-    _entry: ExecutionLogEntry
-
     def __init__(
         self, execution_log: Optional[ExecutionLog] = None, path: str = "", node: Optional[Monitorable] = None
-    ):
-        self._executionLog = execution_log or ExecutionLog()
-        self._entry = self._executionLog.new_entry(path, node)
+    ) -> None:
+        self._executionLog: ExecutionLog = execution_log or ExecutionLog()
+        self._entry: ExecutionLogEntry = self._executionLog.new_entry(path, node)
 
     def _new_path(self, name: str) -> str:
         return name if self._entry.source == "" else f"{self._entry.source}/{name}"

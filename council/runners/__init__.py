@@ -1,4 +1,4 @@
-from .errrors import RunnerError, RunnerTimeoutError, RunnerSkillError, RunnerPredicateError, RunnerGeneratorError
+from .errors import RunnerError, RunnerTimeoutError, RunnerSkillError, RunnerPredicateError, RunnerGeneratorError
 
 from .types import RunnerPredicate, RunnerGenerator
 from .runner_executor import RunnerExecutor, new_runner_executor

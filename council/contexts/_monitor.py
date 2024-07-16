@@ -4,15 +4,12 @@ from typing import Any, Dict, List, Mapping
 
 
 class Monitor:
-    _children: Dict[str, Monitor]
-    _base_type: str
-    _properties: Dict[str, Any]
 
     def __init__(self, inner: object, base_type: str) -> None:
         self._type = inner.__class__.__name__
-        self._children = {}
-        self._properties = {}
-        self._base_type = base_type
+        self._children: Dict[str, Monitor] = {}
+        self._properties: Dict[str, Any] = {}
+        self._base_type: str = base_type
 
     def register_child(self, relation: str, child: Monitor) -> None:
         self._children[relation] = child

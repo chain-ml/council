@@ -54,7 +54,7 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
         llm = GeminiLLM.from_env()
 
     if llm is None:
-        raise ValueError(f"Provider {provider} not supported by council.")
+        raise ValueError(f"Provider {provider} not supported by Council.")
 
     if max_retries is not None and max_retries > 0:
         return LLMFallback(llm=llm, fallback=llm, retry_before_fallback=max_retries - 1)

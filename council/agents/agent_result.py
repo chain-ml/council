@@ -10,8 +10,6 @@ class AgentResult:
     Represent the execution result of an :class:`Agent`
     """
 
-    _messages: List[ScoredChatMessage]
-
     def __init__(self, messages: Optional[List[ScoredChatMessage]] = None) -> None:
         """
         Initialize a new instance.
@@ -19,7 +17,7 @@ class AgentResult:
         Parameters:
             messages(Optional[List[ScoredChatMessage]]): an optional list of messages
         """
-        self._messages = messages if messages is not None else []
+        self._messages: List[ScoredChatMessage] = messages if messages is not None else []
 
     @property
     def messages(self) -> Sequence[ScoredChatMessage]:

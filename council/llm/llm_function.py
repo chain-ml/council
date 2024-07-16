@@ -16,7 +16,7 @@ class LLMFunctionError(Exception):
     Exception raised when an error occurs during the execution of an LLMFunction.
     """
 
-    def __init__(self, message: str, retryable: bool = False):
+    def __init__(self, message: str, retryable: bool = False) -> None:
         """
         Initialize the FunctionError instance.
         """
@@ -31,7 +31,7 @@ class FunctionOutOfRetryError(LLMFunctionError):
     Stores all previous exceptions raised during retry attempts.
     """
 
-    def __init__(self, retry_count: int, exceptions: Optional[Sequence[Exception]] = None):
+    def __init__(self, retry_count: int, exceptions: Optional[Sequence[Exception]] = None) -> None:
         """
         Initialize the FunctionOutOfRetryException instance.
 
