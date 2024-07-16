@@ -6,7 +6,7 @@ import unittest
 import dotenv
 
 from council import AzureLLM
-from council.llm import LLMParsingException, LLMResponse, LLMMessage, LLMMiddlewareChain
+from council.llm import LLMParsingException, LLMResponse, LLMMessage
 from council.llm.llm_function import LLMFunction
 from council.utils import CodeParser
 

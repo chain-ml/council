@@ -4,7 +4,7 @@ from council.contexts import LLMContext
 
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase, LLMMessage
-from .llm_middleware import LLMMiddlewareChain, LLMRequest, LLMResponse, LLMMiddleware
+from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 
 T_Response = TypeVar("T_Response")
 
