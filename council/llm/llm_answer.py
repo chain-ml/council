@@ -131,17 +131,17 @@ class LLMAnswer:
                 properties_dict[class_prop.name] = typed_value
         return properties_dict
 
-    def parse_yaml(self, bloc: str) -> Dict[str, Any]:
-        d = yaml.safe_load(bloc)
+    def parse_yaml(self, block: str) -> Dict[str, Any]:
+        d = yaml.safe_load(block)
         properties_dict = {**d}
         missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
         if len(missing_keys) > 0:
             raise LLMParsingException(f"Missing `{missing_keys}` in response.")
         return properties_dict
 
-    def parse_yaml_list(self, bloc: str) -> List[Dict[str, Any]]:
+    def parse_yaml_list(self, block: str) -> List[Dict[str, Any]]:
         result = []
-        d = yaml.safe_load(bloc)
+        d = yaml.safe_load(block)
         for item in d:
             properties_dict = {**item}
             missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
