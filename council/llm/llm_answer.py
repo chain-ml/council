@@ -150,10 +150,10 @@ class LLMAnswer:
             result.append(properties_dict)
         return result
 
-    def parse_yaml_bloc(self, bloc: str) -> Dict[str, Any]:
-        code_bloc = CodeParser.find_first(language="yaml", text=bloc)
-        if code_bloc is not None:
-            return self.parse_yaml(code_bloc.code)
+    def parse_yaml_bloc(self, block: str) -> Dict[str, Any]:
+        code_block = CodeParser.find_first(language="yaml", text=block)
+        if code_block is not None:
+            return self.parse_yaml(code_block.code)
         return {}
 
     def _find(self, prop: str) -> Optional[LLMProperty]:

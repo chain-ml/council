@@ -65,11 +65,11 @@ class SQLResult:
     @staticmethod
     def from_response(response: LLMResponse) -> SQLResult:
         llm_response = response.result.first_choice if response.result else ""
-        json_bloc = CodeParser.find_first("json", llm_response)
-        if json_bloc is None:
+        json_block = CodeParser.find_first("json", llm_response)
+        if json_block is None:
             raise LLMParsingException("No json block found in response")
 
-        code_response = json.loads(json_bloc.code)
+        code_response = json.loads(json_block.code)
         sql = code_response.get("sql")
         if sql is not None:
             if "LIMIT" not in sql:

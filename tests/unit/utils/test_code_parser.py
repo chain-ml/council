@@ -35,29 +35,29 @@ class TestCodeParser(unittest.TestCase):
         )
 
     def test_parse_all_python(self):
-        code_blocs = CodeParser.extract_code_blocs(language="python", text=self._message)
-        self.assertEqual(len(code_blocs), 2)
-        self.assertTrue(all(code_bloc.is_language("python") for code_bloc in code_blocs))
+        code_blocks = CodeParser.extract_code_blocs(language="python", text=self._message)
+        self.assertEqual(len(code_blocks), 2)
+        self.assertTrue(all(code_block.is_language("python") for code_block in code_blocks))
 
     def test_parse_all(self):
-        code_blocs = CodeParser.extract_code_blocs(text=self._message)
-        self.assertEqual(4, len(code_blocs))
+        code_blocks = CodeParser.extract_code_blocs(text=self._message)
+        self.assertEqual(4, len(code_blocks))
 
     def test_find_first(self):
-        code_bloc = CodeParser.find_first(text=self._message)
-        self.assertIsNotNone(code_bloc)
-        self.assertEqual("\n".join(self._python1[1:-1]), code_bloc.code)
+        code_block = CodeParser.find_first(text=self._message)
+        self.assertIsNotNone(code_block)
+        self.assertEqual("\n".join(self._python1[1:-1]), code_block.code)
 
     def test_find_first_yaml(self):
-        code_bloc = CodeParser.find_first(language="yaml", text=self._message)
-        self.assertIsNotNone(code_bloc)
-        self.assertEqual("\n".join(self._yaml[1:-1]), code_bloc.code)
+        code_block = CodeParser.find_first(language="yaml", text=self._message)
+        self.assertIsNotNone(code_block)
+        self.assertEqual("\n".join(self._yaml[1:-1]), code_block.code)
 
     def test_find_first_not_exist(self):
-        code_bloc = CodeParser.find_first(language="sh", text=self._message)
-        self.assertIsNone(code_bloc)
+        code_block = CodeParser.find_first(language="sh", text=self._message)
+        self.assertIsNone(code_block)
 
     def test_find_last(self):
-        code_bloc = CodeParser.find_last(text=self._message)
-        self.assertIsNotNone(code_bloc)
-        self.assertEqual("\n".join(self._python2[1:-1]), code_bloc.code)
+        code_block = CodeParser.find_last(text=self._message)
+        self.assertIsNotNone(code_block)
+        self.assertEqual("\n".join(self._python2[1:-1]), code_block.code)
