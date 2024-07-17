@@ -42,7 +42,7 @@ class OpenAILLM(OpenAIChatCompletionsModel):
     Represents an OpenAI large language model hosted on OpenAI.
     """
 
-    def __init__(self, config: OpenAIChatGPTConfiguration, name: Optional[str] = None):
+    def __init__(self, config: OpenAIChatGPTConfiguration, name: Optional[str] = None) -> None:
         name = name or f"{self.__class__.__name__}"
         super().__init__(
             config,

@@ -14,7 +14,7 @@ class SkillBase(SkillRunnerBase):
 
     _name: str
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """
         Initializes the Skill object with the provided name.
 

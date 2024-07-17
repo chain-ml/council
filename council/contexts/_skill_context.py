@@ -41,11 +41,11 @@ class IterationContext:
         return self._value
 
     @staticmethod
-    def empty() -> Option["IterationContext"]:
+    def empty() -> Option[IterationContext]:
         return Option.none()
 
     @staticmethod
-    def new(index: int, value: Any) -> Option["IterationContext"]:
+    def new(index: int, value: Any) -> Option[IterationContext]:
         return Option.some(IterationContext(index, value))
 
 

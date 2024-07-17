@@ -36,13 +36,13 @@ class CodeParser:
 
     @staticmethod
     def find_first(language: Optional[str] = None, text: str = "") -> Optional[CodeBlock]:
-        blocs = CodeParser._build_generator(language, text)
-        return first(blocs, None)
+        blocks = CodeParser._build_generator(language, text)
+        return first(blocks, None)
 
     @staticmethod
     def find_last(language: Optional[str] = None, text: str = "") -> Optional[CodeBlock]:
-        blocs = CodeParser._build_generator(language, text)
-        return last(blocs, None)
+        blocks = CodeParser._build_generator(language, text)
+        return last(blocks, None)
 
     @staticmethod
     def _get_pattern(language: Optional[str]):

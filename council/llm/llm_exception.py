@@ -102,3 +102,4 @@ class LLMOutOfRetriesException(LLMException):
         Initializes an instance of LLMOutOfRetriesException.
         """
         super().__init__(f"Exceeded maximum retries after {retry_count} attempts", llm_name)
+        self.exceptions = exceptions if exceptions is not None else []

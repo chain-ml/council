@@ -9,10 +9,8 @@ class CompositeMessageCollection(MessageCollection):
     Wraps multiple :class:`MessageCollection` as one.
     """
 
-    _collections: List[MessageCollection]
-
     def __init__(self, collections: List[MessageCollection]) -> None:
-        self._collections = collections
+        self._collections: List[MessageCollection] = collections
 
     @property
     def messages(self) -> Iterable[ChatMessage]:

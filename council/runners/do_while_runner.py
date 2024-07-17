@@ -8,7 +8,7 @@ class DoWhile(RunnerBase):
     The predicate is executed at the end of the loop. As such, the inner runner executes at least once.
     """
 
-    def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
+    def __init__(self, predicate: RunnerPredicate, runner: RunnerBase) -> None:
         """
         Args:
             predicate: a predicate function

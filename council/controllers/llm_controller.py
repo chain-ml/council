@@ -12,7 +12,7 @@ from .execution_unit import ExecutionUnit
 
 
 class Specialist:
-    def __init__(self, name: str, justification: str, instructions: str, score: int):
+    def __init__(self, name: str, justification: str, instructions: str, score: int) -> None:
         self._instructions = instructions
         self._score = score
         self._name = name
@@ -54,8 +54,6 @@ class LLMController(ControllerBase):
     A controller that uses an LLM to decide the execution plan
     """
 
-    _llm: MonitoredLLM
-
     def __init__(
         self,
         chains: Sequence[ChainBase],
@@ -74,7 +72,7 @@ class LLMController(ControllerBase):
             parallelism (bool): If true, Build a plan that will be executed in parallel
         """
         super().__init__(chains=chains, parallelism=parallelism)
-        self._llm = self.register_monitor(MonitoredLLM("llm", llm))
+        self._llm: MonitoredLLM = self.register_monitor(MonitoredLLM("llm", llm))
         self._response_threshold = response_threshold
         if top_k is None:
             self._top_k = len(self._chains)
@@ -105,7 +103,7 @@ class LLMController(ControllerBase):
                 assistant_message = f"Your response raised an exception:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
 
-        raise ControllerException("LLMController failed to execute.")
+        raise ControllerException(f"LLMController failed to execute after {self._retry} retries.")
 
     @staticmethod
     def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:

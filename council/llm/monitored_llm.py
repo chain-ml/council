@@ -9,7 +9,7 @@ class MonitoredLLM(Monitored[LLMBase]):
     A convenience class that wraps an LLM into a Monitor
     """
 
-    def __init__(self, name: str, llm: LLMBase):
+    def __init__(self, name: str, llm: LLMBase) -> None:
         super().__init__(name, llm)
 
     def post_chat_request(

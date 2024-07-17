@@ -32,5 +32,5 @@ class BasicFilter(FilterBase):
             return []
         if self._score_threshold is not None:
             filtered = [x for x in all_eval_results if x.score >= self._score_threshold]
-            return list(filtered)
+            return filtered
         return list(all_eval_results)

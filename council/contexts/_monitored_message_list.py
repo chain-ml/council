@@ -7,7 +7,7 @@ from ._message_list import MessageList
 
 
 class MonitoredMessageList(MessageCollection):
-    def __init__(self, message_list: MessageList):
+    def __init__(self, message_list: MessageList) -> None:
         self._inner = message_list
 
     @property
@@ -18,6 +18,6 @@ class MonitoredMessageList(MessageCollection):
     def reversed(self) -> Iterable[ChatMessage]:
         return self._inner.reversed
 
-    def append(self, message: ChatMessage, log_entry: ExecutionLogEntry):
+    def append(self, message: ChatMessage, log_entry: ExecutionLogEntry) -> None:
         log_entry.log_message(message)
         self._inner.add_message(message)

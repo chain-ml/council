@@ -15,7 +15,7 @@ class ScorerContext(ContextBase):
     represents a context used by a :class:`~council.scorer.ScorerBase`
     """
 
-    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget):
+    def __init__(self, store: AgentContextStore, execution_context: ExecutionContext, budget: Budget) -> None:
         super().__init__(store, execution_context, budget)
 
     @staticmethod

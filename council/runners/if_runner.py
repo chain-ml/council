@@ -2,7 +2,7 @@ from typing import Optional
 
 from council.contexts import ChainContext, ChatMessage
 
-from .errrors import RunnerPredicateError
+from .errors import RunnerPredicateError
 from .runner_base import RunnerBase
 from .runner_executor import RunnerExecutor
 from .types import RunnerPredicate

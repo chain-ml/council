@@ -9,14 +9,12 @@ class MessageList(MessageCollection):
     represents an appendable list of :class:`.ChatMessage`
     """
 
-    _messages: List[ChatMessage] = []
-
     def __init__(self, messages: Optional[Iterable[ChatMessage]] = None) -> None:
         """
         initialize a new instance
         """
 
-        self._messages = []
+        self._messages: List[ChatMessage] = []
         if messages is not None:
             self._messages.extend(messages)
 

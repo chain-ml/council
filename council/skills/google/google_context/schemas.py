@@ -20,9 +20,13 @@ class ResponseReference:
         return f"ResponseReference(title={self.title} ,url={self.url}, date={date})"
 
     def dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "title": self.title,
             "url": self.url,
-            "snippet": self.snippet,
-            "date": self.date,
         }
+        if self.snippet:
+            result["snippet"] = self.snippet
+        if self.date:
+            result["date"] = self.date
+
+        return result

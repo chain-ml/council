@@ -20,11 +20,6 @@ class Agent(Monitorable):
     Represents an agent that executes a set of chains to interact with the environment.
     """
 
-    _controller: Monitored[ControllerBase]
-    _chains: List[Monitored[ChainBase]]
-    _evaluator: Monitored[EvaluatorBase]
-    _filter: Monitored[FilterBase]
-
     def __init__(
         self, controller: ControllerBase, evaluator: EvaluatorBase, filter: FilterBase, name: str = "agent"
     ) -> None:
@@ -40,10 +35,10 @@ class Agent(Monitorable):
         super().__init__(base_type="agent")
         self.monitor.name = name
 
-        self._controller = self.new_monitor("controller", controller)
-        self._chains = self.new_monitors("chains", self.controller.chains)
-        self._evaluator = self.new_monitor("evaluator", evaluator)
-        self._filter = self.new_monitor("filter", filter)
+        self._controller: Monitored[ControllerBase] = self.new_monitor("controller", controller)
+        self._chains: List[Monitored[ChainBase]] = self.new_monitors("chains", self.controller.chains)
+        self._evaluator: Monitored[EvaluatorBase] = self.new_monitor("evaluator", evaluator)
+        self._filter: Monitored[FilterBase] = self.new_monitor("filter", filter)
 
     @property
     def name(self) -> str:

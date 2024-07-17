@@ -23,7 +23,7 @@ T_Configuration = TypeVar("T_Configuration", bound=LLMConfigurationBase)
 
 
 class LLMResult:
-    def __init__(self, choices: Sequence[str], consumptions: Optional[Sequence[Consumption]] = None):
+    def __init__(self, choices: Sequence[str], consumptions: Optional[Sequence[Consumption]] = None) -> None:
         self._choices = list(choices)
         self._consumptions = list(consumptions) if consumptions is not None else []
 

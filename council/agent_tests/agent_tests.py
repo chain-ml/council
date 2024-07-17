@@ -149,7 +149,6 @@ class AgentTestCase:
 
 
 class AgentTestSuiteResult:
-    _results: List[AgentTestCaseResult]
 
     def __init__(self) -> None:
         self._results: List[AgentTestCaseResult] = []
@@ -162,21 +161,14 @@ class AgentTestSuiteResult:
         self._results.append(result)
 
     def to_dict(self) -> Dict[str, Any]:
-        results = []
-        for item in self._results:
-            results.append(item.to_dict())
-        result = {"results": results}
-        return result
+        results = [item.to_dict() for item in self._results]
+        return {"results": results}
 
 
 class AgentTestSuite:
-    _test_cases: List[AgentTestCase]
 
-    def __init__(self, test_cases: Optional[List[AgentTestCase]] = None):
-        if test_cases is not None:
-            self._test_cases = test_cases
-        else:
-            self._test_cases = []
+    def __init__(self, test_cases: Optional[List[AgentTestCase]] = None) -> None:
+        self._test_cases: List[AgentTestCase] = test_cases if test_cases is not None else []
 
     def add_test_case(self, prompt: str, scorers: List[ScorerBase]) -> AgentTestSuite:
         self._test_cases.append(AgentTestCase(prompt, scorers))

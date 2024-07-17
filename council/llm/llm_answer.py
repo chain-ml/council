@@ -14,7 +14,7 @@ class LLMParsingException(Exception):
 
 
 class llm_property(property):
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None) -> None:
         super().__init__(fget, fset, fdel, doc)
         self.rank = inspect.getsourcelines(fget)[1]
 
@@ -40,7 +40,7 @@ class LLMProperty:
         return self._rank
 
     def __str__(self) -> str:
-        return f"{self._name}: {{{self._description}, expected response type `{self._type.__name__}`}}"
+        return f"{self._name}: {{{self._description}, type: `{self._type.__name__}`}}"
 
     def can_parse(self, value: Any) -> bool:
         try:
@@ -131,17 +131,17 @@ class LLMAnswer:
                 properties_dict[class_prop.name] = typed_value
         return properties_dict
 
-    def parse_yaml(self, bloc: str) -> Dict[str, Any]:
-        d = yaml.safe_load(bloc)
+    def parse_yaml(self, block: str) -> Dict[str, Any]:
+        d = yaml.safe_load(block)
         properties_dict = {**d}
         missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
         if len(missing_keys) > 0:
             raise LLMParsingException(f"Missing `{missing_keys}` in response.")
         return properties_dict
 
-    def parse_yaml_list(self, bloc: str) -> List[Dict[str, Any]]:
+    def parse_yaml_list(self, block: str) -> List[Dict[str, Any]]:
         result = []
-        d = yaml.safe_load(bloc)
+        d = yaml.safe_load(block)
         for item in d:
             properties_dict = {**item}
             missing_keys = [key.name for key in self._properties if key.name not in properties_dict.keys()]
@@ -150,10 +150,10 @@ class LLMAnswer:
             result.append(properties_dict)
         return result
 
-    def parse_yaml_bloc(self, bloc: str) -> Dict[str, Any]:
-        code_bloc = CodeParser.find_first(language="yaml", text=bloc)
-        if code_bloc is not None:
-            return self.parse_yaml(code_bloc.code)
+    def parse_yaml_bloc(self, block: str) -> Dict[str, Any]:
+        code_block = CodeParser.find_first(language="yaml", text=block)
+        if code_block is not None:
+            return self.parse_yaml(code_block.code)
         return {}
 
     def _find(self, prop: str) -> Optional[LLMProperty]:

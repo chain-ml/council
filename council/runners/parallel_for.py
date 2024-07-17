@@ -5,7 +5,7 @@ from council.contexts import ChainContext, IterationContext
 from council.utils import Option
 from more_itertools import batched
 
-from .errrors import RunnerGeneratorError
+from .errors import RunnerGeneratorError
 from .loop_runner_base import LoopRunnerBase
 from .runner_executor import RunnerExecutor
 from .skill_runner_base import SkillRunnerBase

@@ -28,7 +28,7 @@ def get_last_messages(context: SkillContext) -> List[LLMMessage]:
 
 
 class PromptToMessages:
-    def __init__(self, prompt_builder: PromptBuilder):
+    def __init__(self, prompt_builder: PromptBuilder) -> None:
         self._builder = prompt_builder
 
     def to_system_message(self, context: SkillContext) -> List[LLMMessage]:
@@ -51,7 +51,7 @@ class LLMSkill(SkillBase):
         name: str = "LLMSkill",
         system_prompt: str = "",
         context_messages: ReturnMessages = get_last_messages,
-    ):
+    ) -> None:
         """
         Initialize a new instance of LLMSkill.
 

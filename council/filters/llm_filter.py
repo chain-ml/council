@@ -14,7 +14,7 @@ from council.utils import Option
 
 
 class FilterResult:
-    def __init__(self, index: int, is_filtered: bool, justification: str):
+    def __init__(self, index: int, is_filtered: bool, justification: str) -> None:
         self._filtered = is_filtered
         self._index = index
         self._justification = justification
@@ -42,7 +42,7 @@ class FilterResult:
 class LLMFilter(FilterBase):
     """Filter using an `LLM` to filter chain responses."""
 
-    def __init__(self, llm: LLMBase, filter_on: Optional[List[str]] = None):
+    def __init__(self, llm: LLMBase, filter_on: Optional[List[str]] = None) -> None:
         """
         Build a new LLMFilter.
 
@@ -81,7 +81,7 @@ class LLMFilter(FilterBase):
                 assistant_message = f"Your response raised an exception:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
 
-        raise FilterException("LLMFilter failed to execute.")
+        raise FilterException(f"LLMFilter failed to execute after {self._retry} retries")
 
     @staticmethod
     def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:
@@ -144,7 +144,7 @@ class LLMFilter(FilterBase):
         """Build prompt that will be sent to the inner `LLM`."""
         task_description = [
             "\n# ROLE",
-            "You are an judge, with a large breadth of knowledge.",
+            "You are a judge, with a large breadth of knowledge.",
             "You are deciding with objectivity if some answers from different Specialists need to be filtered.",
             "\n# INSTRUCTIONS",
             "1. Give your response with TRUE or FALSE",

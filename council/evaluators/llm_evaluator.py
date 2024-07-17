@@ -14,7 +14,7 @@ from council.utils import Option
 
 
 class SpecialistGrade:
-    def __init__(self, index: int, grade: float, justification: str):
+    def __init__(self, index: int, grade: float, justification: str) -> None:
         self._grade = grade
         self._index = index
         self._justification = justification
@@ -46,7 +46,7 @@ class SpecialistGrade:
 class LLMEvaluator(EvaluatorBase):
     """Evaluator using an `LLM` to evaluate chain responses."""
 
-    def __init__(self, llm: LLMBase):
+    def __init__(self, llm: LLMBase) -> None:
         """
         Build a new LLMEvaluator.
 
@@ -84,7 +84,7 @@ class LLMEvaluator(EvaluatorBase):
                 assistant_message = f"Your response raised an exception:\n{response}"
                 new_messages = self._handle_error(e, assistant_message, context)
 
-        raise EvaluatorException("LLMEvaluator failed to execute.")
+        raise EvaluatorException(f"LLMEvaluator failed to execute after {self._retry} retries")
 
     @staticmethod
     def _handle_error(e: Exception, assistant_message: str, context: ContextBase) -> List[LLMMessage]:

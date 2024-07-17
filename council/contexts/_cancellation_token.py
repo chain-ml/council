@@ -12,7 +12,7 @@ class CancellationToken:
 
     def cancel(self) -> None:
         """
-        set the cancelletion token.
+        set the cancellation token.
         """
         with self._lock:
             self._cancelled = True

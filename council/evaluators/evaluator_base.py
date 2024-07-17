@@ -5,14 +5,17 @@ from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 
 class EvaluatorException(Exception):
-    def __init__(self, message: str):
+    """
+    Exception raised specifically for errors encountered during evaluation process.
+    """
+
+    def __init__(self, message: str) -> None:
         super().__init__(message)
 
 
 class EvaluatorBase(Monitorable, ABC):
     """
     Abstract base class for an agent evaluator.
-
     """
 
     def __init__(self) -> None:

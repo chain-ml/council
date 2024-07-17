@@ -19,7 +19,7 @@ class LLMMessagesToStr(Protocol):
 
 
 class MockTokenCounter(LLMessageTokenCounterBase):
-    def __init__(self, limit: int = -1):
+    def __init__(self, limit: int = -1) -> None:
         self._limit = limit
 
     def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
@@ -37,14 +37,14 @@ class MockLLMConfiguration(LLMConfigurationBase):
     def model_name(self) -> str:
         return self._model_name
 
-    def __init__(self, model_name: str, timeout: int = 10, token_limit: int = -1):
+    def __init__(self, model_name: str, timeout: int = 10, token_limit: int = -1) -> None:
         self._model_name = model_name
         self._timeout = timeout
         self._token_limit = token_limit
 
 
 class MockLLM(LLMBase[MockLLMConfiguration]):
-    def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1):
+    def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1) -> None:
         super().__init__(configuration=MockLLMConfiguration("mock"), token_counter=MockTokenCounter(token_limit))
         self._action = action
 
@@ -68,7 +68,7 @@ class MockLLM(LLMBase[MockLLMConfiguration]):
 
 
 class MockErrorLLM(LLMBase):
-    def __init__(self, exception: LLMException = LLMException("From Mock", "mock")):
+    def __init__(self, exception: LLMException = LLMException("From Mock", "mock")) -> None:
         super().__init__(configuration=MockLLMConfiguration("mock-error"))
         self.exception = exception
 

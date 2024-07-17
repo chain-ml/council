@@ -7,7 +7,7 @@ class While(RunnerBase):
     Runner that executes while the given predicate returns `True`
     """
 
-    def __init__(self, predicate: RunnerPredicate, runner: RunnerBase):
+    def __init__(self, predicate: RunnerPredicate, runner: RunnerBase) -> None:
         """
         Args:
             predicate: a predicate function evaluated in the while loop
