@@ -8,6 +8,10 @@ from .execution_unit import ExecutionUnit
 
 
 class ControllerException(Exception):
+    """
+    Exception raised specifically for errors encountered during controller process.
+    """
+
     def __init__(self, message: str) -> None:
         super().__init__(message)
 

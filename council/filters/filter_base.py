@@ -5,6 +5,10 @@ from council.contexts import AgentContext, Monitorable, ScoredChatMessage
 
 
 class FilterException(Exception):
+    """
+    Exception raised specifically for errors encountered during filtering process.
+    """
+
     def __init__(self, message: str) -> None:
         super().__init__(message)
 
