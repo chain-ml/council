@@ -40,7 +40,7 @@ class LLMProperty:
         return self._rank
 
     def __str__(self) -> str:
-        return f"{self._name}: {{{self._description}, expected response type `{self._type.__name__}`}}"
+        return f"{self._name}: {{{self._description}, type: `{self._type.__name__}`}}"
 
     def can_parse(self, value: Any) -> bool:
         try:

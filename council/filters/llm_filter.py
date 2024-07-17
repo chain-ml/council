@@ -144,7 +144,7 @@ class LLMFilter(FilterBase):
         """Build prompt that will be sent to the inner `LLM`."""
         task_description = [
             "\n# ROLE",
-            "You are an judge, with a large breadth of knowledge.",
+            "You are a judge, with a large breadth of knowledge.",
             "You are deciding with objectivity if some answers from different Specialists need to be filtered.",
             "\n# INSTRUCTIONS",
             "1. Give your response with TRUE or FALSE",
