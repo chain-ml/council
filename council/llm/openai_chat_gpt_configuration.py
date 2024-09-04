@@ -4,7 +4,14 @@ from typing import Any, Final, Optional
 
 from council.llm import ChatGPTConfigurationBase
 from council.llm.llm_config_object import LLMConfigSpec
-from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
+from council.utils import (
+    Parameter,
+    greater_than_validator,
+    prefix_any_validator,
+    prefix_validator,
+    read_env_int,
+    read_env_str,
+)
 
 _env_var_prefix: Final[str] = "OPENAI_"
 
@@ -30,7 +37,9 @@ class OpenAIChatGPTConfiguration(ChatGPTConfigurationBase):
             timeout (int): seconds to wait for response from OpenAI before timing out
         """
         super().__init__()
-        self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gpt-"))
+        self._model = Parameter.string(
+            name="model", required=True, value=model, validator=prefix_any_validator(["gpt-", "ft:gpt-"])
+        )
         self._timeout = Parameter.int(
             name="timeout", required=False, default=timeout or self.default_timeout, validator=greater_than_validator(0)
         )

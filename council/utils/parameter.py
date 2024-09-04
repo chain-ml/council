@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Optional, TypeVar, Union
+from typing import Any, Callable, Generic, Iterable, Optional, TypeVar, Union
 
 from council.utils import Option, read_env_float, read_env_int, read_env_str
 
@@ -21,6 +21,14 @@ def prefix_validator(value: str) -> Validator:
     def validator(x: str) -> None:
         if not x.startswith(value):
             raise ValueError(f"must start with `{value}`")
+
+    return validator
+
+
+def prefix_any_validator(values: Iterable[str]) -> Validator:
+    def validator(x: str) -> None:
+        if not any(x.startswith(value) for value in values):
+            raise ValueError(f"must start with one of: `{', '.join(v for v in values)}`")
 
     return validator
 
