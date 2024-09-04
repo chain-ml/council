@@ -204,6 +204,16 @@ class LLMMessage:
         m = map(LLMMessage.from_chat_message, messages)
         return [msg for msg in m if msg is not None]
 
+    def format(self, role_prefix: str = "#") -> str:
+        """Format message to string, including role and LLMMessageData if any"""
+        parts: List[str] = [f"{role_prefix} {self.role}\n{self.content}"]
+        for data in self.data:
+            parts.append(f"LLMMessageData of type {data.mime_type}:\n{data.content}")
+        return "\n".join(parts)
+
+    def __str__(self) -> str:
+        return self.content
+
 
 class LLMessageTokenCounterBase(abc.ABC):
     @abc.abstractmethod
