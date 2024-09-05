@@ -8,3 +8,5 @@ class LLModels:
 
 class LLMPrompts:
     sample: str = "prompt-abc.yaml"
+    sql: str = "prompt-sql.yaml"
+    sql_template: str = "prompt-template-sql.yaml"
