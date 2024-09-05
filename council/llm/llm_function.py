@@ -42,7 +42,7 @@ def code_blocks_response_parser(cls: Type[T_Dataclass]) -> Type[T_Dataclass]:
             elif field_type is float:
                 parsed_blocks[field_name] = float(value)
             else:
-                raise ValueError(f"Unsupported type `{field_type}` for field `{field_name}`")
+                raise ValueError(f"Unsupported value `{value}` of type `{field_type}` for field `{field_name}`")
 
         instance = cls(**parsed_blocks)  # code blocks in LLM response template must match class fields
         if hasattr(instance, "validate"):
