@@ -1,14 +1,61 @@
-from typing import Any, Callable, Generic, Iterable, List, Optional, Sequence, TypeVar, Union
+from dataclasses import dataclass, is_dataclass
+from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, Sequence, Type, TypeVar, Union
 
 from council.contexts import LLMContext
 
+from ..utils import CodeParser
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase, LLMMessage
 from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 
 T_Response = TypeVar("T_Response")
-
 LLMResponseParser = Callable[[LLMResponse], T_Response]
+
+T_Dataclass = TypeVar("T_Dataclass")
+
+
+def code_blocks_response_parser(cls: Type[T_Dataclass]) -> Type[T_Dataclass]:
+    """
+    Decorator providing an automatic parsing of LLMResponse translating code blocks content into class fields.
+    Implement validate(self) to provide additional validation functionality.
+    """
+    if not is_dataclass(cls):
+        cls = dataclass(cls)
+
+    def from_response(response: LLMResponse) -> T_Dataclass:
+        llm_response = response.value
+        parsed_blocks: Dict[str, Any] = {}
+
+        for field_name, field in cls.__dataclass_fields__.items():  # type: ignore
+            block = CodeParser.find_first(field_name, llm_response)
+            if block is None:
+                raise LLMParsingException(f"`{field_name}` block is not found")
+
+            field_type = field.type
+            value = block.code.strip()
+            if field_type is str:
+                parsed_blocks[field_name] = value
+            elif field_type is bool:
+                if value.lower() not in ["true", "false"]:
+                    raise LLMParsingException(f"Cannot convert value `{value}` to bool for field `{field_name}`")
+                parsed_blocks[field_name] = value.lower() == "true"
+            elif field_type in [int, float]:
+                try:
+                    parsed_blocks[field_name] = field_type(value)
+                except ValueError:
+                    raise LLMParsingException(
+                        f"Cannot convert value `{value}` to {field_type.__name__} for field `{field_name}`"
+                    )
+            else:
+                raise ValueError(f"Unsupported type `{field_type.__name__}` for field `{field_name}`")
+
+        instance = cls(**parsed_blocks)  # code blocks in LLM response template must match class fields
+        if hasattr(instance, "validate"):
+            instance.validate()
+        return instance
+
+    setattr(cls, "from_response", staticmethod(from_response))
+    return cls
 
 
 class LLMFunctionError(Exception):
