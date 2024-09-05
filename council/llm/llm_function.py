@@ -36,13 +36,18 @@ def code_blocks_response_parser(cls: Type[T_Dataclass]) -> Type[T_Dataclass]:
             if field_type is str:
                 parsed_blocks[field_name] = value
             elif field_type is bool:
-                parsed_blocks[field_name] = block.code.strip().lower() == "true"
-            elif field_type is int:
-                parsed_blocks[field_name] = int(value)
-            elif field_type is float:
-                parsed_blocks[field_name] = float(value)
+                if value.lower() not in ["true", "false"]:
+                    raise LLMParsingException(f"Cannot convert value `{value}` to bool for field `{field_name}`")
+                parsed_blocks[field_name] = value.lower() == "true"
+            elif field_type in [int, float]:
+                try:
+                    parsed_blocks[field_name] = field_type(value)
+                except ValueError:
+                    raise LLMParsingException(
+                        f"Cannot convert value `{value}` to {field_type.__name__} for field `{field_name}`"
+                    )
             else:
-                raise ValueError(f"Unsupported value `{value}` of type `{field_type}` for field `{field_name}`")
+                raise ValueError(f"Unsupported type `{field_type.__name__}` for field `{field_name}`")
 
         instance = cls(**parsed_blocks)  # code blocks in LLM response template must match class fields
         if hasattr(instance, "validate"):
