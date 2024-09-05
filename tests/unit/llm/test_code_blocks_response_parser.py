@@ -6,7 +6,7 @@ from council.llm.llm_function import (
     LLMFunction,
     FunctionOutOfRetryError,
 )
-from council.mocks import MockLLM
+from council.mocks import MockLLM, MockMultipleResponses
 
 
 @code_blocks_response_parser
@@ -26,8 +26,8 @@ class BadResponse:
     complex_type: Response
 
 
-def execute_mock_llm_func(llm, response_parser):
-    llm_func = LLMFunction(llm, response_parser=response_parser, system_message="", max_retries=0)
+def execute_mock_llm_func(llm, response_parser, max_retries=0):
+    llm_func = LLMFunction(llm, response_parser=response_parser, system_message="", max_retries=max_retries)
     return llm_func.execute(user_message="")
 
 
@@ -180,3 +180,52 @@ true
         self.assertTrue(response.flag)
         self.assertEqual(response.age, 34)
         self.assertEqual(response.number, 3.14)
+
+    def test_correction(self):
+        responses = [
+            # bad response
+            [
+                """
+```text
+Some other text
+```
+
+```flag
+false
+```
+
+```age
+34
+```
+"""
+            ],
+            # good response simulating self-correction
+            [
+                """
+```text
+Sorry, forgot the number
+```
+
+```flag
+false
+```
+
+```age
+34
+```
+
+```number
+123
+```
+"""
+            ],
+        ]
+
+        llm = MockLLM(action=MockMultipleResponses(responses=responses))
+        response = execute_mock_llm_func(llm, Response.from_response, max_retries=1)
+
+        self.assertIsInstance(response, Response)
+        self.assertEqual(response.text, "Sorry, forgot the number")
+        self.assertFalse(response.flag)
+        self.assertEqual(response.age, 34)
+        self.assertEqual(response.number, 123.0)
