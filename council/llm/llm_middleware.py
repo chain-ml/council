@@ -104,6 +104,21 @@ class LLMLoggingMiddleware:
             request.context.logger.warning("No response")
         return response
 
+class LLMVerboseLoggingMiddleware:
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+        request.context.logger.info(
+            f"Sending request with {len(request.messages)} message(s) to {llm.configuration.model_name()}"
+        )
+        for i, message in enumerate(request.messages):
+            request.context.logger.info(f"{message.role}:\n{message}")
+        response = execute(request)
+        if response.result is not None:
+            request.context.logger.info(f"Response: `{response.result.first_choice}` in {response.duration} seconds")
+            for i, choice in enumerate(response.result.choices):
+                request.context.logger.info(f"Choice {i}: {choice}")
+        else:
+            request.context.logger.warning("No response")
+        return response
 
 class LLMRetryMiddleware:
     def __init__(self, retries: int, delay: float, exception_to_check: Optional[type[Exception]] = None) -> None:

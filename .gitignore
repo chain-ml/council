@@ -11,3 +11,5 @@ dist
 .env
 *.pyc
 
+## Environment
+.conda
