@@ -16,13 +16,23 @@ T = TypeVar("T", bound="BaseModelResponseParser")
 
 
 class BaseModelResponseParser(BaseModel):
+    """Base class for parsing LLM responses into structured data models"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
-        """Implement parsing functionality"""
+        """
+        Parse an LLM response into a structured data model.
+        Must be implemented by subclasses to define specific parsing logic.
+        """
         raise NotImplementedError()
 
     def validator(self) -> None:
-        """Implement custom validation functionality - raise LLMParsingException to trigger local correction"""
+        """
+        Implement custom validation logic for the parsed data.
+        Can be overridden by subclasses to add specific validation rules.
+        Raise LLMParsingException to trigger local correction.
+        Alternatively, use pydantic validation.
+        """
         pass
 
     @classmethod
@@ -33,7 +43,10 @@ class BaseModelResponseParser(BaseModel):
 
     @classmethod
     def _try_create(cls: Type[T], **kwargs) -> T:
-        """Try to create BaseModel object instance and raise LLMParsingException if any ValidationError occurs"""
+        """
+        Attempt to create a BaseModel object instance.
+        Raises an LLMParsingException if a ValidationError occurs during instantiation.
+        """
 
         try:
             return cls(**kwargs)
@@ -44,6 +57,8 @@ class BaseModelResponseParser(BaseModel):
 
 
 class CodeBlocksResponseParser(BaseModelResponseParser):
+    """Parser for responses containing multiple named code blocks"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         llm_response = response.value
@@ -59,6 +74,8 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
 
 
 class YAMLBlockResponseParser(BaseModelResponseParser):
+    """Parser for responses containing a single YAML code block"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         llm_response = response.value
@@ -72,6 +89,8 @@ class YAMLBlockResponseParser(BaseModelResponseParser):
 
 
 class YAMLResponseParser(BaseModelResponseParser):
+    """Parser for responses containing raw YAML content"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         llm_response = response.value
@@ -88,6 +107,8 @@ class YAMLResponseParser(BaseModelResponseParser):
 
 
 class JSONBlockResponseParser(BaseModelResponseParser):
+    """Parser for responses containing a single JSON code block"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         llm_response = response.value
@@ -101,6 +122,8 @@ class JSONBlockResponseParser(BaseModelResponseParser):
 
 
 class JSONResponseParser(BaseModelResponseParser):
+    """Parser for responses containing raw JSON content"""
+
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         llm_response = response.value
