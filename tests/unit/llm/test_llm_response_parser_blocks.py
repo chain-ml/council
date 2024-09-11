@@ -65,40 +65,44 @@ class TestCodeBlocksResponseParser(unittest.TestCase):
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert (
+        self.assertIn(
             "Input should be a valid boolean, unable to interpret input "
-            "[type=bool_parsing, input_value='not-a-bool', input_type=str]"
-        ) in str(e.exception)
+            "[type=bool_parsing, input_value='not-a-bool', input_type=str]",
+            str(e.exception),
+        )
 
     def test_wrong_int(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="not-an-int", number="3.14"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert (
+        self.assertIn(
             "Input should be a valid integer, unable to parse string as an integer "
-            "[type=int_parsing, input_value='not-an-int', input_type=str]"
-        ) in str(e.exception)
+            "[type=int_parsing, input_value='not-an-int', input_type=str]",
+            str(e.exception),
+        )
 
     def test_wrong_float(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="34", number="not-a-float"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert (
+        self.assertIn(
             "Input should be a valid number, unable to parse string as a number "
-            "[type=float_parsing, input_value='not-a-float', input_type=str]"
-        ) in str(e.exception)
+            "[type=float_parsing, input_value='not-a-float', input_type=str]",
+            str(e.exception),
+        )
 
     def test_pydentic_validation(self):
         llm = MockLLM.from_response(format_response(text="incorrect", flag="true", age="34", number="3.14"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert (
+        self.assertIn(
             "Value error, Incorrect `text` value: `incorrect` "
-            "[type=value_error, input_value='incorrect', input_type=str]"
-        ) in str(e.exception)
+            "[type=value_error, input_value='incorrect', input_type=str]",
+            str(e.exception),
+        )
 
     def test_custom_validation(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="-5", number="3.14"))
