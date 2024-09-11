@@ -4,7 +4,8 @@ import dotenv
 
 from council import AzureLLM
 from council.llm import LLMParsingException, LLMMessage
-from council.llm.llm_function import LLMFunction, code_blocks_response_parser
+from council.llm.llm_function import LLMFunction
+from council.llm.llm_response_parser import CodeBlocksResponseParser
 from council.prompt import LLMPromptConfigObject
 from tests import get_data_filename
 from tests.unit import LLMPrompts
@@ -14,13 +15,12 @@ SYSTEM_PROMPT = prompt_config.get_system_prompt_template("default")
 USER = prompt_config.get_user_prompt_template("default")
 
 
-@code_blocks_response_parser
-class SQLResult:
+class SQLResult(CodeBlocksResponseParser):
     solved: bool
     explanation: str
     sql: str
 
-    def validate(self) -> None:
+    def validator(self) -> None:
         if "limit" not in self.sql.lower():
             raise LLMParsingException("Generated SQL query should contain a LIMIT clause")
 

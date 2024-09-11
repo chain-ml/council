@@ -1,29 +1,29 @@
 import unittest
 
+from pydantic import field_validator
+
 from council.llm import LLMParsingException
-from council.llm.llm_function import (
-    code_blocks_response_parser,
-    LLMFunction,
-    FunctionOutOfRetryError,
-)
+from council.llm.llm_function import LLMFunction, FunctionOutOfRetryError
+from council.llm.llm_response_parser import CodeBlocksResponseParser
 from council.mocks import MockLLM, MockMultipleResponses
 
 
-@code_blocks_response_parser
-class Response:
+class Response(CodeBlocksResponseParser):
     text: str
     flag: bool
     age: int
     number: float
 
-    def validate(self) -> None:
+    @field_validator("text")
+    @classmethod
+    def n(cls, text: str) -> str:
+        if text == "incorrect":
+            raise ValueError(f"Incorrect `text` value: `{text}`")
+        return text
+
+    def validator(self) -> None:
         if self.age < 0:
             raise LLMParsingException(f"Age must be a positive number; got `{self.age}`")
-
-
-@code_blocks_response_parser
-class BadResponse:
-    complex_type: Response
 
 
 def format_response(text: str, flag: str, age: str, number: str) -> str:
@@ -65,41 +65,47 @@ class TestCodeBlocksResponseParser(unittest.TestCase):
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert str(e.exception).strip().endswith("Cannot convert value `not-a-bool` to bool for field `flag`")
+        assert (
+            "Input should be a valid boolean, unable to interpret input "
+            "[type=bool_parsing, input_value='not-a-bool', input_type=str]"
+        ) in str(e.exception)
 
     def test_wrong_int(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="not-an-int", number="3.14"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert str(e.exception).strip().endswith("Cannot convert value `not-an-int` to int for field `age`")
-
-    def test_validate_int(self):
-        llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="-5", number="3.14"))
-        with self.assertRaises(FunctionOutOfRetryError) as e:
-            _ = execute_mock_llm_func(llm, Response.from_response)
-
-        assert str(e.exception).strip().endswith("Age must be a positive number; got `-5`")
+        assert (
+            "Input should be a valid integer, unable to parse string as an integer "
+            "[type=int_parsing, input_value='not-an-int', input_type=str]"
+        ) in str(e.exception)
 
     def test_wrong_float(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="34", number="not-a-float"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
             _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert str(e.exception).strip().endswith("Cannot convert value `not-a-float` to float for field `number`")
+        assert (
+            "Input should be a valid number, unable to parse string as a number "
+            "[type=float_parsing, input_value='not-a-float', input_type=str]"
+        ) in str(e.exception)
 
-    def test_wrong_type(self):
-        llm = MockLLM.from_response(
-            """
-```complex_type
-Some text
-```
-"""
-        )
+    def test_pydentic_validation(self):
+        llm = MockLLM.from_response(format_response(text="incorrect", flag="true", age="34", number="3.14"))
         with self.assertRaises(FunctionOutOfRetryError) as e:
-            _ = execute_mock_llm_func(llm, BadResponse.from_response)
+            _ = execute_mock_llm_func(llm, Response.from_response)
 
-        assert str(e.exception).strip().endswith("Unsupported type `Response` for field `complex_type`")
+        assert (
+            "Value error, Incorrect `text` value: `incorrect` "
+            "[type=value_error, input_value='incorrect', input_type=str]"
+        ) in str(e.exception)
+
+    def test_custom_validation(self):
+        llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="-5", number="3.14"))
+        with self.assertRaises(FunctionOutOfRetryError) as e:
+            _ = execute_mock_llm_func(llm, Response.from_response)
+
+        assert str(e.exception).strip().endswith("Age must be a positive number; got `-5`")
 
     def test_correct(self):
         llm = MockLLM.from_response(format_response(text="Some text", flag="true", age="34", number="3.14"))
