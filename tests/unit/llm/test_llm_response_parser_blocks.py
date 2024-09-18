@@ -1,20 +1,18 @@
 import unittest
 
-from pydantic import field_validator
+from pydantic import field_validator, Field
 
 from council.llm import LLMParsingException
 from council.llm.llm_function import LLMFunction, FunctionOutOfRetryError
-from council.llm.llm_response_parser import CodeBlocksResponseParser, non_empty_validator
+from council.llm.llm_response_parser import CodeBlocksResponseParser
 from council.mocks import MockLLM, MockMultipleResponses
 
 
 class Response(CodeBlocksResponseParser):
-    text: str
+    text: str = Field(..., min_length=1)
     flag: bool
     age: int
     number: float
-
-    _text = field_validator("text")(non_empty_validator)
 
     @field_validator("text")
     @classmethod
@@ -112,7 +110,7 @@ class TestCodeBlocksResponseParser(unittest.TestCase):
             _ = execute_mock_llm_func(llm, Response.from_response)
 
         self.assertIn(
-            "`text` string must not be empty",
+            "String should have at least 1 character [type=string_too_short, input_value='', input_type=str]",
             str(e.exception),
         )
 
