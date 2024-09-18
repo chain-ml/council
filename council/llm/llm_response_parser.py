@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, Type, TypeVar
 
 import yaml
 from pydantic import BaseModel, ValidationError
+from pydantic_core.core_schema import ValidationInfo
 
 from ..utils import CodeParser
 from .llm_answer import LLMParsingException
@@ -137,3 +138,10 @@ class JSONResponseParser(BaseModelResponseParser):
             return json.loads(content)
         except json.JSONDecodeError as e:
             raise LLMParsingException(f"Error while parsing json: {e}")
+
+
+def non_empty_validator(value: str, v: ValidationInfo) -> str:
+    """pydantic field validator for non-empty strings"""
+    if not value.strip():
+        raise ValueError(f"`{v.field_name}` string must not be empty")
+    return value

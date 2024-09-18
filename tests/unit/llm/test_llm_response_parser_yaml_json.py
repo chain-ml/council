@@ -43,14 +43,12 @@ def format_dict(mode: str, pairs: Optional[List[Dict[str, Any]]], value_with_def
 def format_response_yaml(
     mode: str, pairs: Optional[List[Dict[str, Any]]] = None, value_with_default: Optional[int] = None
 ) -> str:
-
     return f"```yaml\n{yaml.dump(format_dict(mode, pairs, value_with_default))}\n```"
 
 
 def format_response_json(
     mode: str, pairs: Optional[List[Dict[str, Any]]] = None, value_with_default: Optional[int] = None
 ) -> str:
-
     return f"```json\n{json.dumps(format_dict(mode, pairs, value_with_default))}\n```"
 
 
