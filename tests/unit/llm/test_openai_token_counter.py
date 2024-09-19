@@ -9,6 +9,7 @@ class TestLlmOpenAI(unittest.TestCase):
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
 
+        self.assertEqual(counter.token_limit, 16385)
         self.assertEqual(129, counter.count_messages_token(messages))
 
     def test_token_counter_gpt_4_turbo(self):
@@ -18,6 +19,11 @@ class TestLlmOpenAI(unittest.TestCase):
 
     def test_token_counter_gpt_4o(self):
         model = "gpt-4o"
+        counter = OpenAITokenCounter.from_model(model)
+        self.assertEqual(counter.token_limit, 128000)
+
+    def test_token_counter_o1(self):
+        model = "o1-preview"
         counter = OpenAITokenCounter.from_model(model)
         self.assertEqual(counter.token_limit, 128000)
 
@@ -33,7 +39,7 @@ class TestLlmOpenAI(unittest.TestCase):
         )
 
     def test_filter_first_messages(self):
-        model = "gpt-3.5-turbo"
+        model = "gpt-3.5-turbo-instruct"
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
 
@@ -45,7 +51,7 @@ class TestLlmOpenAI(unittest.TestCase):
         self.assertGreaterEqual(counter.token_limit - counter.count_messages_token(filtered), 4000)
 
     def test_filter_last_messages(self):
-        model = "gpt-3.5-turbo"
+        model = "gpt-3.5-turbo-instruct"
         counter = OpenAITokenCounter.from_model(model)
         messages = self._get_messages()
 

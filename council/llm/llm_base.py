@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Final, Generic, Optional, Sequence, TypeVar
+from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
@@ -23,9 +23,15 @@ T_Configuration = TypeVar("T_Configuration", bound=LLMConfigurationBase)
 
 
 class LLMResult:
-    def __init__(self, choices: Sequence[str], consumptions: Optional[Sequence[Consumption]] = None) -> None:
+    def __init__(
+        self,
+        choices: Sequence[str],
+        consumptions: Optional[Sequence[Consumption]] = None,
+        raw_response: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self._choices = list(choices)
         self._consumptions = list(consumptions) if consumptions is not None else []
+        self._raw_response = raw_response if raw_response is not None else {}
 
     @property
     def first_choice(self) -> str:
@@ -38,6 +44,10 @@ class LLMResult:
     @property
     def consumptions(self) -> Sequence[Consumption]:
         return self._consumptions
+
+    @property
+    def raw_response(self) -> Dict[str, Any]:
+        return self._raw_response
 
 
 class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):

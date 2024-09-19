@@ -82,13 +82,24 @@ class Usage:
 
 class OpenAIChatCompletionsResult:
 
-    def __init__(self, id: str, object: str, created: int, model: str, choices: List[Choice], usage: Usage) -> None:
+    def __init__(
+        self,
+        id: str,
+        object: str,
+        created: int,
+        model: str,
+        choices: List[Choice],
+        usage: Usage,
+        raw_response: Dict[str, Any],
+    ) -> None:
         self._id = id
         self._object = object
         self._usage = usage
         self._model = model
         self._choices = choices
         self._created = created
+
+        self._raw_response = raw_response
 
     @property
     def id(self) -> str:
@@ -106,6 +117,10 @@ class OpenAIChatCompletionsResult:
     def choices(self) -> Sequence[Choice]:
         return self._choices
 
+    @property
+    def raw_response(self) -> Dict[str, Any]:
+        return self._raw_response
+
     def to_consumptions(self) -> Sequence[Consumption]:
         return [
             Consumption(1, "call", f"{self.model}"),
@@ -115,14 +130,14 @@ class OpenAIChatCompletionsResult:
         ]
 
     @staticmethod
-    def from_dict(obj: Any) -> OpenAIChatCompletionsResult:
-        _id = str(obj.get("id"))
-        _object = str(obj.get("object"))
-        _created = int(obj.get("created"))
-        _model = str(obj.get("model"))
-        _choices = [Choice.from_dict(y) for y in obj.get("choices")]
-        _usage = Usage.from_dict(obj.get("usage"))
-        return OpenAIChatCompletionsResult(_id, _object, _created, _model, _choices, _usage)
+    def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:
+        _id = str(response.get("id"))
+        _object = str(response.get("object"))
+        _created = int(response.get("created", -1))
+        _model = str(response.get("model"))
+        _choices = [Choice.from_dict(y) for y in response.get("choices", [])]
+        _usage = Usage.from_dict(response.get("usage"))
+        return OpenAIChatCompletionsResult(_id, _object, _created, _model, _choices, _usage, response)
 
 
 class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
@@ -153,14 +168,18 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         context.logger.debug(
             f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
         )
-        return LLMResult(choices=[c.message.content for c in r.choices], consumptions=r.to_consumptions())
+        return LLMResult(
+            choices=[c.message.content for c in r.choices],
+            consumptions=r.to_consumptions(),
+            raw_response=r.raw_response,
+        )
 
     def _post_request(self, payload) -> OpenAIChatCompletionsResult:
         response = self._provider.__call__(payload)
         if response.status_code != httpx.codes.OK:
             raise LLMCallException(response.status_code, response.text, self._name)
 
-        return OpenAIChatCompletionsResult.from_dict(response.json())
+        return OpenAIChatCompletionsResult.from_response(response.json())
 
     def _build_payload(self, messages: Sequence[LLMMessage]):
         payload = self._configuration.build_default_payload()
