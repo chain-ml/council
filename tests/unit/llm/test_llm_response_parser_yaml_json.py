@@ -152,7 +152,7 @@ class TestJSONBlockResponseParser(unittest.TestCase):
 
         assert str(e.exception).strip().endswith("json block is not found")
 
-    def test_incorrect_yaml(self):
+    def test_incorrect_json(self):
         llm = MockLLM.from_response(
             """
 ```json

@@ -20,6 +20,7 @@ from .llm_middleware import (
     ExecuteLLMRequest,
 )
 from .llm_function import LLMFunction, LLMFunctionError, FunctionOutOfRetryError
+from .llm_function_with_prompt import LLMFunctionWithPrompt
 from .monitored_llm import MonitoredLLM
 
 from .chat_gpt_configuration import ChatGPTConfigurationBase
