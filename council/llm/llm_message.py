@@ -119,15 +119,18 @@ class LLMMessage:
         self._data: List[LLMMessageData] = [] if data is None else list(data)
 
     @staticmethod
-    def system_message(content: str, name: Optional[str] = None) -> LLMMessage:
+    def system_message(
+        content: str, name: Optional[str] = None, data: Optional[Sequence[LLMMessageData]] = None
+    ) -> LLMMessage:
         """
         Create a new system message instance
 
         Parameters:
             content (str): the message content
             name (str): name of the author of this message
+            data (Sequence[LLMMessageData]): list of data associated with this message
         """
-        return LLMMessage(role=LLMMessageRole.System, content=content, name=name)
+        return LLMMessage(role=LLMMessageRole.System, content=content, name=name, data=data)
 
     @staticmethod
     def user_message(
