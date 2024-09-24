@@ -80,6 +80,20 @@ class LLMMessageData:
         return cls(content=uri, mime_type=f"text/url:{mime_type}")
 
 
+class LLMCacheControlData(LLMMessageData):
+    """
+    Data class to hold cache control information for Anthropic prompt caching.
+    """
+
+    def __init__(self, content: str) -> None:
+        super().__init__(content=content, mime_type="cache")
+        self.cache_control = {"type": content}
+
+    @staticmethod
+    def ephemeral() -> LLMCacheControlData:
+        return LLMCacheControlData(content="ephemeral")
+
+
 class LLMMessage:
     """
     Represents chat messages. Used in the payload
