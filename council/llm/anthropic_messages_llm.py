@@ -47,8 +47,12 @@ class AnthropicMessagesLLM(AnthropicAPIClientWrapper):
         return AnthropicAPIClientResult(choices=choices, raw_response=completion.to_dict())
 
     @staticmethod
-    def _to_anthropic_system_messages(messages: Sequence[LLMMessage]) -> Dict[str, Any]:
-        """Return as {system: content} dict"""
+    def _to_anthropic_system_messages(messages: Sequence[LLMMessage]) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Returns a dict suitable for unpacking as keyword arguments in the Anthropic client's create method:
+            - Dict with a "system" key mapping to a list of formatted system messages ({"system": content})
+            - Empty dict if there's no system messages to format
+        """
 
         result: List[Dict[str, Any]] = []
         for message in messages:
