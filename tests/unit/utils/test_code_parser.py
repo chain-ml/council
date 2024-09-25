@@ -30,8 +30,27 @@ class TestCodeParser(unittest.TestCase):
             "```",
         ]
 
+        self._empty_with_whitespace = [
+            "```python",
+            "",
+            "```",
+        ]
+
+        self._empty_no_whitespace = [
+            "```python",
+            "```",
+        ]
+
         self._message = "\n".join(
             ["Here is the code:"] + self._python1 + ["", "text", ""] + self._yaml + self._undefined + self._python2
+        )
+
+        self._message_empty_with_whitespace = "\n".join(
+            ["Here is an empty code block with whitespace:"] + self._empty_with_whitespace
+        )
+
+        self._message_empty_no_whitespace = "\n".join(
+            ["Here is an empty code block with no whitespace:"] + self._empty_no_whitespace
         )
 
     def test_parse_all_python(self):
@@ -61,3 +80,11 @@ class TestCodeParser(unittest.TestCase):
         code_block = CodeParser.find_last(text=self._message)
         self.assertIsNotNone(code_block)
         self.assertEqual("\n".join(self._python2[1:-1]), code_block.code)
+
+    def test_empty_code_block_with_whitespace(self):
+        code_block = CodeParser.find_first(language="python", text=self._message_empty_with_whitespace)
+        self.assertEqual(code_block.code, "")
+
+    def test_empty_code_block_no_whitespace(self):
+        code_block = CodeParser.find_first(language="python", text=self._message_empty_no_whitespace)
+        self.assertEqual(code_block.code, "")
