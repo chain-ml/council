@@ -34,7 +34,7 @@ class AnthropicCompletionLLM(AnthropicAPIClientWrapper):
             top_k=self._config.top_k.unwrap_or(NOT_GIVEN),
             top_p=self._config.top_p.unwrap_or(NOT_GIVEN),
         )
-        return AnthropicAPIClientResult(choices=[result.completion])
+        return AnthropicAPIClientResult.from_completion(result)
 
     @staticmethod
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> str:
