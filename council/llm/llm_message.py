@@ -80,6 +80,20 @@ class LLMMessageData:
         return cls(content=uri, mime_type=f"text/url:{mime_type}")
 
 
+class LLMCacheControlData(LLMMessageData):
+    """
+    Data class to hold cache control information for Anthropic prompt caching.
+    """
+
+    def __init__(self, content: str) -> None:
+        super().__init__(content=content, mime_type="cache")
+        self.cache_control = {"type": content}
+
+    @staticmethod
+    def ephemeral() -> LLMCacheControlData:
+        return LLMCacheControlData(content="ephemeral")
+
+
 class LLMMessage:
     """
     Represents chat messages. Used in the payload
@@ -105,15 +119,18 @@ class LLMMessage:
         self._data: List[LLMMessageData] = [] if data is None else list(data)
 
     @staticmethod
-    def system_message(content: str, name: Optional[str] = None) -> LLMMessage:
+    def system_message(
+        content: str, name: Optional[str] = None, data: Optional[Sequence[LLMMessageData]] = None
+    ) -> LLMMessage:
         """
         Create a new system message instance
 
         Parameters:
             content (str): the message content
             name (str): name of the author of this message
+            data (Sequence[LLMMessageData]): list of data associated with this message
         """
-        return LLMMessage(role=LLMMessageRole.System, content=content, name=name)
+        return LLMMessage(role=LLMMessageRole.System, content=content, name=name, data=data)
 
     @staticmethod
     def user_message(

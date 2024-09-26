@@ -1,9 +1,9 @@
-from typing import List, Sequence
+from typing import Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
 from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
-from council.llm.anthropic import AnthropicAPIClientWrapper
+from council.llm.anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper
 
 _HUMAN_TURN = Anthropic.HUMAN_PROMPT
 _ASSISTANT_TURN = Anthropic.AI_PROMPT
@@ -23,7 +23,7 @@ class AnthropicCompletionLLM(AnthropicAPIClientWrapper):
         self._config = config
         self._client = client
 
-    def post_chat_request(self, messages: Sequence[LLMMessage]) -> List[str]:
+    def post_chat_request(self, messages: Sequence[LLMMessage]) -> AnthropicAPIClientResult:
         prompt = self._to_anthropic_messages(messages)
         result = self._client.completions.create(
             prompt=prompt,
@@ -34,7 +34,7 @@ class AnthropicCompletionLLM(AnthropicAPIClientWrapper):
             top_k=self._config.top_k.unwrap_or(NOT_GIVEN),
             top_p=self._config.top_p.unwrap_or(NOT_GIVEN),
         )
-        return [result.completion]
+        return AnthropicAPIClientResult.from_completion(result)
 
     @staticmethod
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> str:
