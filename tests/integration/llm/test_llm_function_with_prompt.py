@@ -3,7 +3,7 @@ import unittest
 import dotenv
 
 from council import AzureLLM
-from council.llm.llm_function_with_prompt import LLMFunctionWithPrompt
+from council.llm import LLMFunctionWithPrompt
 from council.prompt import LLMPromptConfigObject
 from tests import get_data_filename
 from tests.integration.llm.test_llm_function import SQLResult

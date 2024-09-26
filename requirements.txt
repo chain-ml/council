@@ -22,3 +22,5 @@ GoogleNews>=1.6.10
 pymediawiki~=0.7.3
 beautifulsoup4~=4.12.2
 
+# Response Parsers
+pydantic==2.8.*
