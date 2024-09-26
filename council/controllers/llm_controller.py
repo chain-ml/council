@@ -192,9 +192,9 @@ class LLMController(ControllerBase):
                         scored_specialist.score,
                     )
                 )
-            except StopIteration:
+            except StopIteration as e:
                 context.logger.warning(f'message="no chain found with name `{scored_specialist.name}`"')
-                raise ControllerException(f"The Specialist `{scored_specialist.name}` does not exist.")
+                raise ControllerException(f"The Specialist `{scored_specialist.name}` does not exist.") from e
         return Option.none()
 
     def _build_execution_unit(
