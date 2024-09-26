@@ -48,7 +48,11 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         try:
             response = self._api.post_chat_request(messages=messages)
             prompt_text = "\n".join([msg.content for msg in messages])
-            return LLMResult(choices=response, consumptions=self.to_consumptions(prompt_text, response))
+            return LLMResult(
+                choices=response.choices,
+                consumptions=self.to_consumptions(prompt_text, response.choices),
+                raw_response=response.raw_response,
+            )
         except APITimeoutError as e:
             raise LLMCallTimeoutException(self._configuration.timeout.value, self._name) from e
         except APIStatusError as e:
