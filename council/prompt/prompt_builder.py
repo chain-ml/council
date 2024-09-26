@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from council.contexts import ChainContext, ChatMessageKind, ContextBase
 from jinja2 import Template
@@ -60,7 +60,7 @@ class PromptBuilder:
         return prompt
 
     @staticmethod
-    def _build_chat_history(context: ContextBase) -> dict[str, Any]:
+    def _build_chat_history(context: ContextBase) -> Dict[str, Any]:
         last_message = context.chat_history.try_last_message
         last_user_message = context.chat_history.try_last_user_message
         last_agent_message = context.chat_history.try_last_agent_message

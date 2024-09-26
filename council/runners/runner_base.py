@@ -11,12 +11,12 @@ from .runner_executor import RunnerExecutor
 
 
 class RunnerBase(Monitorable, abc.ABC):
-    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor) -> None:
-        self.run(context, executor)
-
     """
     Base runner class that handles common execution logic, including error management and timeout
     """
+
+    def run_from_chain_context(self, context: ChainContext, executor: RunnerExecutor) -> None:
+        self.run(context, executor)
 
     def fork_run_merge(self, runner: Monitored[RunnerBase], context: ChainContext, executor: RunnerExecutor) -> None:
         inner = context.fork_for(runner)
