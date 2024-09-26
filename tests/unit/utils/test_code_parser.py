@@ -41,8 +41,16 @@ class TestCodeParser(unittest.TestCase):
             "```",
         ]
 
+        self._cpp = ["```c++", "int main() {", "    return 0;", "}", "```"]
+
         self._message = "\n".join(
-            ["Here is the code:"] + self._python1 + ["", "text", ""] + self._yaml + self._undefined + self._python2
+            ["Here is the code:"]
+            + self._python1
+            + ["", "text", ""]
+            + self._yaml
+            + self._undefined
+            + self._cpp
+            + self._python2
         )
 
         self._message_empty_with_whitespace = "\n".join(
@@ -60,7 +68,7 @@ class TestCodeParser(unittest.TestCase):
 
     def test_parse_all(self):
         code_blocks = CodeParser.extract_code_blocs(text=self._message)
-        self.assertEqual(4, len(code_blocks))
+        self.assertEqual(5, len(code_blocks))
 
     def test_find_first(self):
         code_block = CodeParser.find_first(text=self._message)
@@ -88,3 +96,8 @@ class TestCodeParser(unittest.TestCase):
     def test_empty_code_block_no_whitespace(self):
         code_block = CodeParser.find_first(language="python", text=self._message_empty_no_whitespace)
         self.assertEqual(code_block.code, "")
+
+    def test_cpp(self):
+        code_block = CodeParser.find_first(language="c++", text=self._message)
+        self.assertIsNotNone(code_block)
+        self.assertEqual("\n".join(self._cpp[1:-1]), code_block.code)
