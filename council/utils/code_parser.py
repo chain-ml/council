@@ -46,7 +46,7 @@ class CodeParser:
 
     @staticmethod
     def _get_pattern(language: Optional[str]):
-        return r"```(\w*) *\n(.*?)\n```" if language is None else rf"```({language})\n(.*?)\n```"
+        return r"```(\w*) *\n(.*?)\n?```" if language is None else rf"```({language})\n(.*?)\n?```"
 
     @staticmethod
     def _build_generator(language: Optional[str], text: str = "") -> Iterable[CodeBlock]:
