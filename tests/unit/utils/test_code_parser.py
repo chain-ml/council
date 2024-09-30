@@ -41,6 +41,13 @@ class TestCodeParser(unittest.TestCase):
             "```",
         ]
 
+        self._nested = [
+            "```python",
+            "print('```csv')",
+            "print(df.to_csv(index=False))" "print('```')",
+            "```",
+        ]
+
         self._cpp = ["```c++", "int main() {", "    return 0;", "}", "```"]
 
         self._message = "\n".join(
@@ -60,6 +67,8 @@ class TestCodeParser(unittest.TestCase):
         self._message_empty_no_whitespace = "\n".join(
             ["Here is an empty code block with no whitespace:"] + self._empty_no_whitespace
         )
+
+        self._message_with_nested_block = "\n".join(["Here is code block that contains ``` inside"] + self._nested)
 
     def test_parse_all_python(self):
         code_blocks = CodeParser.extract_code_blocs(language="python", text=self._message)
@@ -96,6 +105,10 @@ class TestCodeParser(unittest.TestCase):
     def test_empty_code_block_no_whitespace(self):
         code_block = CodeParser.find_first(language="python", text=self._message_empty_no_whitespace)
         self.assertEqual(code_block.code, "")
+
+    def test_nested(self):
+        code_block = CodeParser.find_first(language="python", text=self._message_with_nested_block)
+        self.assertEqual("\n".join(self._nested[1:-1]), code_block.code)
 
     def test_cpp(self):
         code_block = CodeParser.find_first(language="c++", text=self._message)
