@@ -40,7 +40,7 @@ class AnthropicCompletionLLM(AnthropicAPIClientWrapper):
     def _to_anthropic_messages(messages: Sequence[LLMMessage]) -> str:
         messages_count = len(messages)
         if messages_count == 0:
-            raise Exception("No message to process.")
+            raise RuntimeError("No message to process.")
 
         result = []
         if messages[0].is_of_role(LLMMessageRole.System) and messages_count > 1:
