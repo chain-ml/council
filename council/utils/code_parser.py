@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import Iterable, List, Optional
 
 from more_itertools import first, last
@@ -45,12 +44,22 @@ class CodeParser:
         return last(blocks, None)
 
     @staticmethod
-    def _get_pattern(language: Optional[str]):
-        return r"```([^\n]*)\n(.*?)\n?```" if language is None else rf"```({re.escape(language)})\n(.*?)\n?```"
-
-    @staticmethod
     def _build_generator(language: Optional[str], text: str = "") -> Iterable[CodeBlock]:
-        p = CodeParser._get_pattern(language)
-        matches = re.finditer(p, text, re.DOTALL)
-        for match in matches:
-            yield CodeBlock(match.group(1), match.group(2))
+        delimiter = "```"
+        actual_language: Optional[str] = None
+        code_lines: Optional[List[str]] = None
+        for line in text.split("\n"):
+            if line.startswith(delimiter) and code_lines is None:
+                actual_language = line[3:]
+                code_lines = []
+                continue
+
+            if line == delimiter:
+                if (actual_language == language or language is None) and code_lines is not None:
+                    yield CodeBlock(language, "\n".join(code_lines))
+                code_lines = None
+                actual_language = None
+                continue
+
+            if code_lines is not None:
+                code_lines.append(line)
