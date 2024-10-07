@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import Iterable, List, Optional
 
 from more_itertools import first, last
@@ -26,6 +25,8 @@ class CodeBlock:
 
 
 class CodeParser:
+    DELIMITER = "```"
+
     @staticmethod
     def iter_code_blocs(language: Optional[str] = None, text: str = "") -> Iterable[CodeBlock]:
         return CodeParser._build_generator(language, text)
@@ -45,12 +46,22 @@ class CodeParser:
         return last(blocks, None)
 
     @staticmethod
-    def _get_pattern(language: Optional[str]):
-        return r"```([^\n]*)\n(.*?)\n?```" if language is None else rf"```({re.escape(language)})\n(.*?)\n?```"
-
-    @staticmethod
     def _build_generator(language: Optional[str], text: str = "") -> Iterable[CodeBlock]:
-        p = CodeParser._get_pattern(language)
-        matches = re.finditer(p, text, re.DOTALL)
-        for match in matches:
-            yield CodeBlock(match.group(1), match.group(2))
+        actual_block_language: Optional[str] = None
+        code_lines: Optional[List[str]] = None
+
+        for line in text.split("\n"):
+            if line.startswith(CodeParser.DELIMITER) and code_lines is None:
+                actual_block_language = line[len(CodeParser.DELIMITER) :].strip()
+                code_lines = []
+                continue
+
+            if line == CodeParser.DELIMITER:
+                if (actual_block_language == language or language is None) and code_lines is not None:
+                    yield CodeBlock(language, "\n".join(code_lines))
+                code_lines = None
+                actual_block_language = None
+                continue
+
+            if code_lines is not None:
+                code_lines.append(line)

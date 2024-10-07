@@ -30,14 +30,11 @@ class TestCodeParser(unittest.TestCase):
             "```",
         ]
 
-        self._empty_with_whitespace = [
+        self._nested = [
             "```python",
-            "",
-            "```",
-        ]
-
-        self._empty_no_whitespace = [
-            "```python",
+            "print('```csv')",
+            "print(df.to_csv(index=False))",
+            "print('```')",
             "```",
         ]
 
@@ -54,11 +51,48 @@ class TestCodeParser(unittest.TestCase):
         )
 
         self._message_empty_with_whitespace = "\n".join(
-            ["Here is an empty code block with whitespace:"] + self._empty_with_whitespace
+            [
+                "Here is an empty code block with whitespace:",
+                "```python",
+                "",
+                "```",
+            ]
         )
 
         self._message_empty_no_whitespace = "\n".join(
-            ["Here is an empty code block with no whitespace:"] + self._empty_no_whitespace
+            [
+                "Here is an empty code block with no whitespace:",
+                "```python",
+                "```",
+            ]
+        )
+
+        self._message_with_nested_block = "\n".join(["Here is code block that contains ``` inside"] + self._nested)
+
+        self._message_incomplete = "\n".join(
+            [
+                "Here is an incomplete code block:",
+                "```",
+                "This block has no closing delimiter",
+            ]
+        )
+
+        self._message_incomplete_python = "\n".join(
+            [
+                "Here is an incomplete python code block:",
+                "```python",
+                "def incomplete_function():",
+                "    print('This block has no closing delimiter')",
+            ]
+        )
+
+        self._message_whitespace_after_delimiter = "\n".join(
+            [
+                "Here is a block with whitespace after delimiter:",
+                "```python    ",
+                "print('Whitespace after delimiter')",
+                "```",
+            ]
         )
 
     def test_parse_all_python(self):
@@ -89,6 +123,11 @@ class TestCodeParser(unittest.TestCase):
         self.assertIsNotNone(code_block)
         self.assertEqual("\n".join(self._python2[1:-1]), code_block.code)
 
+    def test_find_last_yaml(self):
+        code_block = CodeParser.find_last(language="yaml", text=self._message)
+        self.assertIsNotNone(code_block)
+        self.assertEqual("\n".join(self._yaml[1:-1]), code_block.code)
+
     def test_empty_code_block_with_whitespace(self):
         code_block = CodeParser.find_first(language="python", text=self._message_empty_with_whitespace)
         self.assertEqual(code_block.code, "")
@@ -96,6 +135,23 @@ class TestCodeParser(unittest.TestCase):
     def test_empty_code_block_no_whitespace(self):
         code_block = CodeParser.find_first(language="python", text=self._message_empty_no_whitespace)
         self.assertEqual(code_block.code, "")
+
+    def test_nested(self):
+        code_block = CodeParser.find_first(language="python", text=self._message_with_nested_block)
+        self.assertEqual("\n".join(self._nested[1:-1]), code_block.code)
+
+    def test_incomplete_block(self):
+        code_blocks = list(CodeParser.extract_code_blocs(text=self._message_incomplete))
+        self.assertEqual(len(code_blocks), 0)
+
+    def test_incomplete_block_python(self):
+        code_blocks = list(CodeParser.extract_code_blocs(language="python", text=self._message_incomplete_python))
+        self.assertEqual(len(code_blocks), 0)
+
+    def test_whitespace_after_delimiter(self):
+        code_block = CodeParser.find_first(language="python", text=self._message_whitespace_after_delimiter)
+        self.assertIsNotNone(code_block)
+        self.assertEqual(code_block.code, "print('Whitespace after delimiter')")
 
     def test_cpp(self):
         code_block = CodeParser.find_first(language="c++", text=self._message)
