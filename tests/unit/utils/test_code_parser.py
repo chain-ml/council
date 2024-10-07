@@ -33,7 +33,8 @@ class TestCodeParser(unittest.TestCase):
         self._nested = [
             "```python",
             "print('```csv')",
-            "print(df.to_csv(index=False))" "print('```')",
+            "print(df.to_csv(index=False))",
+            "print('```')",
             "```",
         ]
 
