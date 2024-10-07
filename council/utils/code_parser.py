@@ -47,26 +47,21 @@ class CodeParser:
 
     @staticmethod
     def _build_generator(language: Optional[str], text: str = "") -> Iterable[CodeBlock]:
-        lines = text.split("\n")
-        i = 0
+        actual_block_language: Optional[str] = None
+        code_lines: Optional[List[str]] = None
 
-        while i < len(lines):
-            if not lines[i].startswith(CodeParser.DELIMITER):
-                i += 1
+        for line in text.split("\n"):
+            if line.startswith(CodeParser.DELIMITER) and code_lines is None:
+                actual_block_language = line[len(CodeParser.DELIMITER) :].strip()
+                code_lines = []
                 continue
 
-            # start of a code block found
-            actual_block_language = lines[i][len(CodeParser.DELIMITER) :].strip() or None
-            start_index = i + 1
-            i += 1
+            if line == CodeParser.DELIMITER:
+                if (actual_block_language == language or language is None) and code_lines is not None:
+                    yield CodeBlock(language, "\n".join(code_lines))
+                code_lines = None
+                actual_block_language = None
+                continue
 
-            while i < len(lines) and lines[i] != CodeParser.DELIMITER:
-                i += 1
-
-            if i >= len(lines):
-                break  # incomplete block
-
-            if actual_block_language == language or language is None:
-                yield CodeBlock(actual_block_language, "\n".join(lines[start_index:i]))
-
-            i += 1  # skip the closing delimiter
+            if code_lines is not None:
+                code_lines.append(line)
