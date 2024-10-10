@@ -23,6 +23,8 @@ Here's how you can simplify :class:`council.llm.LLMFunction` example for a sampl
     from council.llm.llm_function import LLMFunction
     from council.llm.llm_response_parser import CodeBlocksResponseParser
 
+    SYSTEM_PROMPT = "same system prompt as in LLMFunction example"
+
 
     # CodeBlocksResponseParser will provide from_response() automatically for you
     class SQLResultFromCodeBlocks(CodeBlocksResponseParser):
@@ -40,7 +42,7 @@ Here's how you can simplify :class:`council.llm.LLMFunction` example for a sampl
 
     # All the remaining code stays the same
     llm_function: LLMFunction[SQLResultFromCodeBlocks] = LLMFunction(
-        llm, SQLResultFromCodeBlocks.from_response, SYSTEM_PROMPT  # system prompt is the same
+        llm, SQLResultFromCodeBlocks.from_response, SYSTEM_PROMPT
     )
 
     response = llm_function.execute(

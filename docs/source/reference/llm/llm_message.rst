@@ -27,14 +27,16 @@ Here's how you can use Anthropic prompt caching with council.
     os.environ["ANTHROPIC_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["ANTHROPIC_LLM_MODEL"] = "claude-3-haiku-20240307"
 
+    # Ensure that the number of tokens in a cacheable message exceeds
+    # the minimum cacheable token count, which is 2048 for Haiku;
+    # otherwise, the message will not be cached.
+    HUGE_STATIC_SYSTEM_PROMPT = ""
+
     # Create a system message with ephemeral caching
     system_message_with_cache = LLMMessage.system_message(
         HUGE_STATIC_SYSTEM_PROMPT,
         data=[LLMCacheControlData.ephemeral()]
     )
-    # Ensure that the number of tokens in a cacheable message exceeds
-    # the minimum cacheable token count, which is 2048 for Haiku;
-    # otherwise, the message will not be cached.
 
     # Initialize the messages list with cachable system message
     messages = [
