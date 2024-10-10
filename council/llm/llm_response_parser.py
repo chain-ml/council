@@ -57,10 +57,10 @@ class BaseModelResponseParser(BaseModel):
 
 
 class CodeBlocksResponseParser(BaseModelResponseParser):
-    """Parser for responses containing multiple named code blocks"""
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
+        """LLMFunction ResponseParser for response containing multiple named code blocks"""
         llm_response = response.value
         parsed_blocks: Dict[str, Any] = {}
 
@@ -74,10 +74,10 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
 
 
 class YAMLBlockResponseParser(BaseModelResponseParser):
-    """Parser for responses containing a single YAML code block"""
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
+        """LLMFunction ResponseParser for response containing a single YAML code block"""
         llm_response = response.value
 
         yaml_block = CodeParser.find_first("yaml", llm_response)
@@ -89,10 +89,10 @@ class YAMLBlockResponseParser(BaseModelResponseParser):
 
 
 class YAMLResponseParser(BaseModelResponseParser):
-    """Parser for responses containing raw YAML content"""
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
+        """LLMFunction ResponseParser for response containing raw YAML content"""
         llm_response = response.value
 
         yaml_content = YAMLResponseParser.parse(llm_response)
@@ -107,10 +107,10 @@ class YAMLResponseParser(BaseModelResponseParser):
 
 
 class JSONBlockResponseParser(BaseModelResponseParser):
-    """Parser for responses containing a single JSON code block"""
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
+        """LLMFunction ResponseParser for response containing a single JSON code block"""
         llm_response = response.value
 
         json_block = CodeParser.find_first("json", llm_response)
@@ -122,10 +122,10 @@ class JSONBlockResponseParser(BaseModelResponseParser):
 
 
 class JSONResponseParser(BaseModelResponseParser):
-    """Parser for responses containing raw JSON content"""
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
+        """LLMFunction ResponseParser for response containing raw JSON content"""
         llm_response = response.value
 
         json_content = JSONResponseParser.parse(llm_response)

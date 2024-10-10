@@ -91,6 +91,7 @@ class LLMCacheControlData(LLMMessageData):
 
     @staticmethod
     def ephemeral() -> LLMCacheControlData:
+        """Returns ephemeral cache type"""
         return LLMCacheControlData(content="ephemeral")
 
 

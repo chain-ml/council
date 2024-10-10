@@ -1,4 +1,4 @@
-# AnthropicLLM
+# GeminiLLM
 
 ```{eval-rst}
 .. autoclasstree:: council.llm.GeminiLLM

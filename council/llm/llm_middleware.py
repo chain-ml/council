@@ -29,6 +29,7 @@ class LLMRequest:
 
     @staticmethod
     def default(messages: Sequence[LLMMessage], **kwargs: Any) -> LLMRequest:
+        """Creates a default LLMRequest with an empty context."""
         return LLMRequest(LLMContext.empty(), messages, **kwargs)
 
 
@@ -52,6 +53,7 @@ class LLMResponse:
 
     @staticmethod
     def empty(request: LLMRequest) -> LLMResponse:
+        """Creates an empty LLMResponse for a given request."""
         return LLMResponse(request, None, -1.0)
 
 
@@ -59,18 +61,29 @@ ExecuteLLMRequest = Callable[[LLMRequest], LLMResponse]
 
 
 class LLMMiddleware(Protocol):
+    """
+    Protocol for defining LLM middleware.
+
+    Middleware can intercept and modify requests and responses between the client and the LLM, introducing custom logic.
+    """
+
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse: ...
 
 
 class LLMMiddlewareChain:
+    """Manages a chain of LLM middlewares and executes requests through them."""
+
     def __init__(self, llm: LLMBase, middlewares: Optional[Sequence[LLMMiddleware]] = None) -> None:
         self._llm = llm
         self._middlewares: list[LLMMiddleware] = list(middlewares) if middlewares else []
 
     def add_middleware(self, middleware: LLMMiddleware) -> None:
+        """Add middleware to a chain."""
         self._middlewares.append(middleware)
 
     def execute(self, request: LLMRequest) -> LLMResponse:
+        """Execute middleware chain."""
+
         def execute_request(r: LLMRequest) -> LLMResponse:
             start = time.time()
             result = self._llm.post_chat_request(r.context, request.messages, **r.kwargs)
@@ -93,6 +106,8 @@ class LLMMiddlewareChain:
 
 
 class LLMLoggingMiddleware:
+    """Middleware for logging LLM requests and responses."""
+
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         request.context.logger.info(
             f"Sending request with {len(request.messages)} message(s) to {llm.configuration.model_name()}"
@@ -106,6 +121,12 @@ class LLMLoggingMiddleware:
 
 
 class LLMRetryMiddleware:
+    """
+    Middleware for implementing retry logic for LLM requests.
+
+    Attempts to retry failed requests a specified number of times with a delay between attempts.
+    """
+
     def __init__(self, retries: int, delay: float, exception_to_check: Optional[type[Exception]] = None) -> None:
         self._retries = retries
         self._delay = delay

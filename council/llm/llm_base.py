@@ -23,6 +23,10 @@ T_Configuration = TypeVar("T_Configuration", bound=LLMConfigurationBase)
 
 
 class LLMResult:
+    """
+    Represents a response from the LLM
+    """
+
     def __init__(
         self,
         choices: Sequence[str],
