@@ -29,7 +29,7 @@ Here's how you can use Anthropic prompt caching with council.
     os.environ["ANTHROPIC_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["ANTHROPIC_LLM_MODEL"] = "claude-3-haiku-20240307"
 
-    # Ensure that the number of tokens in a cacheable message exceeds
+    # Ensure that the number of tokens in a cacheable message exceeding
     # the minimum cacheable token count, which is 2048 for Haiku;
     # otherwise, the message will not be cached.
     HUGE_STATIC_SYSTEM_PROMPT = ""
