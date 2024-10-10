@@ -81,7 +81,7 @@ Here's how you can use LLMFunction for a sample SQL generation task.
             return SQLResult(solved=True, sql=sql)
 
 
-    os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
+    os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
     llm = OpenAILLM.from_env()
 

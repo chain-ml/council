@@ -24,7 +24,7 @@ Here's how you can use Anthropic prompt caching with council.
     from council.llm.llm_message import LLMMessage, LLMCacheControlData
     from council.contexts import LLMContext
 
-    os.environ["ANTHROPIC_API_KEY"] = "YOUR-KEY-HERE"
+    os.environ["ANTHROPIC_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["ANTHROPIC_LLM_MODEL"] = "claude-3-haiku-20240307"
 
     # Create a system message with ephemeral caching

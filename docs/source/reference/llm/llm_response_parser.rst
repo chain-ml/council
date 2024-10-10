@@ -34,7 +34,7 @@ Here's how you can simplify :class:`council.llm.LLMFunction` example for a sampl
                 raise LLMParsingException("Generated SQL query should contain a LIMIT clause")
 
 
-    os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
+    os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
     llm = OpenAILLM.from_env()
 
@@ -87,7 +87,7 @@ Usage example:
         health: int = Field(..., ge=1, le=100)
 
 
-    os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
+    os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
     llm = OpenAILLM.from_env()
 
@@ -153,7 +153,7 @@ Usage example with OpenAI json mode:
         health: int = Field(..., ge=1, le=100)
 
 
-    os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
+    os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
     os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
     llm = OpenAILLM.from_env()
 
