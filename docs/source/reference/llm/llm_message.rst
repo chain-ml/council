@@ -16,9 +16,11 @@ LLMCacheControlData
 
 Here's how you can use Anthropic prompt caching with council.
 
-.. testcode::
+.. code-block:: python
 
     import os
+
+    # !pip install council-ai==0.0.24
 
     from council.llm import AnthropicLLM
     from council.llm.llm_message import LLMMessage, LLMCacheControlData

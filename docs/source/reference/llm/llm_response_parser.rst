@@ -14,9 +14,11 @@ CodeBlocksResponseParser
 
 Here's how you can simplify :class:`council.llm.LLMFunction` example for a sample SQL generation task.
 
-.. testcode::
+.. code-block:: python
 
     import os
+
+    # !pip install council-ai==0.0.24
 
     from council import OpenAILLM
     from council.llm import LLMParsingException
@@ -60,10 +62,12 @@ YAMLBlockResponseParser
 
 Usage example:
 
-.. testcode::
+.. code-block:: python
 
     import os
     from typing import Literal
+
+    # !pip install council-ai==0.0.24
 
     from council import OpenAILLM
     from council.llm.llm_function import LLMFunction
@@ -126,10 +130,12 @@ JSONResponseParser
 
 Usage example with OpenAI json mode:
 
-.. testcode::
+.. code-block:: python
 
     import os
     from typing import Literal
+
+    # !pip install council-ai==0.0.24
 
     from council import OpenAILLM
     from council.llm.llm_function import LLMFunction

@@ -5,11 +5,13 @@ LLMFunction
 
 Here's how you can use LLMFunction for a sample SQL generation task.
 
-.. testcode::
+.. code-block:: python
 
     from __future__ import annotations
 
     import os
+
+    # !pip install council-ai==0.0.24
 
     from council import OpenAILLM
     from council.llm import LLMParsingException, LLMResponse
