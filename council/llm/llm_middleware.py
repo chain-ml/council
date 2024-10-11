@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from threading import Lock
 from typing import Any, Callable, List, Optional, Protocol, Sequence
 
 from council.contexts import LLMContext
@@ -118,6 +119,43 @@ class LLMLoggingMiddleware:
         else:
             request.context.logger.warning("No response")
         return response
+
+
+class LLMFileLoggingMiddleware:
+    """Middleware for logging LLM requests and responses into a file."""
+
+    def __init__(self, log_file: str, component_name: str) -> None:
+        """Initialize the middleware with the path to the log_file."""
+
+        self.log_file = log_file
+        self.component_name = component_name
+        self._lock = Lock()
+
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+        self._log_llm_request(request)
+        response = execute(request)
+        self._log_llm_response(response)
+        return response
+
+    def _log_llm_request(self, request: LLMRequest) -> None:
+        messages_str = "\n\n".join(message.format() for message in request.messages)
+        self._log(f"LLM input for {self.component_name}:\n{messages_str}")
+
+    def _log_llm_response(self, response: LLMResponse) -> None:
+        if response.result is None:
+            self._log(f"LLM output for {self.component_name} is not available")
+            return
+        self._log(
+            f"LLM output for {self.component_name} Duration: {response.duration:.2f} Output:\n"
+            f"{response.result.first_choice}"
+        )
+
+    def _log(self, content: str) -> None:
+        """Append `content` to a current log file"""
+
+        with self._lock:  # ensure each write is done atomically in case of multi-threading
+            with open(self.log_file, "a", encoding="utf-8") as file:
+                file.write(f"\n{content}")
 
 
 class LLMRetryMiddleware:
