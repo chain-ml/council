@@ -13,6 +13,11 @@ LLMLoggingMiddleware
 
 .. autoclass:: council.llm.LLMLoggingMiddleware
 
+LLMFileLoggingMiddleware
+------------------------
+
+.. autoclass:: council.llm.LLMFileLoggingMiddleware
+
 LLMRetryMiddleware
 ------------------
 
