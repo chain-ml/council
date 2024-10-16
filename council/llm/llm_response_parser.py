@@ -15,6 +15,12 @@ LLMResponseParser = Callable[[LLMResponse], T_Response]
 T = TypeVar("T", bound="BaseModelResponseParser")
 
 
+class StringResponseParser:
+    @staticmethod
+    def from_response(response: LLMResponse) -> str:
+        return response.value
+
+
 class BaseModelResponseParser(BaseModel):
     """Base class for parsing LLM responses into structured data models"""
 
