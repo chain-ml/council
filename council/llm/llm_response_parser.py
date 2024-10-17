@@ -18,6 +18,7 @@ T = TypeVar("T", bound="BaseModelResponseParser")
 class StringResponseParser:
     @staticmethod
     def from_response(response: LLMResponse) -> str:
+        """LLMFunction ResponseParser for plain text response"""
         return response.value
 
 

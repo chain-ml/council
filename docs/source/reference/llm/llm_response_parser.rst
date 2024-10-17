@@ -1,3 +1,8 @@
+StringResponseParser
+--------------------
+
+.. autoclass:: council.llm.llm_response_parser.StringResponseParser
+
 BaseModelResponseParser
 -----------------------
 
