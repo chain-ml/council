@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import time
 from threading import Lock
-from typing import Any, Callable, List, Optional, Protocol, Sequence
+from typing import Any, Callable, Dict, List, Optional, Protocol, Sequence
 
 from council.contexts import LLMContext
 
@@ -186,3 +188,79 @@ class LLMRetryMiddleware:
                 time.sleep(self._delay)
 
         raise LLMOutOfRetriesException(llm_name=llm.model_name, retry_count=attempt, exceptions=exceptions)
+
+
+class CacheEntry:
+    """Represents a cached LLM response."""
+
+    def __init__(self, response: LLMResponse, timestamp: float, ttl: float) -> None:
+        self.response = response
+        self.timestamp = timestamp
+        self.ttl = ttl
+
+    @property
+    def is_expired(self) -> bool:
+        return time.time() - self.timestamp >= self.ttl
+
+    def renew(self) -> None:
+        """Update the timestamp to extend the lifetime."""
+        self.timestamp = time.time()
+
+
+class LLMCachingMiddleware:
+    """Middleware that caches LLM responses to avoid duplicate calls."""
+
+    def __init__(self, ttl: float = 300.0) -> None:
+        """
+        Initialize the caching middleware.
+
+        Args:
+            ttl: Time-to-live in seconds for cache entries (default: 5 mins)
+        """
+        self._cache: Dict[str, CacheEntry] = {}
+        self._ttl = ttl
+
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+
+        key = self.get_request_hash(request)
+
+        if key in self._cache:
+            entry = self._cache[key]
+
+            if not entry.is_expired:
+                entry.renew()  # renew the entry lifetime on hit
+                # TODO: how to differentiate in consumptions
+                return entry.response
+
+            del self._cache[key]  # remove expired entry
+
+        response = execute(request)
+
+        # cache the new response
+        self._cache[key] = CacheEntry(response=response, timestamp=time.time(), ttl=self._ttl)
+
+        return response
+
+    @staticmethod
+    def get_request_hash(request: LLMRequest):
+        """Convert the request to a hash with hashlib.sha256."""
+        serialized = json.dumps(
+            {
+                # TODO: context and message are not serializable
+                # 'context': request.context,
+                "messages": [str(m) for m in request.messages],
+                "kwargs": request.kwargs,
+            },
+            sort_keys=True,
+        )
+        return hashlib.sha256(serialized.encode()).hexdigest()
+
+    def clear_cache(self) -> None:
+        """Clear all cached entries."""
+        self._cache.clear()
+
+    def remove_expired(self) -> None:
+        """Remove all expired cache entries."""
+        expired_keys = [key for key, entry in self._cache.items() if entry.is_expired]
+        for key in expired_keys:
+            del self._cache[key]
