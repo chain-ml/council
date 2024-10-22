@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
+from typing import Any, Dict, Final, Generic, Optional, Sequence, Tuple, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
@@ -112,4 +112,24 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
 
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
+        pass
+
+
+class LLMCostCard:
+    """LLM cost per million token"""
+
+    def __init__(self, input: float, output: float) -> None:
+        self.input = input
+        self.output = output
+
+    def get_costs(self, prompt_tokens: int, completion_tokens: int) -> Tuple[float, float]:
+        prompt_tokens_cost = prompt_tokens * self.input / 1e6
+        completion_tokens_cost = completion_tokens * self.output / 1e6
+        return prompt_tokens_cost, completion_tokens_cost
+
+
+class LLMCostManager(abc.ABC):
+    @classmethod
+    @abc.abstractmethod
+    def find_model_costs(cls, model_name: str) -> Optional[LLMCostCard]:
         pass

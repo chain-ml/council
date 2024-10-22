@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Mapping, Optional, Sequence
 
 from anthropic import Anthropic, APIStatusError, APITimeoutError
 from council.contexts import Consumption, LLMContext
@@ -10,6 +10,8 @@ from council.llm import (
     LLMCallException,
     LLMCallTimeoutException,
     LLMConfigObject,
+    LLMCostCard,
+    LLMCostManager,
     LLMessageTokenCounterBase,
     LLMMessage,
     LLMProviders,
@@ -30,6 +32,24 @@ class AnthropicTokenCounter(LLMessageTokenCounterBase):
         for msg in messages:
             tokens += self._client.count_tokens(msg.content)
         return tokens
+
+
+class AnthropicCostManager(LLMCostManager):
+    COSTS: Mapping[str, LLMCostCard] = {
+        # haiku
+        "claude-3-haiku-20240307": LLMCostCard(input=0.25, output=1.25),
+        # sonnet
+        "claude-3-sonnet-20240229": LLMCostCard(input=3.00, output=15.00),
+        "claude-3-5-sonnet-20240620": LLMCostCard(input=3.00, output=15.00),
+        "claude-3-5-sonnet-20241022": LLMCostCard(input=3.00, output=15.00),
+        # opus
+        "claude-3-opus-20240229": LLMCostCard(input=15.00, output=75.00),
+    }
+
+    @classmethod
+    def find_model_costs(cls, model_name: str) -> Optional[LLMCostCard]:
+        model_name = model_name.split(" with fallback")[0]
+        return cls.COSTS.get(model_name)
 
 
 class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
@@ -62,12 +82,27 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         model = self._configuration.model_name()
         prompt_tokens = self._client.count_tokens(prompt)
         completion_tokens = sum(self._client.count_tokens(r) for r in responses)
-        return [
+        consumptions = [
             Consumption(1, "call", f"{model}"),
             Consumption(prompt_tokens, "token", f"{model}:prompt_tokens"),
             Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
             Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
         ]
+
+        cost_card = AnthropicCostManager.find_model_costs(model)
+        if cost_card is None:
+            return consumptions
+
+        prompt_tokens_cost, completion_tokens_cost = cost_card.get_costs(prompt_tokens, completion_tokens)
+        consumptions.extend(
+            [
+                Consumption(prompt_tokens_cost, "USD", f"{model}:prompt_tokens_cost"),
+                Consumption(completion_tokens_cost, "USD", f"{model}:completion_tokens_cost"),
+                Consumption(prompt_tokens_cost + completion_tokens_cost, "USD", f"{model}:total_tokens_cost"),
+            ]
+        )
+
+        return consumptions
 
     def _get_api_wrapper(self) -> AnthropicAPIClientWrapper:
         if self._configuration is not None and self._configuration.model_name() == "claude-2":
