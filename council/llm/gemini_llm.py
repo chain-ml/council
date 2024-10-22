@@ -15,7 +15,7 @@ from council.llm import (
 )
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
-from google.generativeai.types import HarmBlockThreshold  # type: ignore
+from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
@@ -39,12 +39,17 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         history, last = self._to_chat_history(messages=messages)
         chat = self._model.start_chat(history=history)
         response = chat.send_message(last)
-        return LLMResult(choices=[response.text], consumptions=self.to_consumptions())
+        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(response))
 
-    def to_consumptions(self) -> Sequence[Consumption]:
+    def to_consumptions(self, response: GenerateContentResponse) -> Sequence[Consumption]:
         model = self._configuration.model_name()
+        prompt_tokens = response.usage_metadata.prompt_token_count
+        completion_tokens = response.usage_metadata.candidates_token_count
         return [
             Consumption(1, "call", f"{model}"),
+            Consumption(prompt_tokens, "token", f"{model}:prompt_tokens"),
+            Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
+            Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
         ]
 
     @staticmethod
