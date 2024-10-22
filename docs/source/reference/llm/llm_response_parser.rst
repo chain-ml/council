@@ -1,3 +1,13 @@
+EchoResponseParser
+------------------
+
+.. autoclass:: council.llm.llm_response_parser.EchoResponseParser
+
+StringResponseParser
+--------------------
+
+.. autoclass:: council.llm.llm_response_parser.StringResponseParser
+
 BaseModelResponseParser
 -----------------------
 

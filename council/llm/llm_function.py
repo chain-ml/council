@@ -3,7 +3,8 @@ from typing import Any, Generic, Iterable, List, Optional, Sequence, Union
 from council.contexts import LLMContext
 
 from .llm_answer import LLMParsingException
-from .llm_base import LLMBase, LLMMessage
+from .llm_base import LLMBase
+from .llm_message import LLMMessage, LLMMessageRole
 from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 from .llm_response_parser import LLMResponseParser, T_Response
 
@@ -58,19 +59,45 @@ class LLMFunction(Generic[T_Response]):
         self,
         llm: Union[LLMBase, LLMMiddlewareChain],
         response_parser: LLMResponseParser,
-        system_message: str,
+        system_message: Optional[Union[str, LLMMessage]] = None,
+        messages: Optional[Iterable[LLMMessage]] = None,
         max_retries: int = 3,
     ) -> None:
         """
-        Initializes the LLMFunction with a middleware chain, response parser, system message, and retry settings.
+        Initializes the LLMFunction with a middleware chain, response parser,
+        system_message / messages, and retry settings.
         """
 
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._llm_config = self._llm_middleware.llm.configuration
-        self._system_message = LLMMessage.system_message(system_message)
         self._response_parser = response_parser
         self._max_retries = max_retries
         self._context = LLMContext.empty()
+        self._messages = self._validate_messages(system_message, messages, LLMMessageRole.System)
+
+    def _validate_messages(
+        self,
+        str_message: Optional[Union[str, LLMMessage]],
+        messages: Optional[Iterable[LLMMessage]],
+        role: LLMMessageRole,
+    ) -> List[LLMMessage]:
+        """Convert `str_message` and `messages` into a proper List[LLMMessage]"""
+        if str_message is None and messages is None:
+            raise ValueError("At least one of str message, messages is required")
+
+        llm_messages: List[LLMMessage] = []
+
+        if str_message is not None:
+            llm_messages.append(self._build_llm_message(str_message, role))
+
+        if messages is not None:
+            llm_messages.extend(messages)
+
+        return llm_messages
+
+    @staticmethod
+    def _build_llm_message(message: Union[str, LLMMessage], role: LLMMessageRole) -> LLMMessage:
+        return message if isinstance(message, LLMMessage) else LLMMessage(role=role, content=message)
 
     def add_middleware(self, middleware: LLMMiddleware) -> None:
         self._llm_middleware.add_middleware(middleware)
@@ -96,15 +123,10 @@ class LLMFunction(Generic[T_Response]):
         Raises:
             FunctionOutOfRetryError: If all retry attempts fail, this exception is raised with details.
         """
-        if user_message is None and messages is None:
-            raise ValueError("At least one of 'user_message', 'messages' is required for LLMFunction.execute")
 
-        llm_messages: List[LLMMessage] = [self._system_message]
-        if user_message:
-            um = user_message if isinstance(user_message, LLMMessage) else LLMMessage.user_message(user_message)
-            llm_messages.append(um)
-        if messages:
-            llm_messages = llm_messages + list(messages)
+        llm_messages: List[LLMMessage] = self._messages + self._validate_messages(
+            user_message, messages, LLMMessageRole.User
+        )
         new_messages: List[LLMMessage] = []
         exceptions: List[Exception] = []
 

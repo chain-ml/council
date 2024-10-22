@@ -2,9 +2,9 @@ import unittest
 
 from pydantic import field_validator, Field
 
-from council.llm import LLMParsingException
+from council.llm import LLMParsingException, LLMResponse
 from council.llm.llm_function import LLMFunction, FunctionOutOfRetryError
-from council.llm.llm_response_parser import CodeBlocksResponseParser
+from council.llm.llm_response_parser import CodeBlocksResponseParser, StringResponseParser, EchoResponseParser
 from council.mocks import MockLLM, MockMultipleResponses
 
 
@@ -49,6 +49,24 @@ def format_response(text: str, flag: str, age: str, number: str) -> str:
 def execute_mock_llm_func(llm, response_parser, max_retries=0):
     llm_func = LLMFunction(llm, response_parser=response_parser, system_message="", max_retries=max_retries)
     return llm_func.execute(user_message="")
+
+
+class TestEchoResponseParser(unittest.TestCase):
+    def test(self) -> None:
+        llm = MockLLM.from_response("Some LLM response")
+        response = execute_mock_llm_func(llm, EchoResponseParser.from_response, max_retries=0)
+
+        self.assertIsInstance(response, LLMResponse)
+        self.assertEqual(response.value, "Some LLM response")
+
+
+class TestStringResponseParser(unittest.TestCase):
+    def test(self) -> None:
+        llm = MockLLM.from_response("Some LLM response")
+        response = execute_mock_llm_func(llm, StringResponseParser.from_response, max_retries=0)
+
+        self.assertIsInstance(response, str)
+        self.assertEqual(response, "Some LLM response")
 
 
 class TestCodeBlocksResponseParser(unittest.TestCase):
