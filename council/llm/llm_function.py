@@ -88,7 +88,7 @@ class LLMFunction(Generic[T_Response]):
         llm_messages: List[LLMMessage] = []
 
         if str_message is not None:
-            llm_messages.append(self._validate_message(str_message, role))
+            llm_messages.append(self._build_llm_message(str_message, role))
 
         if messages is not None:
             llm_messages.extend(messages)
@@ -96,7 +96,7 @@ class LLMFunction(Generic[T_Response]):
         return llm_messages
 
     @staticmethod
-    def _validate_message(message: Union[str, LLMMessage], role: LLMMessageRole) -> LLMMessage:
+    def _build_llm_message(message: Union[str, LLMMessage], role: LLMMessageRole) -> LLMMessage:
         return message if isinstance(message, LLMMessage) else LLMMessage(role=role, content=message)
 
     def add_middleware(self, middleware: LLMMiddleware) -> None:
