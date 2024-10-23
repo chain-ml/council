@@ -194,9 +194,9 @@ class LLMRetryMiddleware:
 class CacheEntry:
     """Represents a cached LLM response."""
 
-    def __init__(self, response: LLMResponse, timestamp: float, ttl: float) -> None:
+    def __init__(self, response: LLMResponse, ttl: float) -> None:
         self.response = self._rebuild_response(response)
-        self.timestamp = timestamp
+        self.timestamp = time.time()
         self.ttl = ttl
 
     @staticmethod
@@ -255,7 +255,7 @@ class LLMCachingMiddleware:
         response = execute(request)
 
         # cache the new response
-        self._cache[key] = CacheEntry(response=response, timestamp=time.time(), ttl=self._ttl)
+        self._cache[key] = CacheEntry(response=response, ttl=self._ttl)
         self._cache.move_to_end(key)
         self._enforce_cache_limit()
 
