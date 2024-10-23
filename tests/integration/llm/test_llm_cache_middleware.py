@@ -16,32 +16,94 @@ class TestLlmCachingMiddleware(unittest.TestCase):
         with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-haiku-20240307"):
             self.llm = AnthropicLLM.from_env()
 
-        self.llm_func: LLMFunction[LLMResponse] = LLMFunction(
+        self.m1 = "What is the capital of France?"
+        self.m2 = "What is the capital of France???"
+        self.m3 = "What is the capital of France?????"
+
+    def get_llm_func(self, ttl: float, cache_limit_size: int):
+        llm_func: LLMFunction[LLMResponse] = LLMFunction(
             self.llm, EchoResponseParser.from_response, system_message="You're a helpful assistant"
         )
 
-        self.llm_func.add_middleware(LLMCachingMiddleware(ttl=60))
+        llm_func.add_middleware(LLMCachingMiddleware(ttl=ttl, cache_limit_size=cache_limit_size))
+        return llm_func
 
-    def get_llm_func_wall_time(self, message: str, to_print: str, **kwargs) -> float:
-        start_time = time.time()
-        first_response = self.llm_func.execute(message, **kwargs)
-        wall_time = time.time() - start_time
+    @staticmethod
+    def execute_llm_func(llm_func: LLMFunction, message: str, to_print: str, **kwargs) -> LLMResponse:
+        response = llm_func.execute(message, **kwargs)
         print(f"\n{to_print}")
-        print(f"\tResponse duration: {first_response.duration:.3f}s")
-        print(f"\tWall time: {wall_time:.3f}s")
+        print(f"\tResponse duration: {response.duration:.3f}s")
 
-        return wall_time
+        return response
+
+    @staticmethod
+    def assert_if_cached(response):
+        assert all(not consumption.unit.startswith("cached_") for consumption in response.result.consumptions)
+
+    @staticmethod
+    def assert_if_not_cached(response):
+        assert response.duration == 0
+        assert all(consumption.unit.startswith("cached_") for consumption in response.result.consumptions)
 
     def test_caching(self):
-        message_v1 = "What is the capital of France?"
-        message_v2 = "What is the capital of France???"
+        llm_func = self.get_llm_func(ttl=60, cache_limit_size=10)
         kwargs = {"temperature": 0.9}
 
-        _ = self.get_llm_func_wall_time(message_v1, to_print="First request")
-        t = self.get_llm_func_wall_time(message_v1, to_print="Second request (cached)")
-        assert t < 0.1
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1")
+        self.assert_if_cached(response)
 
-        _ = self.get_llm_func_wall_time(message_v2, to_print="Third request (different input)")
-        _ = self.get_llm_func_wall_time(message_v1, to_print="Fourth request (different params)", **kwargs)
-        t = self.get_llm_func_wall_time(message_v1, to_print="Fifth request (cached)", **kwargs)
-        assert t < 0.1
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 (cached)")
+        self.assert_if_not_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m2, to_print="message_v2")
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 + kwargs", **kwargs)
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 + kwargs (cached)", **kwargs)
+        self.assert_if_not_cached(response)
+
+    def test_ttl(self):
+        llm_func = self.get_llm_func(ttl=2, cache_limit_size=10)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1")
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 (cached)")
+        self.assert_if_not_cached(response)
+
+        time.sleep(2)
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 after 2s sleep (should be expired)")
+        self.assert_if_cached(response)
+
+    def test_cache_limit_size(self):
+        llm_func = self.get_llm_func(ttl=60, cache_limit_size=2)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1")
+        # cache: m1 <- latest
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m2, to_print="message_v2")
+        # cache: m1, m2
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m3, to_print="message_v3")
+        # cache: m2, m3
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m3, to_print="message_v3 (cached)")
+        # cache: m2, m3
+        self.assert_if_not_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m2, to_print="message_v2 (cached)")
+        # cache: m3, m2
+        self.assert_if_not_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m1, to_print="message_v1 (not cached due to size limits)")
+        # cache: m2, m1
+        self.assert_if_cached(response)
+
+        response = self.execute_llm_func(llm_func, self.m3, to_print="message_v3 (not cached due to size limits)")
+        # cache: m1, m3
+        self.assert_if_cached(response)
