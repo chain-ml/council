@@ -23,14 +23,14 @@ from google.generativeai.types import GenerateContentResponse, HarmBlockThreshol
 class GeminiCostManager(LLMCostManager):
     # https://ai.google.dev/pricing
     # different strategy for prompt up to 128k tokens
-    COSTS_UP_TO_128k: Mapping[str, LLMCostCard] = {
+    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = {
         "gemini-1.5-flash": LLMCostCard(input=0.075, output=0.30),
         "gemini-1.5-flash-8b": LLMCostCard(input=0.0375, output=0.15),
         "gemini-1.5-pro": LLMCostCard(input=1.25, output=5.00),
         "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
     }
 
-    COSTS_LONGER_128k: Mapping[str, LLMCostCard] = {
+    COSTS_OVER_128k: Mapping[str, LLMCostCard] = {
         "gemini-1.5-flash": LLMCostCard(input=0.15, output=0.60),
         "gemini-1.5-flash-8b": LLMCostCard(input=0.075, output=0.30),
         "gemini-1.5-pro": LLMCostCard(input=2.50, output=10.00),
@@ -44,8 +44,8 @@ class GeminiCostManager(LLMCostManager):
         model_name = model_name.split(" with fallback")[0]
 
         if self.num_tokens <= 128_000:
-            return self.COSTS_UP_TO_128k.get(model_name)
-        return self.COSTS_LONGER_128k.get(model_name)
+            return self.COSTS_UNDER_128k.get(model_name)
+        return self.COSTS_OVER_128k.get(model_name)
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
