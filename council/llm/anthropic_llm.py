@@ -12,7 +12,7 @@ from council.llm import (
     LLMConfigObject,
     LLMCostCard,
     LLMCostManager,
-    LLMessageTokenCounterBase,
+    LLMMessageTokenCounterBase,
     LLMMessage,
     LLMProviders,
     LLMResult,
@@ -23,7 +23,7 @@ from .anthropic_completion_llm import AnthropicCompletionLLM
 from .anthropic_messages_llm import AnthropicMessagesLLM
 
 
-class AnthropicTokenCounter(LLMessageTokenCounterBase):
+class AnthropicTokenCounter(LLMMessageTokenCounterBase):
     def __init__(self, client: Anthropic) -> None:
         self._client = client
 

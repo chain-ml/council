@@ -9,7 +9,7 @@ from ..utils import truncate_dict_values_to_str
 from . import ChatGPTConfigurationBase
 from .llm_base import LLMBase, LLMCostCard, LLMCostManager, LLMResult
 from .llm_exception import LLMCallException
-from .llm_message import LLMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessageTokenCounterBase, LLMMessage
 
 
 class Provider(Protocol):
@@ -204,7 +204,7 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         self,
         config: ChatGPTConfigurationBase,
         provider: Provider,
-        token_counter: Optional[LLMessageTokenCounterBase],
+        token_counter: Optional[LLMMessageTokenCounterBase],
         name: Optional[str] = None,
     ) -> None:
         super().__init__(configuration=config, token_counter=token_counter, name=name)

@@ -6,7 +6,7 @@ from typing import List, Mapping, Optional, Sequence
 import tiktoken
 from tiktoken import Encoding
 
-from . import LLMessageTokenCounterBase, LLMMessage, LLMTokenLimitException
+from . import LLMMessageTokenCounterBase, LLMMessage, LLMTokenLimitException
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class TokenInfo:
         return TokenInfo(tokens_limit=128_000, tokens_per_message=3, tokens_per_name=1)
 
 
-class OpenAITokenCounter(LLMessageTokenCounterBase):
+class OpenAITokenCounter(LLMMessageTokenCounterBase):
     """
     See https://github.com/openai/openai-python/blob/main/chatml.md for information on
         how messages are converted to tokens.
