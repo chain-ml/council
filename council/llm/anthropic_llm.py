@@ -48,7 +48,6 @@ class AnthropicCostManager(LLMCostManager):
     }
 
     def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
-        model_name = model_name.split(" with fallback")[0]
         return self.COSTS.get(model_name)
 
 

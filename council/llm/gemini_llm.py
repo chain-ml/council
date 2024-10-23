@@ -41,8 +41,6 @@ class GeminiCostManager(LLMCostManager):
         self.num_tokens = num_tokens
 
     def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
-        model_name = model_name.split(" with fallback")[0]
-
         if self.num_tokens <= 128_000:
             return self.COSTS_UNDER_128k.get(model_name)
         return self.COSTS_OVER_128k.get(model_name)

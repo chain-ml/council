@@ -45,12 +45,6 @@ class TestAnthropicCostManager(unittest.TestCase):
         self.assertEqual(prompt_cost, 1.50)  # $15.00 * 0.1
         self.assertEqual(completion_cost, 3.75)  # $75.00 * 0.05
 
-    def test_model_with_fallback(self):
-        cost_card = self.cost_manager.find_model_costs("claude-3-opus-20240229 with fallback_claude-3-haiku-20240307")
-        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
-        self.assertEqual(prompt_cost, 15.00)
-        self.assertEqual(completion_cost, 37.50)
-
     def test_invalid_model(self):
         self.assertIsNone(self.cost_manager.find_model_costs("invalid-model"))
 
@@ -92,14 +86,6 @@ class TestGeminiCostManager(unittest.TestCase):
         cost_manager = GeminiCostManager(128_000)
         # Should use COSTS_UNDER_128k
         self.assertEqual(cost_manager.find_model_costs("gemini-1.5-pro").input, 1.25)
-
-    def test_find_model_costs_with_fallback(self):
-        cost_manager = GeminiCostManager(100_000)
-
-        self.assertEqual(
-            cost_manager.find_model_costs("gemini-1.5-pro with fallback_ABC").input,
-            cost_manager.find_model_costs("gemini-1.5-pro").input,
-        )
 
     def test_find_model_costs_invalid_model(self):
         cost_manager = GeminiCostManager(100_000)
@@ -197,12 +183,6 @@ class TestOpenAICostManager(unittest.TestCase):
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
         self.assertEqual(prompt_cost, 3.00)  # $3.00 per 1M tokens * 1M
         self.assertEqual(completion_cost, 6.00)  # $12.00 per 1M tokens * 0.5M
-
-    def test_model_fallback_handling(self):
-        cost_card = self.cost_manager.find_model_costs("gpt-4-turbo with fallback_claude")
-        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
-        self.assertEqual(prompt_cost, 10.00)
-        self.assertEqual(completion_cost, 15.00)
 
     def test_invalid_models(self):
         self.assertIsNone(self.cost_manager.find_model_costs("invalid-model"))

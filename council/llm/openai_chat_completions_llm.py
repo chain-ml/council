@@ -116,16 +116,14 @@ class OpenAICostManager(LLMCostManager):
     }
 
     def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
-        model = model_name.split(" with fallback")[0]
-
-        if model.startswith("o1"):
-            return self.COSTS_o1_FAMILY.get(model)
-        elif model.startswith("gpt-4o"):
-            return self.COSTS_gpt_4o_FAMILY.get(model)
-        elif model.startswith("gpt-4"):
-            return self.COSTS_gpt_4_FAMILY.get(model)
-        elif model.startswith("gpt-3.5-turbo"):
-            return self.COSTS_gpt_35_turbo_FAMILY.get(model)
+        if model_name.startswith("o1"):
+            return self.COSTS_o1_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-4o"):
+            return self.COSTS_gpt_4o_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-4"):
+            return self.COSTS_gpt_4_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-3.5-turbo"):
+            return self.COSTS_gpt_35_turbo_FAMILY.get(model_name)
 
         return None
 
