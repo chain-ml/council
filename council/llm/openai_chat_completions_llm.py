@@ -33,7 +33,6 @@ class Message:
 
 
 class Choice:
-
     def __init__(self, index: int, finish_reason: str, message: Message) -> None:
         self._index = index
         self._finish_reason = finish_reason
@@ -82,7 +81,7 @@ class Usage:
 
 class OpenAICostManager(LLMCostManager):
     # https://openai.com/api/pricing/
-    COSTS_GPT_35_turbo_FAMILY: Mapping[str, LLMCostCard] = {
+    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = {
         "gpt-3.5-turbo-0125": LLMCostCard(input=0.50, output=1.50),
         "gpt-3.5-turbo-instruct": LLMCostCard(input=1.50, output=2.00),
         "gpt-3.5-turbo-1106": LLMCostCard(input=1.00, output=2.00),
@@ -91,7 +90,7 @@ class OpenAICostManager(LLMCostManager):
         "gpt-3.5-turbo-0301": LLMCostCard(input=1.50, output=2.00),
     }
 
-    COSTS_GPT_4_FAMILY: Mapping[str, LLMCostCard] = {
+    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = {
         "gpt-4-turbo": LLMCostCard(input=10.00, output=30.00),
         "gpt-4-turbo-2024-04-09": LLMCostCard(input=10.00, output=30.00),
         "gpt-4": LLMCostCard(input=30.00, output=60.00),
@@ -101,7 +100,7 @@ class OpenAICostManager(LLMCostManager):
         "gpt-4-vision-preview": LLMCostCard(input=10.00, output=30.00),
     }
 
-    COSTS_GPT_4o_FAMILY: Mapping[str, LLMCostCard] = {
+    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = {
         "gpt-4o": LLMCostCard(input=2.50, output=10.00),
         "gpt-4o-2024-08-06": LLMCostCard(input=2.50, output=10.00),
         "gpt-4o-2024-05-13": LLMCostCard(input=5.00, output=15.00),
@@ -116,19 +115,17 @@ class OpenAICostManager(LLMCostManager):
         "o1-mini-2024-09-12": LLMCostCard(input=3.00, output=12.00),
     }
 
-    MODEL_FAMILY_TO_COSTS: Mapping[str, Mapping[str, LLMCostCard]] = {
-        "gpt-3.5-turbo": COSTS_GPT_35_turbo_FAMILY,
-        "gpt-4": COSTS_GPT_4_FAMILY,
-        "gpt-4o": COSTS_GPT_4o_FAMILY,
-        "o1": COSTS_o1_FAMILY,
-    }
-
     def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
         model = model_name.split(" with fallback")[0]
 
-        for model_family in self.MODEL_FAMILY_TO_COSTS.keys():
-            if model.startswith(model_family):
-                return self.MODEL_FAMILY_TO_COSTS[model_family].get(model)
+        if model.startswith("o1"):
+            return self.COSTS_o1_FAMILY.get(model)
+        elif model.startswith("gpt-4o"):
+            return self.COSTS_gpt_4o_FAMILY.get(model)
+        elif model.startswith("gpt-4"):
+            return self.COSTS_gpt_4_FAMILY.get(model)
+        elif model.startswith("gpt-3.5-turbo"):
+            return self.COSTS_gpt_35_turbo_FAMILY.get(model)
 
         return None
 
@@ -174,12 +171,20 @@ class OpenAIChatCompletionsResult:
         return self._raw_response
 
     def to_consumptions(self) -> Sequence[Consumption]:
-        return [
+        base_consumptions = [
             Consumption(1, "call", f"{self.model}"),
             Consumption(self.usage.prompt_tokens, "token", f"{self.model}:prompt_tokens"),
             Consumption(self.usage.completion_tokens, "token", f"{self.model}:completion_tokens"),
             Consumption(self.usage.total_tokens, "token", f"{self.model}:total_tokens"),
         ]
+
+        cost_card = OpenAICostManager().find_model_costs(self.model)
+        if cost_card is None:
+            return base_consumptions
+
+        return base_consumptions + cost_card.get_consumptions(
+            self.model, self.usage.prompt_tokens, self.usage.completion_tokens
+        )
 
     @staticmethod
     def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:
