@@ -6,7 +6,7 @@ import time
 from threading import Lock
 from typing import Any, Callable, Dict, List, Optional, Protocol, Sequence
 
-from council.contexts import LLMContext
+from council.contexts import Consumption, LLMContext
 
 from .llm_base import LLMBase, LLMMessage, LLMResult
 from .llm_exception import LLMOutOfRetriesException
@@ -194,9 +194,24 @@ class CacheEntry:
     """Represents a cached LLM response."""
 
     def __init__(self, response: LLMResponse, timestamp: float, ttl: float) -> None:
-        self.response = response
+        self.response = self._rebuild_response(response)
         self.timestamp = timestamp
         self.ttl = ttl
+
+    @staticmethod
+    def _rebuild_response(response: LLMResponse) -> LLMResponse:
+        """Modify the response so it has zero duration and consumption with different units"""
+        if response.result is not None:
+            cached_consumptions: List[Consumption] = [
+                Consumption(value=consumption.value, unit=f"cached_{consumption.unit}", kind=consumption.kind)
+                for consumption in response.result.consumptions
+            ]
+            cached_result = LLMResult(response.result.choices, cached_consumptions, response.result.raw_response)
+        else:
+            cached_result = None
+        cached_response = LLMResponse(response._request, cached_result, 0)
+
+        return cached_response
 
     @property
     def is_expired(self) -> bool:
@@ -242,13 +257,12 @@ class LLMCachingMiddleware:
         return response
 
     @staticmethod
-    def get_request_hash(request: LLMRequest):
+    def get_request_hash(request: LLMRequest) -> str:
         """Convert the request to a hash with hashlib.sha256."""
         serialized = json.dumps(
             {
-                # TODO: context and message are not serializable
-                # 'context': request.context,
-                "messages": [str(m) for m in request.messages],
+                # TODO: request.context is not serialized
+                "messages": [str(m) for m in request.messages],  # TODO: serialize messages properly
                 "kwargs": request.kwargs,
             },
             sort_keys=True,
