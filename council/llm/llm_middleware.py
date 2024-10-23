@@ -3,8 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from collections import OrderedDict
 from threading import Lock
-from typing import Any, Callable, Dict, List, Optional, Protocol, Sequence
+from typing import Any, Callable, List, Optional, Protocol, Sequence
 
 from council.contexts import Consumption, LLMContext
 
@@ -225,18 +226,20 @@ class CacheEntry:
 class LLMCachingMiddleware:
     """Middleware that caches LLM responses to avoid duplicate calls."""
 
-    def __init__(self, ttl: float = 300.0) -> None:
+    def __init__(self, ttl: float = 300.0, cache_limit_size: int = 10) -> None:
         """
         Initialize the caching middleware.
 
         Args:
             ttl: Time-to-live in seconds for cache entries (default: 5 mins)
+            cache_limit_size: Cache limit size in cache units (default: 10)
         """
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: OrderedDict[str, CacheEntry] = OrderedDict()
         self._ttl = ttl
+        self.cache_limit_size = cache_limit_size
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
-
+        self._remove_expired()
         key = self.get_request_hash(request)
 
         if key in self._cache:
@@ -244,7 +247,7 @@ class LLMCachingMiddleware:
 
             if not entry.is_expired:
                 entry.renew()  # renew the entry lifetime on hit
-                # TODO: how to differentiate in consumptions
+                self._cache.move_to_end(key)  # move to most recent
                 return entry.response
 
             del self._cache[key]  # remove expired entry
@@ -253,6 +256,8 @@ class LLMCachingMiddleware:
 
         # cache the new response
         self._cache[key] = CacheEntry(response=response, timestamp=time.time(), ttl=self._ttl)
+        self._cache.move_to_end(key)
+        self._enforce_cache_limit()
 
         return response
 
@@ -269,12 +274,17 @@ class LLMCachingMiddleware:
         )
         return hashlib.sha256(serialized.encode()).hexdigest()
 
-    def clear_cache(self) -> None:
-        """Clear all cached entries."""
-        self._cache.clear()
-
-    def remove_expired(self) -> None:
+    def _remove_expired(self) -> None:
         """Remove all expired cache entries."""
         expired_keys = [key for key, entry in self._cache.items() if entry.is_expired]
         for key in expired_keys:
             del self._cache[key]
+
+    def _enforce_cache_limit(self) -> None:
+        """Remove oldest entries if cache size exceeds limit."""
+        while len(self._cache) > self.cache_limit_size:
+            self._cache.popitem(last=False)  # remove the first item (oldest)
+
+    def clear_cache(self) -> None:
+        """Clear all cached entries."""
+        self._cache.clear()
