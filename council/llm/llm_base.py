@@ -142,7 +142,6 @@ class LLMCostCard:
 
 
 class LLMCostManager(abc.ABC):
-    @classmethod
     @abc.abstractmethod
-    def find_model_costs(cls, model_name: str) -> Optional[LLMCostCard]:
+    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
         pass

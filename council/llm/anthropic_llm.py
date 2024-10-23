@@ -47,10 +47,9 @@ class AnthropicCostManager(LLMCostManager):
         "claude-3-opus-20240229": LLMCostCard(input=15.00, output=75.00),
     }
 
-    @classmethod
-    def find_model_costs(cls, model_name: str) -> Optional[LLMCostCard]:
+    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
         model_name = model_name.split(" with fallback")[0]
-        return cls.COSTS.get(model_name)
+        return self.COSTS.get(model_name)
 
 
 class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
@@ -90,7 +89,7 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
             Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
         ]
 
-        cost_card = AnthropicCostManager.find_model_costs(model)
+        cost_card = AnthropicCostManager().find_model_costs(model)
         if cost_card is None:
             return base_consumptions
 

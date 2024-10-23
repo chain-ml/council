@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, Mapping, Optional, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
@@ -8,6 +8,8 @@ from council.llm import (
     GeminiLLMConfiguration,
     LLMBase,
     LLMConfigObject,
+    LLMCostCard,
+    LLMCostManager,
     LLMMessage,
     LLMMessageRole,
     LLMProviders,
@@ -16,6 +18,34 @@ from council.llm import (
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
+
+
+class GeminiCostManager(LLMCostManager):
+    # https://ai.google.dev/pricing
+    # different strategy for prompt up to 128k tokens
+    COSTS_UP_TO_128k: Mapping[str, LLMCostCard] = {
+        "gemini-1.5-flash": LLMCostCard(input=0.075, output=0.30),
+        "gemini-1.5-flash-8b": LLMCostCard(input=0.0375, output=0.15),
+        "gemini-1.5-pro": LLMCostCard(input=1.25, output=5.00),
+        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
+    }
+
+    COSTS_LONGER_128k: Mapping[str, LLMCostCard] = {
+        "gemini-1.5-flash": LLMCostCard(input=0.15, output=0.60),
+        "gemini-1.5-flash-8b": LLMCostCard(input=0.075, output=0.30),
+        "gemini-1.5-pro": LLMCostCard(input=2.50, output=10.00),
+        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
+    }
+
+    def __init__(self, num_tokens: int) -> None:
+        self.num_tokens = num_tokens
+
+    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
+        model_name = model_name.split(" with fallback")[0]
+
+        if self.num_tokens <= 128_000:
+            return self.COSTS_UP_TO_128k.get(model_name)
+        return self.COSTS_LONGER_128k.get(model_name)
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
@@ -45,12 +75,19 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         model = self._configuration.model_name()
         prompt_tokens = response.usage_metadata.prompt_token_count
         completion_tokens = response.usage_metadata.candidates_token_count
-        return [
+        base_consumptions = [
             Consumption(1, "call", f"{model}"),
             Consumption(prompt_tokens, "token", f"{model}:prompt_tokens"),
             Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
             Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
         ]
+
+        cost_manager = GeminiCostManager(prompt_tokens)
+        cost_card = cost_manager.find_model_costs(model)
+        if cost_card is None:
+            return base_consumptions
+
+        return base_consumptions + cost_card.get_consumptions(model, prompt_tokens, completion_tokens)
 
     @staticmethod
     def from_env() -> GeminiLLM:
