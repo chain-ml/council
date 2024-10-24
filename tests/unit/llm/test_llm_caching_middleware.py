@@ -16,13 +16,13 @@ from council.utils import OsEnviron
 class TestLlmCachingMiddleware(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
-        with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-haiku-20240307"):
+        with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-haiku-20240307"), OsEnviron("ANTHROPIC_API_KEY", "sk-key"):
             self.anthropic_config = AnthropicLLMConfiguration.from_env()
 
-        with OsEnviron("GEMINI_LLM_MODEL", "gemini-1.5-flash"):
+        with OsEnviron("GEMINI_LLM_MODEL", "gemini-1.5-flash"), OsEnviron("GEMINI_API_KEY", "key"):
             self.gemini_config = GeminiLLMConfiguration.from_env()
 
-        with OsEnviron("OPENAI_LLM_MODEL", "gpt-4o-mini"):
+        with OsEnviron("OPENAI_LLM_MODEL", "gpt-4o-mini"), OsEnviron("OPENAI_API_KEY", "sk-key"):
             self.openai_config = OpenAIChatGPTConfiguration.from_env()
 
     def get_hash(self, messages, configuration=None):
