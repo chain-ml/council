@@ -201,7 +201,7 @@ class CacheEntry:
 
     @staticmethod
     def _rebuild_response(response: LLMResponse) -> LLMResponse:
-        """Modify the response so it has zero duration and consumption with different units"""
+        """Modify the response so it has zero duration and consumptions in 'cached_' units"""
         if response.result is not None:
             cached_consumptions: List[Consumption] = [
                 Consumption(value=consumption.value, unit=f"cached_{consumption.unit}", kind=consumption.kind)
@@ -218,7 +218,7 @@ class CacheEntry:
     def is_expired(self) -> bool:
         return time.time() - self.timestamp >= self.ttl
 
-    def renew(self) -> None:
+    def renew_lifetime(self) -> None:
         """Update the timestamp to extend the lifetime."""
         self.timestamp = time.time()
 
@@ -231,12 +231,12 @@ class LLMCachingMiddleware:
         Initialize the caching middleware.
 
         Args:
-            ttl: Time-to-live in seconds for cache entries (default: 5 mins)
-            cache_limit_size: Cache limit size in cache units (default: 10)
+            ttl: Sliding window time-to-live in seconds for cache entries (default: 5 mins)
+            cache_limit_size: Cache limit size in cached entries (default: 10)
         """
         self._cache: OrderedDict[str, CacheEntry] = OrderedDict()
         self._ttl = ttl
-        self.cache_limit_size = cache_limit_size
+        self._cache_limit_size = cache_limit_size
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         self._remove_expired()
@@ -244,13 +244,9 @@ class LLMCachingMiddleware:
 
         if key in self._cache:
             entry = self._cache[key]
-
-            if not entry.is_expired:
-                entry.renew()  # renew the entry lifetime on hit
-                self._cache.move_to_end(key)  # move to most recent
-                return entry.response
-
-            del self._cache[key]  # remove expired entry
+            entry.renew_lifetime()  # renew on hit
+            self._cache.move_to_end(key)  # move to most recent
+            return entry.response
 
         response = execute(request)
 
@@ -282,8 +278,8 @@ class LLMCachingMiddleware:
 
     def _enforce_cache_limit(self) -> None:
         """Remove oldest entries if cache size exceeds limit."""
-        while len(self._cache) > self.cache_limit_size:
-            self._cache.popitem(last=False)  # remove the first item (oldest)
+        while len(self._cache) > self._cache_limit_size:
+            self._cache.popitem(last=False)  # remove the first (oldest) item
 
     def clear_cache(self) -> None:
         """Clear all cached entries."""
