@@ -23,6 +23,11 @@ LLMRetryMiddleware
 
 .. autoclass:: council.llm.LLMRetryMiddleware
 
+LLMCachingMiddleware
+--------------------
+
+.. autoclass:: council.llm.LLMCachingMiddleware
+
 LLMRequest
 -----------
 
