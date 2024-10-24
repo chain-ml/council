@@ -263,7 +263,7 @@ class LLMCachingMiddleware:
         serialized = json.dumps(
             {
                 # TODO: request.context is not serialized
-                "messages": [str(m) for m in request.messages],  # TODO: serialize messages properly
+                "messages": [m.normalize() for m in request.messages],
                 "kwargs": request.kwargs,
             },
             sort_keys=True,
