@@ -3,7 +3,7 @@ from typing import Any, Dict, Final, Generic, List, Optional, Sequence, Tuple, T
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
-from .llm_message import LLMMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
 

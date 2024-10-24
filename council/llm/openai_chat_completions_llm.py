@@ -9,7 +9,7 @@ from ..utils import truncate_dict_values_to_str
 from . import ChatGPTConfigurationBase
 from .llm_base import LLMBase, LLMCostCard, LLMCostManager, LLMResult
 from .llm_exception import LLMCallException
-from .llm_message import LLMMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 
 class Provider(Protocol):

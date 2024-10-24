@@ -6,7 +6,7 @@ from typing import List, Mapping, Optional, Sequence
 import tiktoken
 from tiktoken import Encoding
 
-from . import LLMMessageTokenCounterBase, LLMMessage, LLMTokenLimitException
+from . import LLMMessage, LLMMessageTokenCounterBase, LLMTokenLimitException
 
 logger = logging.getLogger(__name__)
 
