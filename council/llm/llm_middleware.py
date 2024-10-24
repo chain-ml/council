@@ -110,7 +110,10 @@ class LLMMiddlewareChain:
 
 
 class LLMLoggingMiddleware:
-    """Middleware for logging LLM requests and responses."""
+    """Middleware for logging LLM requests, responses and consumptions."""
+
+    def __init__(self, log_consumptions: bool = False) -> None:
+        self.log_consumptions = log_consumptions
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         request.context.logger.info(
@@ -119,19 +122,23 @@ class LLMLoggingMiddleware:
         response = execute(request)
         if response.result is not None:
             request.context.logger.info(f"Response: `{response.result.first_choice}` in {response.duration} seconds")
+            if self.log_consumptions:
+                for consumption in response.result.consumptions:
+                    request.context.logger.info(f"{consumption}")
         else:
             request.context.logger.warning("No response")
         return response
 
 
 class LLMFileLoggingMiddleware:
-    """Middleware for logging LLM requests and responses into a file."""
+    """Middleware for logging LLM requests, responses and consumptions into a file."""
 
-    def __init__(self, log_file: str, component_name: str) -> None:
-        """Initialize the middleware with the path to the log_file."""
+    def __init__(self, log_file: str, component_name: str, log_consumptions: bool = False) -> None:
+        """Initialize the middleware with the path to the log_file, component name and whether to log consumptions"""
 
         self.log_file = log_file
         self.component_name = component_name
+        self.log_consumptions = log_consumptions
         self._lock = Lock()
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
@@ -152,6 +159,10 @@ class LLMFileLoggingMiddleware:
             f"LLM output for {self.component_name} Duration: {response.duration:.2f} Output:\n"
             f"{response.result.first_choice}"
         )
+
+        if self.log_consumptions:
+            for consumption in response.result.consumptions:
+                self._log(f"Consumption for {self.component_name}: {consumption}")
 
     def _log(self, content: str) -> None:
         """Append `content` to a current log file"""

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Protocol, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Protocol, Sequence
 
 import httpx
 from council.contexts import Consumption, LLMContext
 
 from ..utils import truncate_dict_values_to_str
 from . import ChatGPTConfigurationBase
-from .llm_base import LLMBase, LLMResult
+from .llm_base import LLMBase, LLMCostCard, LLMCostManager, LLMResult
 from .llm_exception import LLMCallException
-from .llm_message import LLMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 
 class Provider(Protocol):
@@ -33,7 +33,6 @@ class Message:
 
 
 class Choice:
-
     def __init__(self, index: int, finish_reason: str, message: Message) -> None:
         self._index = index
         self._finish_reason = finish_reason
@@ -80,8 +79,56 @@ class Usage:
         return Usage(_completion_tokens, _prompt_tokens, _total_tokens)
 
 
-class OpenAIChatCompletionsResult:
+class OpenAICostManager(LLMCostManager):
+    # https://openai.com/api/pricing/
+    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = {
+        "gpt-3.5-turbo-0125": LLMCostCard(input=0.50, output=1.50),
+        "gpt-3.5-turbo-instruct": LLMCostCard(input=1.50, output=2.00),
+        "gpt-3.5-turbo-1106": LLMCostCard(input=1.00, output=2.00),
+        "gpt-3.5-turbo-0613": LLMCostCard(input=1.50, output=2.00),
+        "gpt-3.5-turbo-16k-0613": LLMCostCard(input=3.00, output=4.00),
+        "gpt-3.5-turbo-0301": LLMCostCard(input=1.50, output=2.00),
+    }
 
+    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = {
+        "gpt-4-turbo": LLMCostCard(input=10.00, output=30.00),
+        "gpt-4-turbo-2024-04-09": LLMCostCard(input=10.00, output=30.00),
+        "gpt-4": LLMCostCard(input=30.00, output=60.00),
+        "gpt-4-32k": LLMCostCard(input=60.00, output=120.00),
+        "gpt-4-0125-preview": LLMCostCard(input=10.00, output=30.00),
+        "gpt-4-1106-preview": LLMCostCard(input=10.00, output=30.00),
+        "gpt-4-vision-preview": LLMCostCard(input=10.00, output=30.00),
+    }
+
+    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = {
+        "gpt-4o": LLMCostCard(input=2.50, output=10.00),
+        "gpt-4o-2024-08-06": LLMCostCard(input=2.50, output=10.00),
+        "gpt-4o-2024-05-13": LLMCostCard(input=5.00, output=15.00),
+        "gpt-4o-mini": LLMCostCard(input=0.150, output=0.60),
+        "gpt-4o-mini-2024-07-18": LLMCostCard(input=0.150, output=0.60),
+    }
+
+    COSTS_o1_FAMILY: Mapping[str, LLMCostCard] = {
+        "o1-preview": LLMCostCard(input=15.00, output=60.00),
+        "o1-preview-2024-09-12": LLMCostCard(input=15.00, output=60.00),
+        "o1-mini": LLMCostCard(input=3.00, output=12.00),
+        "o1-mini-2024-09-12": LLMCostCard(input=3.00, output=12.00),
+    }
+
+    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
+        if model_name.startswith("o1"):
+            return self.COSTS_o1_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-4o"):
+            return self.COSTS_gpt_4o_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-4"):
+            return self.COSTS_gpt_4_FAMILY.get(model_name)
+        elif model_name.startswith("gpt-3.5-turbo"):
+            return self.COSTS_gpt_35_turbo_FAMILY.get(model_name)
+
+        return None
+
+
+class OpenAIChatCompletionsResult:
     def __init__(
         self,
         id: str,
@@ -122,12 +169,20 @@ class OpenAIChatCompletionsResult:
         return self._raw_response
 
     def to_consumptions(self) -> Sequence[Consumption]:
-        return [
+        base_consumptions = [
             Consumption(1, "call", f"{self.model}"),
             Consumption(self.usage.prompt_tokens, "token", f"{self.model}:prompt_tokens"),
             Consumption(self.usage.completion_tokens, "token", f"{self.model}:completion_tokens"),
             Consumption(self.usage.total_tokens, "token", f"{self.model}:total_tokens"),
         ]
+
+        cost_card = OpenAICostManager().find_model_costs(self.model)
+        if cost_card is None:
+            return base_consumptions
+
+        return base_consumptions + cost_card.get_consumptions(
+            self.model, self.usage.prompt_tokens, self.usage.completion_tokens
+        )
 
     @staticmethod
     def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:
@@ -149,7 +204,7 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         self,
         config: ChatGPTConfigurationBase,
         provider: Provider,
-        token_counter: Optional[LLMessageTokenCounterBase],
+        token_counter: Optional[LLMMessageTokenCounterBase],
         name: Optional[str] = None,
     ) -> None:
         super().__init__(configuration=config, token_counter=token_counter, name=name)

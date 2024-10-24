@@ -1,9 +1,9 @@
 import abc
-from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
+from typing import Any, Dict, Final, Generic, List, Optional, Sequence, Tuple, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
-from .llm_message import LLMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
 
@@ -62,7 +62,7 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     def __init__(
         self,
         configuration: T_Configuration,
-        token_counter: Optional[LLMessageTokenCounterBase] = None,
+        token_counter: Optional[LLMMessageTokenCounterBase] = None,
         name: Optional[str] = None,
     ) -> None:
         super().__init__(name or "llm")
@@ -112,4 +112,36 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
 
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
+        pass
+
+
+class LLMCostCard:
+    """LLM cost per million token"""
+
+    def __init__(self, input: float, output: float) -> None:
+        self.input = input
+        self.output = output
+
+    def __str__(self) -> str:
+        return f"${self.input}/${self.output} per 1m tokens"
+
+    def get_costs(self, prompt_tokens: int, completion_tokens: int) -> Tuple[float, float]:
+        """Return tuple of (prompt_tokens_cost, completion_token_cost)"""
+        prompt_tokens_cost = prompt_tokens * self.input / 1e6
+        completion_tokens_cost = completion_tokens * self.output / 1e6
+        return prompt_tokens_cost, completion_tokens_cost
+
+    def get_consumptions(self, model: str, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """Get list of USD consumptions for prompt, completion and total tokens"""
+        prompt_tokens_cost, completion_tokens_cost = self.get_costs(prompt_tokens, completion_tokens)
+        return [
+            Consumption(prompt_tokens_cost, "USD", f"{model}:prompt_tokens_cost"),
+            Consumption(completion_tokens_cost, "USD", f"{model}:completion_tokens_cost"),
+            Consumption(prompt_tokens_cost + completion_tokens_cost, "USD", f"{model}:total_tokens_cost"),
+        ]
+
+
+class LLMCostManager(abc.ABC):
+    @abc.abstractmethod
+    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
         pass

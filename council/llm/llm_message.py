@@ -249,7 +249,7 @@ class LLMMessage:
         return normalized_content
 
 
-class LLMessageTokenCounterBase(abc.ABC):
+class LLMMessageTokenCounterBase(abc.ABC):
     @abc.abstractmethod
     def count_messages_token(self, messages: Sequence[LLMMessage]) -> int:
         """
