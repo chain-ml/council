@@ -232,6 +232,22 @@ class LLMMessage:
     def __str__(self) -> str:
         return self.content
 
+    def normalize(self) -> str:
+        """
+        Returns a normalized string representation of the message for hashing.
+        The string contains the message content and sorted data content, all lowercase and without whitespaces.
+
+        Returns:
+            str: Normalized string containing content and sorted data
+        """
+        normalized_content = "".join(self._content.lower().split())
+
+        if self._data:
+            data_contents = sorted("".join(data.content.lower().split()) for data in self._data)
+            return normalized_content + "".join(data_contents)
+
+        return normalized_content
+
 
 class LLMMessageTokenCounterBase(abc.ABC):
     @abc.abstractmethod
