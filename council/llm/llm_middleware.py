@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional, Protocol, Sequence
 
 from council.contexts import Consumption, LLMContext
 
-from .llm_base import LLMBase, LLMMessage, LLMResult
+from .llm_base import LLMBase, LLMMessage, LLMResult, T_Configuration
 from .llm_exception import LLMOutOfRetriesException
 
 
@@ -240,7 +240,7 @@ class LLMCachingMiddleware:
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         self._remove_expired()
-        key = self.get_request_hash(request)
+        key = self.get_hash(request, llm.configuration)
 
         if key in self._cache:
             entry = self._cache[key]
@@ -258,10 +258,11 @@ class LLMCachingMiddleware:
         return response
 
     @staticmethod
-    def get_request_hash(request: LLMRequest) -> str:
-        """Convert the request to a hash with hashlib.sha256."""
+    def get_hash(request: LLMRequest, configuration: T_Configuration) -> str:
+        """Convert the request and LLM configuration to a hash with hashlib.sha256."""
         serialized = json.dumps(
             {
+                "configuration": {key: str(value) for key, value in configuration.__dict__.items()},
                 # TODO: request.context is not serialized
                 "messages": [m.normalize() for m in request.messages],
                 "kwargs": request.kwargs,
