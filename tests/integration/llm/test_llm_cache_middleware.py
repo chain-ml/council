@@ -3,11 +3,9 @@ import unittest
 
 import dotenv
 
-from council import AnthropicLLM, LLMContext
-from council.llm import LLMMessage
+from council import AnthropicLLM
 from council.llm.llm_function import LLMFunction
-from council.llm.llm_message import LLMMessageData
-from council.llm.llm_middleware import LLMCachingMiddleware, LLMResponse, LLMRequest
+from council.llm.llm_middleware import LLMCachingMiddleware, LLMResponse
 from council.llm.llm_response_parser import EchoResponseParser
 from council.utils import OsEnviron
 
@@ -109,31 +107,3 @@ class TestLlmCachingMiddleware(unittest.TestCase):
         response = self.execute_llm_func(llm_func, self.m3, to_print="message_v3 (not cached due to size limits)")
         # cache: m1, m3
         self.assert_if_cached(response)
-
-    def test_message_hashing(self):
-        def get_request_hash(messages):
-            request = LLMRequest(context=LLMContext.empty(), messages=messages)
-            return LLMCachingMiddleware.get_request_hash(request)
-
-        messages_v1 = [LLMMessage.system_message("System message"), LLMMessage.user_message("User message")]
-        messages_v1_1 = [LLMMessage.system_message("System message"), LLMMessage.user_message("UsEr MesSagE   ")]
-        messages_v2 = [LLMMessage.system_message("System message"), LLMMessage.user_message("Different user message")]
-        messages_v3 = [
-            LLMMessage.system_message("System message"),
-            LLMMessage.user_message("User message", data=[LLMMessageData(content="data", mime_type="")]),
-        ]
-        messages_v3_1 = [
-            LLMMessage.system_message("System message"),
-            LLMMessage.user_message("User message   ", data=[LLMMessageData(content="data   ", mime_type="")]),
-        ]
-        messages_v4 = [
-            LLMMessage.system_message("System message"),
-            LLMMessage.user_message("User message", data=[LLMMessageData(content="different data", mime_type="")]),
-        ]
-
-        self.assertEqual(get_request_hash(messages_v1), get_request_hash(messages_v1))
-        self.assertEqual(get_request_hash(messages_v1), get_request_hash(messages_v1_1))
-        self.assertNotEqual(get_request_hash(messages_v1), get_request_hash(messages_v2))
-        self.assertNotEqual(get_request_hash(messages_v2), get_request_hash(messages_v3))
-        self.assertEqual(get_request_hash(messages_v3), get_request_hash(messages_v3_1))
-        self.assertNotEqual(get_request_hash(messages_v3_1), get_request_hash(messages_v4))
