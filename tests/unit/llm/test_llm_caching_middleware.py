@@ -2,9 +2,14 @@ import unittest
 
 import dotenv
 
-from council.llm import LLMMessage, AnthropicLLMConfiguration, GeminiLLMConfiguration, OpenAIChatGPTConfiguration
-from council.llm.llm_message import LLMMessageData
-from council.llm.llm_middleware import LLMCachingMiddleware, LLMRequest
+from council.llm import (
+    AnthropicLLMConfiguration,
+    GeminiLLMConfiguration,
+    OpenAIChatGPTConfiguration,
+    LLMCachingMiddleware,
+    LLMRequest,
+)
+from council.llm.llm_message import LLMMessage, LLMMessageData
 from council.utils import OsEnviron
 
 

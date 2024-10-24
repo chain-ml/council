@@ -18,6 +18,7 @@ from .llm_middleware import (
     LLMRetryMiddleware,
     LLMLoggingMiddleware,
     LLMFileLoggingMiddleware,
+    LLMCachingMiddleware,
     ExecuteLLMRequest,
 )
 from .llm_function import LLMFunction, LLMFunctionError, FunctionOutOfRetryError
