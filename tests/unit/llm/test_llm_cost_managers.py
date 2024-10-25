@@ -9,6 +9,10 @@ class TestAnthropicCostManager(unittest.TestCase):
     def setUp(self):
         self.cost_manager = AnthropicCostManager()
 
+    def test_all_cache_models_have_base_costs(self):
+        for model in self.cost_manager.COSTS_CACHING.keys():
+            self.assertIn(model, self.cost_manager.COSTS)
+
     def test_haiku_cost_calculation(self):
         cost_card = self.cost_manager.find_model_costs("claude-3-haiku-20240307")
 
@@ -19,6 +23,21 @@ class TestAnthropicCostManager(unittest.TestCase):
         prompt_cost, completion_cost = cost_card.get_costs(100_000, 50_000)
         self.assertEqual(prompt_cost, 0.025)  # $0.25 * 0.1
         self.assertEqual(completion_cost, 0.0625)  # $1.25 * 0.05
+
+    def test_haiku_cache_cost_calculation(self):
+        consumptions = self.cost_manager.get_caching_cost_consumptions(
+            "claude-3-haiku-20240307",
+            cache_creation_prompt_tokens=1_000_000,
+            cache_read_prompt_tokens=500_000,
+            prompt_tokens=100_000,
+            completion_tokens=50_000,
+        )
+
+        cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
+        cache_read_cost = next(c for c in consumptions if "cache_read_prompt_tokens_cost" in c.kind)
+
+        self.assertEqual(cache_creation_cost.value, 0.30)  # $0.30 per 1M tokens * 1M tokens
+        self.assertEqual(cache_read_cost.value, 0.015)  # $0.03 per 1M tokens * 0.5M tokens
 
     def test_sonnet_cost_calculation(self):
         sonnet_versions = ["claude-3-sonnet-20240229", "claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022"]
@@ -34,6 +53,24 @@ class TestAnthropicCostManager(unittest.TestCase):
             self.assertEqual(prompt_cost, 0.30)  # $3.00 * 0.1
             self.assertEqual(completion_cost, 0.75)  # $15.00 * 0.05
 
+    def test_sonnet_cache_cost_calculation(self):
+        sonnet_versions = ["claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022"]
+
+        for version in sonnet_versions:
+            consumptions = self.cost_manager.get_caching_cost_consumptions(
+                version,
+                cache_creation_prompt_tokens=1_000_000,
+                cache_read_prompt_tokens=500_000,
+                prompt_tokens=100_000,
+                completion_tokens=50_000,
+            )
+
+            cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
+            cache_read_cost = next(c for c in consumptions if "cache_read_prompt_tokens_cost" in c.kind)
+
+            self.assertEqual(cache_creation_cost.value, 3.75)  # $3.75 per 1M tokens * 1M tokens
+            self.assertEqual(cache_read_cost.value, 0.15)  # $0.30 per 1M tokens * 0.5M tokens
+
     def test_opus_cost_calculation(self):
         cost_card = self.cost_manager.find_model_costs("claude-3-opus-20240229")
 
@@ -45,16 +82,57 @@ class TestAnthropicCostManager(unittest.TestCase):
         self.assertEqual(prompt_cost, 1.50)  # $15.00 * 0.1
         self.assertEqual(completion_cost, 3.75)  # $75.00 * 0.05
 
+    def test_opus_cache_cost_calculation(self):
+        consumptions = self.cost_manager.get_caching_cost_consumptions(
+            "claude-3-opus-20240229",
+            cache_creation_prompt_tokens=1_000_000,
+            cache_read_prompt_tokens=500_000,
+            prompt_tokens=100_000,
+            completion_tokens=50_000,
+        )
+
+        cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
+        cache_read_cost = next(c for c in consumptions if "cache_read_prompt_tokens_cost" in c.kind)
+
+        self.assertEqual(cache_creation_cost.value, 18.75)  # $18.75 per 1M tokens * 1M tokens
+        self.assertEqual(cache_read_cost.value, 0.75)  # $1.50 per 1M tokens * 0.5M tokens
+
     def test_invalid_model(self):
         self.assertIsNone(self.cost_manager.find_model_costs("invalid-model"))
 
+    def test_invalid_model_cache_costs(self):
+        consumptions = self.cost_manager.get_caching_cost_consumptions(
+            "claude-3-sonnet-20240229",  # doesn't support caching
+            cache_creation_prompt_tokens=1000,
+            cache_read_prompt_tokens=500,
+            prompt_tokens=100,
+            completion_tokens=50,
+        )
+
+        self.assertEqual(len(consumptions), 0)
+
     def test_consumption_units_and_types(self):
-        cost_card = self.cost_manager.find_model_costs("claude-3-haiku-20240307")
-        consumptions = cost_card.get_consumptions("claude-3-haiku-20240307", 1_000, 1_000)
+        model = "claude-3-haiku-20240307"
+        cost_card = self.cost_manager.find_model_costs(model)
+        consumptions = cost_card.get_consumptions(model, 1_000, 1_000)
 
         for consumption in consumptions:
             self.assertEqual(consumption.unit, "USD")
-            self.assertTrue(consumption.kind.startswith("claude-3-haiku-20240307:"))
+            self.assertTrue(consumption.kind.startswith(f"{model}:"))
+
+    def test_cache_consumption_units_and_types(self):
+        model = "claude-3-5-sonnet-20241022"
+        consumptions = self.cost_manager.get_caching_cost_consumptions(
+            model,
+            cache_creation_prompt_tokens=1000,
+            cache_read_prompt_tokens=500,
+            prompt_tokens=100,
+            completion_tokens=50,
+        )
+
+        for consumption in consumptions:
+            self.assertEqual(consumption.unit, "USD")
+            self.assertTrue(consumption.kind.startswith(f"{model}:"))
 
 
 class TestGeminiCostManager(unittest.TestCase):
