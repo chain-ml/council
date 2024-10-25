@@ -64,7 +64,7 @@ class AnthropicCostManager(LLMCostManager):
         prompt_tokens: int,
         completion_tokens: int,
     ) -> List[Consumption]:
-        """Caching costs consumptions specific for Anthropic prompt caching."""
+        """Get list of USD consumptions specific for Anthropic prompt caching."""
         cost_card = self.find_model_costs(model)
         caching_cost_card = self.COSTS_CACHING.get(model)
 
