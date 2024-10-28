@@ -1,8 +1,8 @@
 kind: LLMPrompt
 version: 0.1
 metadata:
-  name: "Prompt used for SQL generation"
-  description: ""
+  name: "SQL"
+  description: "Prompt used for SQL generation"
   labels:
     abc: xyz
 spec:

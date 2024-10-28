@@ -2,6 +2,7 @@ from typing import Any, Iterable, Mapping, Optional, Union
 
 from council.llm import LLMBase, LLMFunction, LLMMessage, LLMMiddlewareChain
 from council.llm.llm_function import LLMResponseParser, T_Response
+from council.llm.llm_message import LLMCacheControlData
 from council.prompt import LLMPromptConfigObject
 
 
@@ -17,9 +18,15 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         prompt_config: LLMPromptConfigObject,
         max_retries: int = 3,
         system_prompt_params: Optional[Mapping[str, str]] = None,
+        system_prompt_caching: bool = False,
     ) -> None:
         """
-        Initializes the LLMFunctionWithPrompt with an ability to format system prompt.
+        Initializes the LLMFunctionWithPrompt with an ability to format and cache system prompt.
+
+        Args:
+            system_prompt_params (Optional[Mapping[str, str]]): system prompt params to format system prompt
+            system_prompt_caching (bool): whether to cache system prompt (default: False).
+                Only Anthropic prompt caching is supported. Note: entire system prompt should be static
         """
 
         self._prompt_config = prompt_config
@@ -28,11 +35,15 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         if system_prompt_params is not None:
             system_prompt = system_prompt.format(**system_prompt_params)
 
+        system_message = LLMMessage.system_message(system_prompt)
+        if system_prompt_caching:
+            system_message.add_data(LLMCacheControlData.ephemeral())
+
         if not self._prompt_config.has_user_prompt_template:
             raise ValueError("user prompt template is required for LLMFunctionWithPrompt")
         self.user_prompt = self._prompt_config.get_user_prompt_template(llm_name)
 
-        super().__init__(llm, response_parser=response_parser, system_message=system_prompt, max_retries=max_retries)
+        super().__init__(llm, response_parser=response_parser, system_message=system_message, max_retries=max_retries)
 
     def execute(
         self,

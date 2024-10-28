@@ -1,0 +1,104 @@
+kind: LLMPrompt
+version: 0.1
+metadata:
+  name: "large"
+  description: "Large prompt to test Anthropic prompt caching"
+  labels:
+    abc: xyz
+spec:
+  system:
+    - model: default
+      template: |
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France. 
+        Paris is capital of France. Paris is capital of France. Paris is capital of France. Paris is capital of France.
+  user:
+    - model: default
+      template: |
+        What is the capital of France?
