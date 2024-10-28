@@ -2,6 +2,7 @@ from typing import Any, Generic, Iterable, List, Optional, Sequence, Union
 
 from council.contexts import LLMContext
 
+from . import LLMFunctionResponse
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase
 from .llm_message import LLMMessage, LLMMessageRole
@@ -86,7 +87,6 @@ class LLMFunction(Generic[T_Response]):
             raise ValueError("At least one of str message, messages is required")
 
         llm_messages: List[LLMMessage] = []
-
         if str_message is not None:
             llm_messages.append(self._build_llm_message(str_message, role))
 
@@ -102,12 +102,12 @@ class LLMFunction(Generic[T_Response]):
     def add_middleware(self, middleware: LLMMiddleware) -> None:
         self._llm_middleware.add_middleware(middleware)
 
-    def execute(
+    def execute2(
         self,
         user_message: Optional[Union[str, LLMMessage]] = None,
         messages: Optional[Iterable[LLMMessage]] = None,
         **kwargs: Any,
-    ) -> T_Response:
+    ) -> LLMFunctionResponse[T_Response]:
         """
         Executes the LLM request with the provided user message and additional messages,
         handling errors and retries as configured.
@@ -136,7 +136,7 @@ class LLMFunction(Generic[T_Response]):
             request = LLMRequest(context=self._context, messages=llm_messages, **kwargs)
             try:
                 llm_response = self._llm_middleware.execute(request)
-                return self._response_parser(llm_response)
+                return LLMFunctionResponse.from_llm_response(llm_response, self._response_parser(llm_response))
             except LLMParsingException as e:
                 exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
@@ -152,6 +152,14 @@ class LLMFunction(Generic[T_Response]):
             retry += 1
 
         raise FunctionOutOfRetryError(self._max_retries, exceptions)
+
+    def execute(
+        self,
+        user_message: Optional[Union[str, LLMMessage]] = None,
+        messages: Optional[Iterable[LLMMessage]] = None,
+        **kwargs: Any,
+    ) -> T_Response:
+        return self.execute2(user_message, messages, **kwargs).response
 
     def _handle_error(self, e: Exception, response: LLMResponse, user_message: str) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
