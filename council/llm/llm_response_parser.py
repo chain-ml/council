@@ -1,13 +1,10 @@
-from __future__ import annotations
-
 import json
 import re
-from typing import Any, Callable, Dict, Generic, Sequence, Type, TypeVar
+from typing import Any, Callable, Dict, Type, TypeVar
 
 import yaml
 from pydantic import BaseModel, ValidationError
 
-from ..contexts import Consumption
 from ..utils import CodeParser
 from .llm_answer import LLMParsingException
 from .llm_middleware import LLMResponse
@@ -17,29 +14,6 @@ T_Response = TypeVar("T_Response")
 LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 T = TypeVar("T", bound="BaseModelResponseParser")
-
-
-class LLMFunctionResponse(Generic[T_Response]):
-    def __init__(self, llm_response: LLMResponse, response: T_Response) -> None:
-        self.llm_response = llm_response
-        self._response = response
-
-    @property
-    def response(self) -> T_Response:
-        return self._response
-
-    @property
-    def duration(self) -> float:
-        return self.llm_response.duration
-
-    @property
-    def consumptions(self) -> Sequence[Consumption]:
-        result = self.llm_response.result
-        return result.consumptions if result else []
-
-    @staticmethod
-    def from_llm_response(llm_response: LLMResponse, llm_response_parser: LLMResponseParser) -> LLMFunctionResponse:
-        return LLMFunctionResponse(llm_response, llm_response_parser(llm_response))
 
 
 class EchoResponseParser:

@@ -1,13 +1,82 @@
+from __future__ import annotations
+
 from typing import Any, Generic, Iterable, List, Optional, Sequence, Union
 
-from council.contexts import LLMContext
+from council.contexts import LLMContext, Consumption
 
-from . import LLMFunctionResponse
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase
 from .llm_message import LLMMessage, LLMMessageRole
 from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 from .llm_response_parser import LLMResponseParser, T_Response
+
+
+class LLMFunctionResponse(Generic[T_Response]):
+    """
+    A class representing the response from a Large Language Model (LLM) function.
+
+    This class wraps the LLM response along with a parsed response, providing additional
+    access to response metadata like duration and consumptions.
+
+    Attributes:
+        llm_response (LLMResponse): The raw response from the LLM, including metadata such as duration.
+        _response (T_Response): The parsed response extracted from the LLM response.
+
+    Methods:
+        response: Provides access to the parsed response.
+        duration: Returns the duration of the LLM's response.
+        consumptions: Returns a list of consumptions associated with the LLM's response.
+        from_llm_response: Factory method to create an instance from an LLM response and a parser.
+    """
+
+    def __init__(self, llm_response: LLMResponse, response: T_Response) -> None:
+        self.llm_response = llm_response
+        self._response = response
+
+    @property
+    def response(self) -> T_Response:
+        """
+        Get the parsed response.
+
+        Returns:
+            T_Response: The parsed response.
+        """
+        return self._response
+
+    @property
+    def duration(self) -> float:
+        """
+        Get the duration of the LLM's response.
+
+        Returns:
+            float: The time taken by the LLM to produce the response, in seconds.
+        """
+        return self.llm_response.duration
+
+    @property
+    def consumptions(self) -> Sequence[Consumption]:
+        """
+        Get the consumptions associated with the LLM's response.
+
+        Returns:
+            Sequence[Consumption]: A sequence of consumption objects if available; otherwise, an empty sequence.
+        """
+        result = self.llm_response.result
+        return result.consumptions if result else []
+
+    @staticmethod
+    def from_llm_response(llm_response: LLMResponse, llm_response_parser: LLMResponseParser) -> LLMFunctionResponse:
+        """
+        Create an instance of LLMFunctionResponse from a raw LLM response and a parser function.
+
+        Args:
+            llm_response (LLMResponse): The raw response from the LLM.
+            llm_response_parser (LLMResponseParser): A function that parses the LLM response into the desired format.
+
+        Returns:
+            LLMFunctionResponse: A new instance of LLMFunctionResponse containing the parsed response.
+        """
+        return LLMFunctionResponse(llm_response, llm_response_parser(llm_response))
 
 
 class LLMFunctionError(Exception):
@@ -102,7 +171,7 @@ class LLMFunction(Generic[T_Response]):
     def add_middleware(self, middleware: LLMMiddleware) -> None:
         self._llm_middleware.add_middleware(middleware)
 
-    def execute2(
+    def execute_with_llm_response(
         self,
         user_message: Optional[Union[str, LLMMessage]] = None,
         messages: Optional[Iterable[LLMMessage]] = None,
@@ -118,7 +187,7 @@ class LLMFunction(Generic[T_Response]):
             **kwargs: Additional keyword arguments to be passed to the LLMRequest.
 
         Returns:
-            T_Response: The response from the LLM after processing by the response parser.
+            LLMFunctionResponse[T_Response]: The response from the LLM and the one processed by the response parser.
 
         Raises:
             FunctionOutOfRetryError: If all retry attempts fail, this exception is raised with details.
@@ -136,7 +205,7 @@ class LLMFunction(Generic[T_Response]):
             request = LLMRequest(context=self._context, messages=llm_messages, **kwargs)
             try:
                 llm_response = self._llm_middleware.execute(request)
-                return LLMFunctionResponse.from_llm_response(llm_response, self._response_parser(llm_response))
+                return LLMFunctionResponse.from_llm_response(llm_response, self._response_parser)
             except LLMParsingException as e:
                 exceptions.append(e)
                 new_messages = self._handle_error(e, llm_response, e.message)
@@ -159,7 +228,22 @@ class LLMFunction(Generic[T_Response]):
         messages: Optional[Iterable[LLMMessage]] = None,
         **kwargs: Any,
     ) -> T_Response:
-        return self.execute2(user_message, messages, **kwargs).response
+        """
+        Executes the LLM request with the provided user message and additional messages,
+        handling errors and retries as configured.
+
+        Args:
+            user_message (Union[str, LLMMessage], optional): The primary message from the user or an LLMMessage object.
+            messages (Iterable[LLMMessage], optional): Additional messages to include in the request.
+            **kwargs: Additional keyword arguments to be passed to the LLMRequest.
+
+        Returns:
+            T_Response: The response from the LLM after processing by the response parser.
+
+        Raises:
+            FunctionOutOfRetryError: If all retry attempts fail, this exception is raised with details.
+        """
+        return self.execute_with_llm_response(user_message, messages, **kwargs).response
 
     def _handle_error(self, e: Exception, response: LLMResponse, user_message: str) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"

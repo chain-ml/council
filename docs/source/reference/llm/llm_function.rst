@@ -1,7 +1,18 @@
+LLMFunctionResponse
+-------------------
+
+.. autoclass:: council.llm.LLMFunctionResponse
+
+This class wraps the LLM response along with a parsed response, providing additional
+access to response metadata like duration and consumptions.
+
 LLMFunction
 -----------
 
 .. autoclass:: council.llm.LLMFunction
+
+Represents a function that handles interactions with an LLM,
+including error handling and retries. It uses middleware to manage the requests and responses.
 
 Here's how you can use LLMFunction for a sample SQL generation task.
 
@@ -100,3 +111,18 @@ Here's how you can use LLMFunction for a sample SQL generation task.
     print(response.sql)
 
 You can simplify this example with :class:`council.llm.llm_response_parser.CodeBlocksResponseParser`.
+
+LLMFunctionError
+----------------
+
+.. autoclass:: council.llm.LLMFunctionError
+
+Exception raised when an error occurs during the execution of an LLMFunction.
+
+FunctionOutOfRetryError
+-----------------------
+
+.. autoclass:: council.llm.FunctionOutOfRetryError
+
+Exception raised when the maximum number of function execution retries is reached.
+Stores all previous exceptions raised during retry attempts.
