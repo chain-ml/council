@@ -115,6 +115,8 @@ class OpenAICostManager(LLMCostManager):
         "o1-mini-2024-09-12": LLMCostCard(input=3.00, output=12.00),
     }
 
+    # TODO: implement consumptions for OpenAI's o1 reasoning tokens and cached tokens
+
     def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
         if model_name.startswith("o1"):
             return self.COSTS_o1_FAMILY.get(model_name)
