@@ -10,8 +10,8 @@ from council.llm import (
     LLMCallException,
     LLMCallTimeoutException,
     LLMConfigObject,
+    LLMConsumptionCalculator,
     LLMCostCard,
-    LLMCostManager,
     LLMMessage,
     LLMMessageTokenCounterBase,
     LLMProviders,
@@ -34,7 +34,7 @@ class AnthropicTokenCounter(LLMMessageTokenCounterBase):
         return tokens
 
 
-class AnthropicCostManager(LLMCostManager):
+class AnthropicConsumptionCalculator(LLMConsumptionCalculator):
     # https://www.anthropic.com/pricing#anthropic-api
     COSTS: Mapping[str, LLMCostCard] = {
         "claude-3-haiku-20240307": LLMCostCard(input=0.25, output=1.25),
@@ -52,43 +52,63 @@ class AnthropicCostManager(LLMCostManager):
         "claude-3-opus-20240229": LLMCostCard(input=18.75, output=1.50),
     }
 
-    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
-        return self.COSTS.get(model_name)
+    def find_model_costs(self) -> Optional[LLMCostCard]:
+        return self.COSTS.get(self.model)
 
-    def get_caching_cost_consumptions(
-        self,
-        model: str,
-        *,
-        cache_creation_prompt_tokens: int,
-        cache_read_prompt_tokens: int,
-        prompt_tokens: int,
-        completion_tokens: int,
-    ) -> List[Consumption]:
-        """Get list of USD consumptions specific for Anthropic prompt caching."""
-        cost_card = self.find_model_costs(model)
-        caching_cost_card = self.COSTS_CACHING.get(model)
+    def find_caching_costs(self) -> Optional[LLMCostCard]:
+        return self.COSTS_CACHING.get(self.model)
+
+    def get_cache_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
+        consumptions = self.get_cache_token_consumptions(usage) + self.get_cache_cost_consumptions(usage)
+
+        # filter zero consumptions that could occur for cache tokens
+        return list(filter(lambda consumption: consumption.value > 0, consumptions))
+
+    def get_cache_token_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
+        total = sum(
+            [
+                usage["cache_creation_prompt_tokens"],
+                usage["cache_read_prompt_tokens"],
+                usage["prompt_tokens"],
+                usage["completion_tokens"],
+            ]
+        )
+        return [
+            Consumption.call(1, self.model),
+            Consumption.token(usage["cache_creation_prompt_tokens"], self.format_kind("cache_creation_prompt")),
+            Consumption.token(usage["cache_read_prompt_tokens"], self.format_kind("cache_read_prompt")),
+            Consumption.token(usage["prompt_tokens"], self.format_kind("prompt")),
+            Consumption.token(usage["completion_tokens"], self.format_kind("completion")),
+            Consumption.token(total, self.format_kind("total")),
+        ]
+
+    def get_cache_cost_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
+        cost_card = self.find_model_costs()
+        caching_cost_card = self.find_caching_costs()
 
         if cost_card is None or caching_cost_card is None:
             return []
 
-        prompt_tokens_cost, completion_tokens_cost = cost_card.get_costs(prompt_tokens, completion_tokens)
-        cache_creation_prompt_tokens_cost, cache_read_prompt_tokens_cost = caching_cost_card.get_costs(
-            cache_creation_prompt_tokens, cache_read_prompt_tokens
-        )
+        prompt_tokens_cost = cost_card.input_cost(usage["prompt_tokens"])
+        completion_tokens_cost = cost_card.output_cost(usage["completion_tokens"])
+        cache_creation_prompt_tokens_cost = caching_cost_card.input_cost(usage["cache_creation_prompt_tokens"])
+        cache_read_prompt_tokens_cost = caching_cost_card.output_cost(usage["cache_read_prompt_tokens"])
 
-        total_cost = (
-            prompt_tokens_cost
-            + completion_tokens_cost
-            + cache_creation_prompt_tokens_cost
-            + cache_read_prompt_tokens_cost
+        total_cost = sum(
+            [
+                prompt_tokens_cost,
+                completion_tokens_cost,
+                cache_creation_prompt_tokens_cost,
+                cache_read_prompt_tokens_cost,
+            ]
         )
 
         return [
-            Consumption(cache_creation_prompt_tokens_cost, "USD", f"{model}:cache_creation_prompt_tokens_cost"),
-            Consumption(cache_read_prompt_tokens_cost, "USD", f"{model}:cache_read_prompt_tokens_cost"),
-            Consumption(prompt_tokens_cost, "USD", f"{model}:prompt_tokens_cost"),
-            Consumption(completion_tokens_cost, "USD", f"{model}:completion_tokens_cost"),
-            Consumption(total_cost, "USD", f"{model}:total_tokens_cost"),
+            Consumption.cost(cache_creation_prompt_tokens_cost, self.format_kind("cache_creation_prompt", cost=True)),
+            Consumption.cost(cache_read_prompt_tokens_cost, self.format_kind("cache_read_prompt", cost=True)),
+            Consumption.cost(prompt_tokens_cost, self.format_kind("prompt", cost=True)),
+            Consumption.cost(completion_tokens_cost, self.format_kind("completion", cost=True)),
+            Consumption.cost(total_cost, self.format_kind("total", cost=True)),
         ]
 
 
@@ -123,63 +143,11 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
             return []
 
         model = self._configuration.model_name()
+        consumption_calculator = AnthropicConsumptionCalculator(model)
         if "cache_creation_input_tokens" in usage:
-            return self.to_cache_consumptions(
-                model,
-                cache_creation_prompt_tokens=usage["cache_creation_input_tokens"],
-                cache_read_prompt_tokens=usage["cache_read_input_tokens"],
-                prompt_tokens=usage["input_tokens"],
-                completion_tokens=usage["output_tokens"],
-            )
+            return consumption_calculator.get_cache_consumptions(usage)
 
-        return self.to_default_consumptions(
-            model, prompt_tokens=usage["input_tokens"], completion_tokens=usage["output_tokens"]
-        )
-
-    @staticmethod
-    def to_default_consumptions(model: str, *, prompt_tokens: int, completion_tokens: int) -> Sequence[Consumption]:
-        base_consumptions = [
-            Consumption(1, "call", f"{model}"),
-            Consumption(prompt_tokens, "token", f"{model}:prompt_tokens"),
-            Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
-            Consumption(prompt_tokens + completion_tokens, "token", f"{model}:total_tokens"),
-        ]
-
-        cost_card = AnthropicCostManager().find_model_costs(model)
-        if cost_card is None:
-            return base_consumptions
-
-        return base_consumptions + cost_card.get_consumptions(model, prompt_tokens, completion_tokens)
-
-    @staticmethod
-    def to_cache_consumptions(
-        model: str,
-        *,
-        cache_creation_prompt_tokens: int,
-        cache_read_prompt_tokens: int,
-        prompt_tokens: int,
-        completion_tokens: int,
-    ) -> Sequence[Consumption]:
-        total = cache_creation_prompt_tokens + cache_read_prompt_tokens + prompt_tokens + completion_tokens
-        base_consumptions = [
-            Consumption(1, "call", f"{model}"),
-            Consumption(cache_creation_prompt_tokens, "token", f"{model}:cache_creation_prompt_tokens"),
-            Consumption(cache_read_prompt_tokens, "token", f"{model}:cache_read_prompt_tokens"),
-            Consumption(prompt_tokens, "token", f"{model}:prompt_tokens"),
-            Consumption(completion_tokens, "token", f"{model}:completion_tokens"),
-            Consumption(total, "token", f"{model}:total_tokens"),
-        ]
-
-        consumptions = base_consumptions + AnthropicCostManager().get_caching_cost_consumptions(
-            model,
-            cache_creation_prompt_tokens=cache_creation_prompt_tokens,
-            cache_read_prompt_tokens=cache_read_prompt_tokens,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-        )
-
-        # filter zero consumptions that could occur for cache tokens
-        return list(filter(lambda consumption: consumption.value > 0, consumptions))
+        return consumption_calculator.get_consumptions(usage["input_tokens"], usage["output_tokens"])
 
     def _get_api_wrapper(self) -> AnthropicAPIClientWrapper:
         if self._configuration is not None and self._configuration.model_name() == "claude-2":

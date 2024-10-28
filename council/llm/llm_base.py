@@ -119,29 +119,80 @@ class LLMCostCard:
     """LLM cost per million token"""
 
     def __init__(self, input: float, output: float) -> None:
-        self.input = input
-        self.output = output
+        self._input = input
+        self._output = output
+
+    @property
+    def input(self) -> float:
+        return self._input
+
+    @property
+    def output(self) -> float:
+        return self._output
 
     def __str__(self) -> str:
         return f"${self.input}/${self.output} per 1m tokens"
 
+    def input_cost(self, tokens: int) -> float:
+        return tokens * self.input / 1e6
+
+    def output_cost(self, tokens: int) -> float:
+        return tokens * self.output / 1e6
+
     def get_costs(self, prompt_tokens: int, completion_tokens: int) -> Tuple[float, float]:
         """Return tuple of (prompt_tokens_cost, completion_token_cost)"""
-        prompt_tokens_cost = prompt_tokens * self.input / 1e6
-        completion_tokens_cost = completion_tokens * self.output / 1e6
-        return prompt_tokens_cost, completion_tokens_cost
+        return self.input_cost(prompt_tokens), self.output_cost(completion_tokens)
 
-    def get_consumptions(self, model: str, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
-        """Get list of USD consumptions for prompt, completion and total tokens"""
-        prompt_tokens_cost, completion_tokens_cost = self.get_costs(prompt_tokens, completion_tokens)
+
+class LLMConsumptionCalculator(abc.ABC):
+    def __init__(self, model: str):
+        self.model = model
+
+    def format_kind(self, kind: str, cost: bool = False) -> str:
+        options = [
+            "prompt",
+            "completion",
+            "total",
+            "reasoning",  # OpenAI o1
+            "cache_creation_prompt",  # Anthropic prompt caching
+            "cache_read_prompt",  # Anthropic & OpenAI prompt caching
+        ]
+        result = f"{self.model}:_"
+        if kind not in options:
+            raise ValueError(f"Unknown kind for LLMConsumptionCalculator; expected one of `{','.join(options)}`")
+
+        result += f"{kind}_tokens"
+
+        if cost:
+            result += "_cost"
+
+        return result
+
+    def get_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        return self.get_token_consumptions(prompt_tokens, completion_tokens) + self.get_cost_consumptions(
+            prompt_tokens, completion_tokens
+        )
+
+    def get_token_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
         return [
-            Consumption(prompt_tokens_cost, "USD", f"{model}:prompt_tokens_cost"),
-            Consumption(completion_tokens_cost, "USD", f"{model}:completion_tokens_cost"),
-            Consumption(prompt_tokens_cost + completion_tokens_cost, "USD", f"{model}:total_tokens_cost"),
+            Consumption.call(1, self.model),
+            Consumption.token(prompt_tokens, self.format_kind("prompt")),
+            Consumption.token(completion_tokens, self.format_kind("completion")),
+            Consumption.token(prompt_tokens + completion_tokens, self.format_kind("total")),
         ]
 
+    def get_cost_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        cost_card = self.find_model_costs()
+        if cost_card is None:
+            return []
 
-class LLMCostManager(abc.ABC):
+        prompt_tokens_cost, completion_tokens_cost = cost_card.get_costs(prompt_tokens, completion_tokens)
+        return [
+            Consumption.cost(prompt_tokens_cost, self.format_kind("prompt", cost=True)),
+            Consumption.cost(completion_tokens_cost, self.format_kind("completion", cost=True)),
+            Consumption.cost(prompt_tokens_cost + completion_tokens_cost, self.format_kind("total", cost=True)),
+        ]
+
     @abc.abstractmethod
-    def find_model_costs(self, model_name: str) -> Optional[LLMCostCard]:
+    def find_model_costs(self) -> Optional[LLMCostCard]:
         pass
