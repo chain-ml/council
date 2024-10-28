@@ -1,10 +1,13 @@
+import time
 import unittest
 
 import dotenv
 
-from council import AzureLLM
+from council import AzureLLM, AnthropicLLM
 from council.llm import LLMFunctionWithPrompt
+from council.llm.llm_response_parser import EchoResponseParser
 from council.prompt import LLMPromptConfigObject
+from council.utils import OsEnviron
 from tests import get_data_filename
 from tests.integration.llm.test_llm_function import SQLResult
 from tests.unit import LLMPrompts
@@ -41,6 +44,7 @@ class TestLlmFunctionWithPrompt(unittest.TestCase):
 
         self.prompt_config_simple = LLMPromptConfigObject.from_yaml(get_data_filename(LLMPrompts.sql))
         self.prompt_config_template = LLMPromptConfigObject.from_yaml(get_data_filename(LLMPrompts.sql_template))
+        self.prompt_config_large = LLMPromptConfigObject.from_yaml(get_data_filename(LLMPrompts.large))
 
     def test_simple_prompt(self):
         llm_func = LLMFunctionWithPrompt(self.llm, SQLResult.from_response, self.prompt_config_simple)
@@ -58,3 +62,30 @@ class TestLlmFunctionWithPrompt(unittest.TestCase):
         sql_result = llm_func.execute(user_prompt_params={"question": "Show me first 5 rows of the dataset"})
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
+
+    def test_with_caching(self):
+        with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-haiku-20240307"):
+            anthropic_llm = AnthropicLLM.from_env()
+
+        llm_func_no_caching = LLMFunctionWithPrompt(
+            anthropic_llm,
+            EchoResponseParser.from_response,
+            self.prompt_config_large,
+            system_prompt_caching=False,
+        )
+        response = llm_func_no_caching.execute()
+
+        assert all(not key.startswith("cache_") for key in response.result.raw_response["usage"])
+
+        llm_func_caching = LLMFunctionWithPrompt(
+            anthropic_llm,
+            EchoResponseParser.from_response,
+            self.prompt_config_large,
+            system_prompt_caching=True,
+        )
+        response = llm_func_caching.execute()
+        assert response.result.raw_response["usage"]["cache_creation_input_tokens"] > 0
+
+        time.sleep(1)
+        response = llm_func_caching.execute()
+        assert response.result.raw_response["usage"]["cache_read_input_tokens"] > 0
