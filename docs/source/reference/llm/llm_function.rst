@@ -3,16 +3,10 @@ LLMFunctionResponse
 
 .. autoclass:: council.llm.LLMFunctionResponse
 
-This class wraps the LLM response along with a parsed response, providing additional
-access to response metadata like duration and consumptions.
-
 LLMFunction
 -----------
 
 .. autoclass:: council.llm.LLMFunction
-
-Represents a function that handles interactions with an LLM,
-including error handling and retries. It uses middleware to manage the requests and responses.
 
 Here's how you can use LLMFunction for a sample SQL generation task.
 
