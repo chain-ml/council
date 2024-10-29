@@ -10,6 +10,7 @@ from .llm_answer import LLMParsingException
 from .llm_middleware import LLMResponse
 
 T_Response = TypeVar("T_Response")
+
 LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 T = TypeVar("T", bound="BaseModelResponseParser")

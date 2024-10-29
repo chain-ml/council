@@ -1,3 +1,9 @@
+LLMFunctionResponse
+-------------------
+
+.. autoclass:: council.llm.LLMFunctionResponse
+   :member-order: bysource
+
 LLMFunction
 -----------
 
@@ -100,3 +106,18 @@ Here's how you can use LLMFunction for a sample SQL generation task.
     print(response.sql)
 
 You can simplify this example with :class:`council.llm.llm_response_parser.CodeBlocksResponseParser`.
+
+LLMFunctionError
+----------------
+
+.. autoclass:: council.llm.LLMFunctionError
+
+Exception raised when an error occurs during the execution of an LLMFunction.
+
+FunctionOutOfRetryError
+-----------------------
+
+.. autoclass:: council.llm.FunctionOutOfRetryError
+
+Exception raised when the maximum number of function execution retries is reached.
+Stores all previous exceptions raised during retry attempts.
