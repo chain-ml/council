@@ -2,6 +2,8 @@ LLMFunctionResponse
 -------------------
 
 .. autoclass:: council.llm.LLMFunctionResponse
+   :members:
+   :noindex: consumptions
 
 LLMFunction
 -----------
