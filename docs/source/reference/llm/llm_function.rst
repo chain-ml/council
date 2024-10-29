@@ -2,8 +2,7 @@ LLMFunctionResponse
 -------------------
 
 .. autoclass:: council.llm.LLMFunctionResponse
-   :members:
-   :noindex: consumptions
+   :member-order: bysource
 
 LLMFunction
 -----------
