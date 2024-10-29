@@ -76,4 +76,4 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         Execute LLMFunctionWithPrompt with an ability to format user prompt.
         """
 
-        return self.execute_with_llm_response(user_message, messages, **kwargs).response
+        return self.execute_with_llm_response(user_message, messages, user_prompt_params, **kwargs).response
