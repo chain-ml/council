@@ -51,6 +51,15 @@ class Choice:
 
 
 class Usage:
+    """
+    Represents token usage statistics for an OpenAI API request, with normalized token counting.
+
+    This class extends the standard OpenAI usage stats by separately tracking reasoning and cached tokens
+    while maintaining consistent total token counts. Unlike the OpenAI implementation, this class:
+    - Subtracts reasoning_tokens from completion_tokens to avoid double-counting
+    - Subtracts cached_tokens from prompt_tokens to avoid double-counting
+    """
+
     def __init__(
         self, completion_tokens: int, prompt_tokens: int, total_tokens: int, reasoning_tokens: int, cached_tokens: int
     ) -> None:
@@ -65,22 +74,27 @@ class Usage:
 
     @property
     def prompt_tokens(self) -> int:
+        """Number of tokens in the prompt, excluding cached tokens."""
         return self._prompt
 
     @property
     def completion_tokens(self) -> int:
+        """Number of tokens in the completion, excluding reasoning tokens."""
         return self._completion
 
     @property
     def total_tokens(self) -> int:
+        """Total number of tokens used (cached + prompt + reasoning + completion)."""
         return self._total
 
     @property
     def reasoning_tokens(self) -> int:
+        """Number of reasoning completion tokens."""
         return self._reasoning
 
     @property
     def cached_tokens(self) -> int:
+        """Number of cached prompt tokens."""
         return self._cached
 
     @staticmethod
@@ -151,10 +165,14 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculator):
         return None
 
     def get_openai_consumptions(self, usage: Usage) -> List[Consumption]:
+        """
+        Get consumptions specific for OpenAI:
+            - 1 call
+            - cache_read_prompt, prompt, reasoning, completion and total tokens
+            - costs LLMCostCard can be found
+        """
         consumptions = self.get_openai_token_consumptions(usage) + self.get_openai_cost_consumptions(usage)
-
-        # filter zero consumptions that could occur for cache/reasoning tokens
-        return list(filter(lambda consumption: consumption.value > 0, consumptions))
+        return self.filter_zeros(consumptions)  # could occur for cache/reasoning tokens
 
     def get_openai_token_consumptions(self, usage: Usage) -> List[Consumption]:
         return [

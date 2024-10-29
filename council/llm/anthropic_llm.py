@@ -59,10 +59,14 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculator):
         return self.COSTS_CACHING.get(self.model)
 
     def get_cache_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
+        """
+        Get consumptions specific for Anthropic prompt caching:
+            - 1 call
+            - cache_creation_prompt, cache_read_prompt, prompt, completion and total tokens
+            - costs if both regular and caching LLMCostCards can be found
+        """
         consumptions = self.get_cache_token_consumptions(usage) + self.get_cache_cost_consumptions(usage)
-
-        # filter zero consumptions that could occur for cache tokens
-        return list(filter(lambda consumption: consumption.value > 0, consumptions))
+        return self.filter_zeros(consumptions)  # could occur for cache tokens
 
     def get_cache_token_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
         total = sum(

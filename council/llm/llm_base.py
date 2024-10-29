@@ -145,10 +145,13 @@ class LLMCostCard:
 
 
 class LLMConsumptionCalculator(abc.ABC):
+    """Helper class to manage LLM consumptions."""
+
     def __init__(self, model: str):
         self.model = model
 
-    def format_kind(self, kind: str, cost: bool = False) -> str:
+    def format_kind(self, token_kind: str, cost: bool = False) -> str:
+        """Format Consumption.kind - from 'prompt' to '{self.model}:prompt_tokens'"""
         options = [
             "prompt",
             "completion",
@@ -158,10 +161,10 @@ class LLMConsumptionCalculator(abc.ABC):
             "cache_read_prompt",  # Anthropic & OpenAI prompt caching
         ]
         result = f"{self.model}:_"
-        if kind not in options:
+        if token_kind not in options:
             raise ValueError(f"Unknown kind for LLMConsumptionCalculator; expected one of `{','.join(options)}`")
 
-        result += f"{kind}_tokens"
+        result += f"{token_kind}_tokens"
 
         if cost:
             result += "_cost"
@@ -169,6 +172,12 @@ class LLMConsumptionCalculator(abc.ABC):
         return result
 
     def get_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """
+        Get default consumptions:
+            - 1 call
+            - prompt, completion and total tokens
+            - cost for prompt, completion and total tokens if LLMCostCard can be found
+        """
         return self.get_token_consumptions(prompt_tokens, completion_tokens) + self.get_cost_consumptions(
             prompt_tokens, completion_tokens
         )
@@ -195,4 +204,9 @@ class LLMConsumptionCalculator(abc.ABC):
 
     @abc.abstractmethod
     def find_model_costs(self) -> Optional[LLMCostCard]:
+        """Get LLMCostCard for self to calculate cost consumptions."""
         pass
+
+    @staticmethod
+    def filter_zeros(consumptions: List[Consumption]) -> List[Consumption]:
+        return list(filter(lambda consumption: consumption.value > 0, consumptions))
