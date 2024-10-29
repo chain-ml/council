@@ -1,6 +1,6 @@
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from council.llm import LLMBase, LLMFunction, LLMMessage, LLMMiddlewareChain
+from council.llm import LLMBase, LLMFunction, LLMMessage, LLMMiddlewareChain, LLMResponse, LLMFunctionResponse
 from council.llm.llm_function import LLMResponseParser, T_Response
 from council.llm.llm_message import LLMCacheControlData
 from council.prompt import LLMPromptConfigObject
@@ -45,13 +45,13 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
 
         super().__init__(llm, response_parser=response_parser, system_message=system_message, max_retries=max_retries)
 
-    def execute(
+    def execute_with_llm_response(
         self,
         user_message: Optional[Union[str, LLMMessage]] = None,
         messages: Optional[Iterable[LLMMessage]] = None,
         user_prompt_params: Optional[Mapping[str, str]] = None,
         **kwargs: Any,
-    ) -> T_Response:
+    ) -> LLMFunctionResponse[T_Response]:
         """
         Execute LLMFunctionWithPrompt with an ability to format user prompt.
         """
@@ -63,4 +63,17 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
             )
 
         prompt = self.user_prompt.format(**user_prompt_params) if user_prompt_params is not None else self.user_prompt
-        return super().execute(user_message=prompt, **kwargs)
+        return super().execute_with_llm_response(user_message=prompt, **kwargs)
+
+    def execute(
+        self,
+        user_message: Optional[Union[str, LLMMessage]] = None,
+        messages: Optional[Iterable[LLMMessage]] = None,
+        user_prompt_params: Optional[Mapping[str, str]] = None,
+        **kwargs: Any,
+    ) -> T_Response:
+        """
+        Execute LLMFunctionWithPrompt with an ability to format user prompt.
+        """
+
+        return self.execute_with_llm_response(user_message, messages, **kwargs).response

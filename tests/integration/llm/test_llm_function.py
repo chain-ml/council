@@ -39,7 +39,11 @@ class TestLlmFunction(unittest.TestCase):
 
     def test_basic_prompt(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
-        sql_result = llm_func.execute(user_message=USER)
+        llm_function_response = llm_func.execute_with_llm_response(user_message=USER)
+
+        self.assertTrue(llm_function_response.duration > 0)
+        self.assertTrue(len(llm_function_response.consumptions) > 0)
+        sql_result = llm_function_response.response
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
@@ -47,7 +51,11 @@ class TestLlmFunction(unittest.TestCase):
         llm_func = LLMFunction(
             self.llm, SQLResult.from_response, system_message=LLMMessage.system_message(SYSTEM_PROMPT)
         )
-        sql_result = llm_func.execute(user_message=USER)
+        llm_function_response = llm_func.execute_with_llm_response(user_message=USER)
+
+        self.assertTrue(llm_function_response.duration > 0)
+        self.assertTrue(len(llm_function_response.consumptions) > 0)
+        sql_result = llm_function_response.response
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
@@ -57,7 +65,11 @@ class TestLlmFunction(unittest.TestCase):
             SQLResult.from_response,
             messages=[LLMMessage.system_message(SYSTEM_PROMPT), LLMMessage.system_message("Another system message")],
         )
-        sql_result = llm_func.execute(user_message=USER)
+        llm_function_response = llm_func.execute_with_llm_response(user_message=USER)
+
+        self.assertTrue(llm_function_response.duration > 0)
+        self.assertTrue(len(llm_function_response.consumptions) > 0)
+        sql_result = llm_function_response.response
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
