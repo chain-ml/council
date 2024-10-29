@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Generic, Iterable, List, Optional, Sequence, Union
 
-from council.contexts import LLMContext, Consumption
+from council.contexts import Consumption, LLMContext
 
 from .llm_answer import LLMParsingException
 from .llm_base import LLMBase
