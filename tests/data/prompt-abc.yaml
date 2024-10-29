@@ -1,8 +1,8 @@
 kind: LLMPrompt
 version: 0.1
 metadata:
-  name: "Prompt used to do ABC"
-  description: ""
+  name: "abc"
+  description: "Prompt used to do ABC"
   labels:
     abc: xyz
 spec:
