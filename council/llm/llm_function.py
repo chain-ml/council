@@ -17,16 +17,6 @@ class LLMFunctionResponse(Generic[T_Response]):
 
     This class wraps the LLM response along with a parsed response, providing additional
     access to response metadata like duration and consumptions.
-
-    Attributes:
-        llm_response (LLMResponse): The raw response from the LLM, including metadata such as duration.
-        _response (T_Response): The parsed response extracted from the LLM response.
-
-    Methods:
-        response: Provides access to the parsed response.
-        duration: Returns the duration of the LLM's response.
-        consumptions: Returns a list of consumptions associated with the LLM's response.
-        from_llm_response: Factory method to create an instance from an LLM response and a parser.
     """
 
     def __init__(self, llm_response: LLMResponse, response: T_Response) -> None:
