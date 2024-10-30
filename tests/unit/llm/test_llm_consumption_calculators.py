@@ -117,7 +117,7 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
     def test_consumption_units_and_types(self):
         model = "claude-3-haiku-20240307"
         calculator = AnthropicConsumptionCalculator(model)
-        consumptions = calculator.get_cost_consumptions(1_000, 1_000)
+        consumptions = calculator.get_cost_consumptions(prompt_tokens=1_000, completion_tokens=1_000)
 
         for consumption in consumptions:
             self.assertEqual(consumption.unit, "USD")
