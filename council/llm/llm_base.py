@@ -3,7 +3,7 @@ from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 
-from .llm_message import LLMessageTokenCounterBase, LLMMessage
+from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
 
@@ -62,7 +62,7 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     def __init__(
         self,
         configuration: T_Configuration,
-        token_counter: Optional[LLMessageTokenCounterBase] = None,
+        token_counter: Optional[LLMMessageTokenCounterBase] = None,
         name: Optional[str] = None,
     ) -> None:
         super().__init__(name or "llm")

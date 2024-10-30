@@ -57,3 +57,8 @@ class TestLlmOpenAI(unittest.TestCase):
         messages = [message]
         result = self.llm.post_chat_request(LLMContext.empty(), messages, model="gpt-4o")
         print(result.first_choice)
+
+    def test_o1(self):
+        messages = [LLMMessage.user_message("Hello")]
+        result = self.llm.post_chat_request(LLMContext.empty(), messages, model="o1-mini")
+        print(result.first_choice)

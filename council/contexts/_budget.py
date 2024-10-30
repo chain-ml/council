@@ -81,6 +81,18 @@ class Consumption:
     def to_dict(self) -> Dict[str, Any]:
         return {"kind": self.kind, "unit": self.unit, "value": self.value}
 
+    @staticmethod
+    def call(value: int, kind: str) -> Consumption:
+        return Consumption(value, "call", kind)
+
+    @staticmethod
+    def token(value: int, kind: str) -> Consumption:
+        return Consumption(value, "token", kind)
+
+    @staticmethod
+    def cost(value: float, kind: str) -> Consumption:
+        return Consumption(value, "USD", kind)
+
 
 class Budget:
     """

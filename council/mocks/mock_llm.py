@@ -6,9 +6,9 @@ from council import LLMContext
 from council.llm import (
     LLMBase,
     LLMConfigurationBase,
-    LLMessageTokenCounterBase,
     LLMException,
     LLMMessage,
+    LLMMessageTokenCounterBase,
     LLMResult,
     LLMTokenLimitException,
 )
@@ -18,7 +18,7 @@ class LLMMessagesToStr(Protocol):
     def __call__(self, messages: Sequence[LLMMessage]) -> Sequence[str]: ...
 
 
-class MockTokenCounter(LLMessageTokenCounterBase):
+class MockTokenCounter(LLMMessageTokenCounterBase):
     def __init__(self, limit: int = -1) -> None:
         self._limit = limit
 

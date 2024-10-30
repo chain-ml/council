@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, Mapping, Optional, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
@@ -8,6 +8,8 @@ from council.llm import (
     GeminiLLMConfiguration,
     LLMBase,
     LLMConfigObject,
+    LLMConsumptionCalculatorBase,
+    LLMCostCard,
     LLMMessage,
     LLMMessageRole,
     LLMProviders,
@@ -15,7 +17,34 @@ from council.llm import (
 )
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
-from google.generativeai.types import HarmBlockThreshold  # type: ignore
+from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
+
+
+class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
+    # https://ai.google.dev/pricing
+    # different strategy for prompt up to 128k tokens
+    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = {
+        "gemini-1.5-flash": LLMCostCard(input=0.075, output=0.30),
+        "gemini-1.5-flash-8b": LLMCostCard(input=0.0375, output=0.15),
+        "gemini-1.5-pro": LLMCostCard(input=1.25, output=5.00),
+        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
+    }
+
+    COSTS_OVER_128k: Mapping[str, LLMCostCard] = {
+        "gemini-1.5-flash": LLMCostCard(input=0.15, output=0.60),
+        "gemini-1.5-flash-8b": LLMCostCard(input=0.075, output=0.30),
+        "gemini-1.5-pro": LLMCostCard(input=2.50, output=10.00),
+        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
+    }
+
+    def __init__(self, model: str, num_tokens: int) -> None:
+        super().__init__(model)
+        self.num_tokens = num_tokens
+
+    def find_model_costs(self) -> Optional[LLMCostCard]:
+        if self.num_tokens <= 128_000:
+            return self.COSTS_UNDER_128k.get(self.model)
+        return self.COSTS_OVER_128k.get(self.model)
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
@@ -39,13 +68,15 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         history, last = self._to_chat_history(messages=messages)
         chat = self._model.start_chat(history=history)
         response = chat.send_message(last)
-        return LLMResult(choices=[response.text], consumptions=self.to_consumptions())
+        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(response))
 
-    def to_consumptions(self) -> Sequence[Consumption]:
+    def to_consumptions(self, response: GenerateContentResponse) -> Sequence[Consumption]:
         model = self._configuration.model_name()
-        return [
-            Consumption(1, "call", f"{model}"),
-        ]
+        prompt_tokens = response.usage_metadata.prompt_token_count
+        completion_tokens = response.usage_metadata.candidates_token_count
+
+        consumption_calculator = GeminiConsumptionCalculator(model, prompt_tokens)
+        return consumption_calculator.get_consumptions(prompt_tokens, completion_tokens)
 
     @staticmethod
     def from_env() -> GeminiLLM:
