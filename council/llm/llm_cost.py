@@ -24,19 +24,23 @@ class LLMCostCard:
 
     @property
     def input(self) -> float:
+        """Cost per million input (prompt) tokens."""
         return self._input
 
     @property
     def output(self) -> float:
+        """Cost per million output (completion) tokens."""
         return self._output
 
     def __str__(self) -> str:
         return f"${self.input}/${self.output} per 1m tokens"
 
     def input_cost(self, tokens: int) -> float:
+        """Get prompt_tokens_cost for a given amount of input tokens."""
         return tokens * self.input / 1e6
 
     def output_cost(self, tokens: int) -> float:
+        """Get completion_token_cost for a given amount of completion tokens."""
         return tokens * self.output / 1e6
 
     def get_costs(self, prompt_tokens: int, completion_tokens: int) -> Tuple[float, float]:
@@ -80,18 +84,18 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         return f"{self.model}:{kind}_tokens" if not cost else f"{self.model}:{kind}_tokens_cost"
 
     def get_consumptions(self, duration: float, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
-        """
-        Get default consumptions:
-            - 1 call
-            - specified duration
-            - prompt, completion and total tokens
-            - cost for prompt, completion and total tokens if LLMCostCard can be found
-        """
+        """Get base and cost consumptions if any"""
         return self.get_base_consumptions(duration, prompt_tokens, completion_tokens) + self.get_cost_consumptions(
             prompt_tokens, completion_tokens
         )
 
     def get_base_consumptions(self, duration: float, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """
+        Get base consumptions:
+            - 1 call
+            - specified duration
+            - prompt, completion and total tokens
+        """
         return [
             Consumption.call(1, self.model),
             Consumption.duration(duration, self.model),
@@ -101,6 +105,7 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         ]
 
     def get_cost_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """Get cost for prompt, completion and total tokens if LLMCostCard can be found."""
         cost_card = self.find_model_costs()
         if cost_card is None:
             return []
@@ -170,17 +175,21 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
 
     @staticmethod
     def anthropic():
+        """Get LLMCostManager for Anthropic models"""
         return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, ANTHROPIC_COSTS_FILENAME))
 
     @staticmethod
     def gemini():
+        """Get LLMCostManager for Gemini models"""
         return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, GEMINI_COSTS_FILENAME))
 
     @staticmethod
     def openai():
+        """Get LLMCostManager for OpenAI models"""
         return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, OPENAI_COSTS_FILENAME))
 
     def get_cost_map(self, category: str) -> Dict[str, LLMCostCard]:
+        """Get cost mapping {model: LLMCostCard} for a given category"""
         if category not in self.spec.costs:
             raise ValueError(f"Unexpected category `{category}` for LLMCostManager")
 
