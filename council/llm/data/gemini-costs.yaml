@@ -1,0 +1,40 @@
+kind: LLMCostManager
+version: 0.1
+metadata:
+  name: gemini-costs
+  labels:
+    provider: Google
+    reference: https://ai.google.dev/pricing
+spec:
+  under_128k:
+    description: |
+      Costs for prompt tokens up to 128k
+    models:
+      gemini-1.5-flash:
+        input: 0.075
+        output: 0.30
+      gemini-1.5-flash-8b:
+        input: 0.0375
+        output: 0.15
+      gemini-1.5-pro:
+        input: 1.25
+        output: 5.00
+      gemini-1.0-pro:
+        input: 0.50
+        output: 1.50
+  over_128k:
+    description: |
+      Costs for prompt tokens over 128k
+    models:
+      gemini-1.5-flash:
+        input: 0.15
+        output: 0.60
+      gemini-1.5-flash-8b:
+        input: 0.075
+        output: 0.30
+      gemini-1.5-pro:
+        input: 2.50
+        output: 10.00
+      gemini-1.0-pro:
+        input: 0.50
+        output: 1.50

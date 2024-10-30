@@ -10,12 +10,13 @@ from council.llm import (
     LLMCallException,
     LLMConsumptionCalculatorBase,
     LLMCostCard,
+    LLMCostManagerObject,
     LLMMessage,
     LLMMessageTokenCounterBase,
     LLMResult,
+    TokenKind,
 )
-
-from ..utils import truncate_dict_values_to_str
+from council.utils.utils import DurationManager, truncate_dict_values_to_str
 
 
 class Provider(Protocol):
@@ -123,40 +124,11 @@ class Usage:
 
 
 class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
-    # https://openai.com/api/pricing/
-    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = {
-        "gpt-3.5-turbo-0125": LLMCostCard(input=0.50, output=1.50),
-        "gpt-3.5-turbo-instruct": LLMCostCard(input=1.50, output=2.00),
-        "gpt-3.5-turbo-1106": LLMCostCard(input=1.00, output=2.00),
-        "gpt-3.5-turbo-0613": LLMCostCard(input=1.50, output=2.00),
-        "gpt-3.5-turbo-16k-0613": LLMCostCard(input=3.00, output=4.00),
-        "gpt-3.5-turbo-0301": LLMCostCard(input=1.50, output=2.00),
-    }
-
-    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = {
-        "gpt-4-turbo": LLMCostCard(input=10.00, output=30.00),
-        "gpt-4-turbo-2024-04-09": LLMCostCard(input=10.00, output=30.00),
-        "gpt-4": LLMCostCard(input=30.00, output=60.00),
-        "gpt-4-32k": LLMCostCard(input=60.00, output=120.00),
-        "gpt-4-0125-preview": LLMCostCard(input=10.00, output=30.00),
-        "gpt-4-1106-preview": LLMCostCard(input=10.00, output=30.00),
-        "gpt-4-vision-preview": LLMCostCard(input=10.00, output=30.00),
-    }
-
-    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = {
-        "gpt-4o": LLMCostCard(input=2.50, output=10.00),
-        "gpt-4o-2024-08-06": LLMCostCard(input=2.50, output=10.00),
-        "gpt-4o-2024-05-13": LLMCostCard(input=5.00, output=15.00),
-        "gpt-4o-mini": LLMCostCard(input=0.150, output=0.60),
-        "gpt-4o-mini-2024-07-18": LLMCostCard(input=0.150, output=0.60),
-    }
-
-    COSTS_o1_FAMILY: Mapping[str, LLMCostCard] = {
-        "o1-preview": LLMCostCard(input=15.00, output=60.00),
-        "o1-preview-2024-09-12": LLMCostCard(input=15.00, output=60.00),
-        "o1-mini": LLMCostCard(input=3.00, output=12.00),
-        "o1-mini-2024-09-12": LLMCostCard(input=3.00, output=12.00),
-    }
+    _cost_manager = LLMCostManagerObject.openai()
+    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_35_turbo_family")
+    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_4_family")
+    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_4o_family")
+    COSTS_o1_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("o1_family")
 
     def find_model_costs(self) -> Optional[LLMCostCard]:
         if self.model.startswith("o1"):
@@ -170,24 +142,26 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
 
         return None
 
-    def get_openai_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_openai_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         """
         Get consumptions specific for OpenAI:
             - 1 call
+            - specified duration
             - cache_read_prompt, prompt, reasoning, completion and total tokens
             - costs LLMCostCard can be found
         """
-        consumptions = self.get_openai_token_consumptions(usage) + self.get_openai_cost_consumptions(usage)
+        consumptions = self.get_openai_base_consumptions(duration, usage) + self.get_openai_cost_consumptions(usage)
         return self.filter_zeros(consumptions)  # could occur for cache/reasoning tokens
 
-    def get_openai_token_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_openai_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         return [
             Consumption.call(1, self.model),
-            Consumption.token(usage.cached_tokens, self.format_kind("cache_read_prompt")),
-            Consumption.token(usage.prompt_tokens, self.format_kind("prompt")),
-            Consumption.token(usage.reasoning_tokens, self.format_kind("reasoning")),
-            Consumption.token(usage.completion_tokens, self.format_kind("completion")),
-            Consumption.token(usage.total_tokens, self.format_kind("total")),
+            Consumption.duration(duration, self.model),
+            Consumption.token(usage.cached_tokens, self.format_kind(TokenKind.cache_read_prompt)),
+            Consumption.token(usage.prompt_tokens, self.format_kind(TokenKind.prompt)),
+            Consumption.token(usage.reasoning_tokens, self.format_kind(TokenKind.reasoning)),
+            Consumption.token(usage.completion_tokens, self.format_kind(TokenKind.completion)),
+            Consumption.token(usage.total_tokens, self.format_kind(TokenKind.total)),
         ]
 
     def get_openai_cost_consumptions(self, usage: Usage) -> List[Consumption]:
@@ -202,11 +176,11 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
         total_cost = sum([cached_tokens_cost, prompt_tokens_cost, reasoning_tokens_cost, completion_tokens_cost])
 
         return [
-            Consumption.cost(cached_tokens_cost, self.format_kind("cache_read_prompt", cost=True)),
-            Consumption.cost(prompt_tokens_cost, self.format_kind("prompt", cost=True)),
-            Consumption.cost(reasoning_tokens_cost, self.format_kind("reasoning", cost=True)),
-            Consumption.cost(completion_tokens_cost, self.format_kind("completion", cost=True)),
-            Consumption.cost(total_cost, self.format_kind("total", cost=True)),
+            Consumption.cost(cached_tokens_cost, self.format_kind(TokenKind.cache_read_prompt, cost=True)),
+            Consumption.cost(prompt_tokens_cost, self.format_kind(TokenKind.prompt, cost=True)),
+            Consumption.cost(reasoning_tokens_cost, self.format_kind(TokenKind.reasoning, cost=True)),
+            Consumption.cost(completion_tokens_cost, self.format_kind(TokenKind.completion, cost=True)),
+            Consumption.cost(total_cost, self.format_kind(TokenKind.total, cost=True)),
         ]
 
 
@@ -250,9 +224,9 @@ class OpenAIChatCompletionsResult:
     def raw_response(self) -> Dict[str, Any]:
         return self._raw_response
 
-    def to_consumptions(self) -> Sequence[Consumption]:
+    def to_consumptions(self, duration: float) -> Sequence[Consumption]:
         consumption_calculator = OpenAIConsumptionCalculator(self.model)
-        return consumption_calculator.get_openai_consumptions(self.usage)
+        return consumption_calculator.get_openai_consumptions(duration, self.usage)
 
     @staticmethod
     def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:
@@ -289,13 +263,14 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         context.logger.debug(
             f'message="Sending chat GPT completions request to {self._name}" payload="{truncate_dict_values_to_str(payload, 100)}"'
         )
-        r = self._post_request(payload)
+        with DurationManager() as timer:
+            r = self._post_request(payload)
         context.logger.debug(
             f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
         )
         return LLMResult(
             choices=[c.message.content for c in r.choices],
-            consumptions=r.to_consumptions(),
+            consumptions=r.to_consumptions(timer.duration),
             raw_response=r.raw_response,
         )
 

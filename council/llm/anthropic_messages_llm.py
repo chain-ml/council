@@ -6,7 +6,7 @@ from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
 from anthropic.types import MessageParam, TextBlock
 from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
-from council.llm.anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper
+from council.llm.anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper, Usage
 from council.llm.llm_message import LLMCacheControlData
 
 
@@ -44,7 +44,9 @@ class AnthropicMessagesLLM(AnthropicAPIClientWrapper):
         )
         choices = [content.text for content in completion.content if isinstance(content, TextBlock)]
 
-        return AnthropicAPIClientResult(choices=choices, raw_response=completion.to_dict())
+        return AnthropicAPIClientResult(
+            choices=choices, usage=Usage.from_dict(completion.usage.to_dict()), raw_response=completion.to_dict()
+        )
 
     @staticmethod
     def _to_anthropic_system_messages(messages: Sequence[LLMMessage]) -> Dict[str, List[Dict[str, Any]]]:

@@ -1,8 +1,8 @@
 import unittest
 
-from council.llm.anthropic_llm import AnthropicConsumptionCalculator
+from council.llm.anthropic_llm import AnthropicConsumptionCalculator, Usage as AnthropicUsage
 from council.llm.gemini_llm import GeminiConsumptionCalculator
-from council.llm.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage
+from council.llm.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage as OpenAIUsage
 
 
 class TestAnthropicConsumptionCalculator(unittest.TestCase):
@@ -23,13 +23,13 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
         self.assertEqual(completion_cost, 0.0625)  # $1.25 * 0.05
 
     def test_haiku_cache_cost_calculation(self):
-        consumptions = AnthropicConsumptionCalculator("claude-3-haiku-20240307").get_cache_cost_consumptions(
-            {
-                "cache_creation_prompt_tokens": 1_000_000,
-                "cache_read_prompt_tokens": 500_000,
-                "prompt_tokens": 100_000,
-                "completion_tokens": 50_000,
-            }
+        consumptions = AnthropicConsumptionCalculator("claude-3-haiku-20240307").get_anthropic_cost_consumptions(
+            AnthropicUsage(
+                prompt_tokens=100_000,
+                completion_tokens=50_000,
+                cache_creation_prompt_tokens=1_000_000,
+                cache_read_prompt_tokens=500_000,
+            )
         )
 
         cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
@@ -56,13 +56,13 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
         sonnet_versions = ["claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022"]
 
         for version in sonnet_versions:
-            consumptions = AnthropicConsumptionCalculator(version).get_cache_cost_consumptions(
-                {
-                    "cache_creation_prompt_tokens": 1_000_000,
-                    "cache_read_prompt_tokens": 500_000,
-                    "prompt_tokens": 100_000,
-                    "completion_tokens": 50_000,
-                }
+            consumptions = AnthropicConsumptionCalculator(version).get_anthropic_cost_consumptions(
+                AnthropicUsage(
+                    prompt_tokens=100_000,
+                    completion_tokens=50_000,
+                    cache_creation_prompt_tokens=1_000_000,
+                    cache_read_prompt_tokens=500_000,
+                )
             )
 
             cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
@@ -83,13 +83,13 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
         self.assertEqual(completion_cost, 3.75)  # $75.00 * 0.05
 
     def test_opus_cache_cost_calculation(self):
-        consumptions = AnthropicConsumptionCalculator("claude-3-opus-20240229").get_cache_cost_consumptions(
-            {
-                "cache_creation_prompt_tokens": 1_000_000,
-                "cache_read_prompt_tokens": 500_000,
-                "prompt_tokens": 100_000,
-                "completion_tokens": 50_000,
-            }
+        consumptions = AnthropicConsumptionCalculator("claude-3-opus-20240229").get_anthropic_cost_consumptions(
+            AnthropicUsage(
+                prompt_tokens=100_000,
+                completion_tokens=50_000,
+                cache_creation_prompt_tokens=1_000_000,
+                cache_read_prompt_tokens=500_000,
+            )
         )
 
         cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
@@ -103,13 +103,13 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
 
     def test_invalid_model_cache_costs(self):
         # doesn't support caching
-        consumptions = AnthropicConsumptionCalculator("claude-3-sonnet-20240229").get_cache_cost_consumptions(
-            {
-                "cache_creation_prompt_tokens": 1_000_000,
-                "cache_read_prompt_tokens": 500_000,
-                "prompt_tokens": 100_000,
-                "completion_tokens": 50_000,
-            }
+        consumptions = AnthropicConsumptionCalculator("claude-3-sonnet-20240229").get_anthropic_cost_consumptions(
+            AnthropicUsage(
+                prompt_tokens=100_000,
+                completion_tokens=50_000,
+                cache_creation_prompt_tokens=1_000_000,
+                cache_read_prompt_tokens=500_000,
+            )
         )
 
         self.assertEqual(len(consumptions), 0)
@@ -117,7 +117,7 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
     def test_consumption_units_and_types(self):
         model = "claude-3-haiku-20240307"
         calculator = AnthropicConsumptionCalculator(model)
-        consumptions = calculator.get_cost_consumptions(1_000, 1_000)
+        consumptions = calculator.get_cost_consumptions(prompt_tokens=1_000, completion_tokens=1_000)
 
         for consumption in consumptions:
             self.assertEqual(consumption.unit, "USD")
@@ -125,13 +125,10 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
 
     def test_cache_consumption_units_and_types(self):
         model = "claude-3-5-sonnet-20241022"
-        consumptions = AnthropicConsumptionCalculator(model).get_cache_cost_consumptions(
-            {
-                "cache_creation_prompt_tokens": 1000,
-                "cache_read_prompt_tokens": 500,
-                "prompt_tokens": 100,
-                "completion_tokens": 50,
-            }
+        consumptions = AnthropicConsumptionCalculator(model).get_anthropic_cost_consumptions(
+            AnthropicUsage(
+                prompt_tokens=100, completion_tokens=50, cache_creation_prompt_tokens=1000, cache_read_prompt_tokens=500
+            )
         )
 
         for consumption in consumptions:
@@ -269,7 +266,7 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
         self.assertIsNone(OpenAIConsumptionCalculator("gpt-4-invalid").find_model_costs())
 
     def test_cached_tokens_cost_calculations(self):
-        usage = Usage(
+        usage = OpenAIUsage(
             completion_tokens=0,
             prompt_tokens=500_000,
             total_tokens=1_500_000,
@@ -289,7 +286,7 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
         self.assertEqual(prompt_cost, 1.25)
 
     def test_reasoning_tokens_cost_calculations(self):
-        usage = Usage(
+        usage = OpenAIUsage(
             completion_tokens=1_000_000,
             prompt_tokens=0,
             total_tokens=2_000_000,

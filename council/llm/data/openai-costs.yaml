@@ -1,0 +1,90 @@
+kind: LLMCostManager
+version: 0.1
+metadata:
+  name: openai-costs
+  labels:
+    provider: OpenAI
+    reference: https://openai.com/api/pricing/
+spec:
+  gpt_35_turbo_family:
+    description: |
+      Costs for GPT-3.5 Turbo family models
+    models:
+      gpt-3.5-turbo-0125:
+        input: 0.50
+        output: 1.50
+      gpt-3.5-turbo-instruct:
+        input: 1.50
+        output: 2.00
+      gpt-3.5-turbo-1106:
+        input: 1.00
+        output: 2.00
+      gpt-3.5-turbo-0613:
+        input: 1.50
+        output: 2.00
+      gpt-3.5-turbo-16k-0613:
+        input: 3.00
+        output: 4.00
+      gpt-3.5-turbo-0301:
+        input: 1.50
+        output: 2.00
+  gpt_4_family:
+    description: |
+      Costs for GPT-4 family models
+    models:
+      gpt-4-turbo:
+        input: 10.00
+        output: 30.00
+      gpt-4-turbo-2024-04-09:
+        input: 10.00
+        output: 30.00
+      gpt-4:
+        input: 30.00
+        output: 60.00
+      gpt-4-32k:
+        input: 60.00
+        output: 120.00
+      gpt-4-0125-preview:
+        input: 10.00
+        output: 30.00
+      gpt-4-1106-preview:
+        input: 10.00
+        output: 30.00
+      gpt-4-vision-preview:
+        input: 10.00
+        output: 30.00
+  gpt_4o_family:
+    description: |
+      Costs for GPT-4o family models
+    models:
+      gpt-4o:
+        input: 2.50
+        output: 10.00
+      gpt-4o-2024-08-06:
+        input: 2.50
+        output: 10.00
+      gpt-4o-2024-05-13:
+        input: 5.00
+        output: 15.00
+      gpt-4o-mini:
+        input: 0.150
+        output: 0.60
+      gpt-4o-mini-2024-07-18:
+        input: 0.150
+        output: 0.60
+  o1_family:
+    description: |
+      Costs for o1 family models
+    models:
+      o1-preview:
+        input: 15.00
+        output: 60.00
+      o1-preview-2024-09-12:
+        input: 15.00
+        output: 60.00
+      o1-mini:
+        input: 3.00
+        output: 12.00
+      o1-mini-2024-09-12:
+        input: 3.00
+        output: 12.00

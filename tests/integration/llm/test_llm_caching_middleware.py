@@ -32,6 +32,8 @@ class TestLlmCachingMiddleware(unittest.TestCase):
         response = llm_func.execute(message, **kwargs)
         print(f"\n{to_print}")
         print(f"\tResponse duration: {response.duration:.3f}s")
+        for consumption in response.result.consumptions:
+            print(f"\t{consumption}")
 
         return response
 

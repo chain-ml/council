@@ -10,32 +10,22 @@ from council.llm import (
     LLMConfigObject,
     LLMConsumptionCalculatorBase,
     LLMCostCard,
+    LLMCostManagerObject,
     LLMMessage,
     LLMMessageRole,
     LLMProviders,
     LLMResult,
 )
+from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
 
 class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
-    # https://ai.google.dev/pricing
-    # different strategy for prompt up to 128k tokens
-    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = {
-        "gemini-1.5-flash": LLMCostCard(input=0.075, output=0.30),
-        "gemini-1.5-flash-8b": LLMCostCard(input=0.0375, output=0.15),
-        "gemini-1.5-pro": LLMCostCard(input=1.25, output=5.00),
-        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
-    }
-
-    COSTS_OVER_128k: Mapping[str, LLMCostCard] = {
-        "gemini-1.5-flash": LLMCostCard(input=0.15, output=0.60),
-        "gemini-1.5-flash-8b": LLMCostCard(input=0.075, output=0.30),
-        "gemini-1.5-pro": LLMCostCard(input=2.50, output=10.00),
-        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
-    }
+    _cost_manager = LLMCostManagerObject.gemini()
+    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("under_128k")
+    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("over_128k")
 
     def __init__(self, model: str, num_tokens: int) -> None:
         super().__init__(model)
@@ -67,16 +57,17 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         history, last = self._to_chat_history(messages=messages)
         chat = self._model.start_chat(history=history)
-        response = chat.send_message(last)
-        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(response))
+        with DurationManager() as timer:
+            response = chat.send_message(last)
+        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(timer.duration, response))
 
-    def to_consumptions(self, response: GenerateContentResponse) -> Sequence[Consumption]:
+    def to_consumptions(self, duration: float, response: GenerateContentResponse) -> Sequence[Consumption]:
         model = self._configuration.model_name()
         prompt_tokens = response.usage_metadata.prompt_token_count
         completion_tokens = response.usage_metadata.candidates_token_count
 
-        consumption_calculator = GeminiConsumptionCalculator(model, prompt_tokens)
-        return consumption_calculator.get_consumptions(prompt_tokens, completion_tokens)
+        calculator = GeminiConsumptionCalculator(model, prompt_tokens)
+        return calculator.get_consumptions(duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
     @staticmethod
     def from_env() -> GeminiLLM:
