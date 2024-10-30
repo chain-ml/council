@@ -184,4 +184,4 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
         if category not in self.spec.costs:
             raise ValueError(f"Unexpected category `{category}` for LLMCostManager")
 
-        return self.spec.costs["category"]
+        return self.spec.costs[category]
