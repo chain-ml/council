@@ -13,16 +13,6 @@ class BudgetExpiredException(Exception):
 class Consumption:
     """
     A class representing a consumption measurement with value, unit, and kind information.
-
-    Attributes:
-        _value (float): The numeric value of the consumption measurement.
-        _unit (str): The unit of measurement for the consumption (e.g., tokens, api_calls, etc.).
-        _kind (str): The kind or category of the consumption.
-
-    Methods:
-        __init__(value: float, unit: str, kind: str):
-            Initializes a Consumption instance with the provided value, unit, and kind.
-
     """
 
     def __init__(self, value: float, unit: str, kind: str) -> None:
@@ -41,14 +31,17 @@ class Consumption:
 
     @property
     def value(self) -> float:
+        """The numeric value of the consumption measurement."""
         return self._value
 
     @property
     def unit(self) -> str:
+        """The unit of measurement for the consumption (e.g., tokens, api_calls, etc.)."""
         return self._unit
 
     @property
     def kind(self) -> str:
+        """The kind or category of the consumption."""
         return self._kind
 
     def __str__(self) -> str:
