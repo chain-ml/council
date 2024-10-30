@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, List, Mapping, Optional, Sequence
 
 from anthropic import Anthropic, APIStatusError, APITimeoutError
 from council.contexts import Consumption, LLMContext
@@ -20,7 +20,7 @@ from council.llm import (
 )
 from council.utils.utils import DurationManager
 
-from .anthropic import AnthropicAPIClientWrapper
+from .anthropic import AnthropicAPIClientWrapper, Usage
 from .anthropic_completion_llm import AnthropicCompletionLLM
 from .anthropic_messages_llm import AnthropicMessagesLLM
 
@@ -60,7 +60,7 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
     def find_caching_costs(self) -> Optional[LLMCostCard]:
         return self.COSTS_CACHING.get(self.model)
 
-    def get_cache_consumptions(self, duration: float, usage: Dict[str, int]) -> List[Consumption]:
+    def get_anthropic_consumptions(self, duration: float, usage: Optional[Usage]) -> List[Consumption]:
         """
         Get consumptions specific for Anthropic prompt caching:
             - 1 call
@@ -68,39 +68,37 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
             - cache_creation_prompt, cache_read_prompt, prompt, completion and total tokens
             - costs if both regular and caching LLMCostCards can be found
         """
-        consumptions = self.get_cache_base_consumptions(duration, usage) + self.get_cache_cost_consumptions(usage)
+        if usage is None:
+            # legacy completion API
+            return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
+
+        consumptions = self.get_anthropic_base_consumptions(duration, usage) + self.get_anthropic_cost_consumptions(
+            usage
+        )
         return self.filter_zeros(consumptions)  # could occur for cache tokens
 
-    def get_cache_base_consumptions(self, duration: float, usage: Dict[str, int]) -> List[Consumption]:
-        total = sum(
-            [
-                usage["cache_creation_prompt_tokens"],
-                usage["cache_read_prompt_tokens"],
-                usage["prompt_tokens"],
-                usage["completion_tokens"],
-            ]
-        )
+    def get_anthropic_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         return [
             Consumption.call(1, self.model),
             Consumption.duration(duration, self.model),
-            Consumption.token(usage["cache_creation_prompt_tokens"], self.format_kind(TokenKind.cache_creation_prompt)),
-            Consumption.token(usage["cache_read_prompt_tokens"], self.format_kind(TokenKind.cache_read_prompt)),
-            Consumption.token(usage["prompt_tokens"], self.format_kind(TokenKind.prompt)),
-            Consumption.token(usage["completion_tokens"], self.format_kind(TokenKind.completion)),
-            Consumption.token(total, self.format_kind(TokenKind.total)),
+            Consumption.token(usage.cache_creation_prompt_tokens, self.format_kind(TokenKind.cache_creation_prompt)),
+            Consumption.token(usage.cache_read_prompt_tokens, self.format_kind(TokenKind.cache_read_prompt)),
+            Consumption.token(usage.prompt_tokens, self.format_kind(TokenKind.prompt)),
+            Consumption.token(usage.completion_tokens, self.format_kind(TokenKind.completion)),
+            Consumption.token(usage.total_tokens, self.format_kind(TokenKind.total)),
         ]
 
-    def get_cache_cost_consumptions(self, usage: Dict[str, int]) -> List[Consumption]:
+    def get_anthropic_cost_consumptions(self, usage: Usage) -> List[Consumption]:
         cost_card = self.find_model_costs()
         caching_cost_card = self.find_caching_costs()
 
         if cost_card is None or caching_cost_card is None:
             return []
 
-        prompt_tokens_cost = cost_card.input_cost(usage["prompt_tokens"])
-        completion_tokens_cost = cost_card.output_cost(usage["completion_tokens"])
-        cache_creation_prompt_tokens_cost = caching_cost_card.input_cost(usage["cache_creation_prompt_tokens"])
-        cache_read_prompt_tokens_cost = caching_cost_card.output_cost(usage["cache_read_prompt_tokens"])
+        prompt_tokens_cost = cost_card.input_cost(usage.prompt_tokens)
+        completion_tokens_cost = cost_card.output_cost(usage.completion_tokens)
+        cache_creation_prompt_tokens_cost = caching_cost_card.input_cost(usage.cache_creation_prompt_tokens)
+        cache_read_prompt_tokens_cost = caching_cost_card.output_cost(usage.cache_read_prompt_tokens)
 
         total_cost = sum(
             [
@@ -138,10 +136,9 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         try:
             with DurationManager() as timer:
                 response = self._api.post_chat_request(messages=messages)
-            usage = response.raw_response["usage"] if response.raw_response is not None else {}
             return LLMResult(
                 choices=response.choices,
-                consumptions=self.to_consumptions(timer.duration, usage),
+                consumptions=self.to_consumptions(timer.duration, response.usage),
                 raw_response=response.raw_response,
             )
         except APITimeoutError as e:
@@ -149,16 +146,10 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         except APIStatusError as e:
             raise LLMCallException(code=e.status_code, error=e.message, llm_name=self._name) from e
 
-    def to_consumptions(self, duration: float, usage: Dict[str, int]) -> Sequence[Consumption]:
-        if "input_tokens" not in usage or "output_tokens" not in usage:
-            return []
-
+    def to_consumptions(self, duration: float, usage: Optional[Usage]) -> Sequence[Consumption]:
         model = self._configuration.model_name()
         consumption_calculator = AnthropicConsumptionCalculator(model)
-        if "cache_creation_input_tokens" in usage:
-            return consumption_calculator.get_cache_consumptions(duration, usage)
-
-        return consumption_calculator.get_consumptions(duration, usage["input_tokens"], usage["output_tokens"])
+        return consumption_calculator.get_anthropic_consumptions(duration, usage)
 
     def _get_api_wrapper(self) -> AnthropicAPIClientWrapper:
         if self._configuration is not None and self._configuration.model_name() == "claude-2":
