@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Dict, List, Mapping, Optional, Protocol, Sequence
 
 import httpx
@@ -16,6 +17,7 @@ from council.llm import (
 )
 
 from ..utils import truncate_dict_values_to_str
+from .llm_cost import TokenKind
 
 
 class Provider(Protocol):
@@ -170,24 +172,26 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
 
         return None
 
-    def get_openai_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_openai_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         """
         Get consumptions specific for OpenAI:
             - 1 call
+            - specified duration
             - cache_read_prompt, prompt, reasoning, completion and total tokens
             - costs LLMCostCard can be found
         """
-        consumptions = self.get_openai_token_consumptions(usage) + self.get_openai_cost_consumptions(usage)
+        consumptions = self.get_openai_base_consumptions(duration, usage) + self.get_openai_cost_consumptions(usage)
         return self.filter_zeros(consumptions)  # could occur for cache/reasoning tokens
 
-    def get_openai_token_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_openai_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         return [
             Consumption.call(1, self.model),
-            Consumption.token(usage.cached_tokens, self.format_kind("cache_read_prompt")),
-            Consumption.token(usage.prompt_tokens, self.format_kind("prompt")),
-            Consumption.token(usage.reasoning_tokens, self.format_kind("reasoning")),
-            Consumption.token(usage.completion_tokens, self.format_kind("completion")),
-            Consumption.token(usage.total_tokens, self.format_kind("total")),
+            Consumption.duration(duration, self.model),
+            Consumption.token(usage.cached_tokens, self.format_kind(TokenKind.cache_read_prompt)),
+            Consumption.token(usage.prompt_tokens, self.format_kind(TokenKind.prompt)),
+            Consumption.token(usage.reasoning_tokens, self.format_kind(TokenKind.reasoning)),
+            Consumption.token(usage.completion_tokens, self.format_kind(TokenKind.completion)),
+            Consumption.token(usage.total_tokens, self.format_kind(TokenKind.total)),
         ]
 
     def get_openai_cost_consumptions(self, usage: Usage) -> List[Consumption]:
@@ -202,11 +206,11 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
         total_cost = sum([cached_tokens_cost, prompt_tokens_cost, reasoning_tokens_cost, completion_tokens_cost])
 
         return [
-            Consumption.cost(cached_tokens_cost, self.format_kind("cache_read_prompt", cost=True)),
-            Consumption.cost(prompt_tokens_cost, self.format_kind("prompt", cost=True)),
-            Consumption.cost(reasoning_tokens_cost, self.format_kind("reasoning", cost=True)),
-            Consumption.cost(completion_tokens_cost, self.format_kind("completion", cost=True)),
-            Consumption.cost(total_cost, self.format_kind("total", cost=True)),
+            Consumption.cost(cached_tokens_cost, self.format_kind(TokenKind.cache_read_prompt, cost=True)),
+            Consumption.cost(prompt_tokens_cost, self.format_kind(TokenKind.prompt, cost=True)),
+            Consumption.cost(reasoning_tokens_cost, self.format_kind(TokenKind.reasoning, cost=True)),
+            Consumption.cost(completion_tokens_cost, self.format_kind(TokenKind.completion, cost=True)),
+            Consumption.cost(total_cost, self.format_kind(TokenKind.total, cost=True)),
         ]
 
 
@@ -250,9 +254,9 @@ class OpenAIChatCompletionsResult:
     def raw_response(self) -> Dict[str, Any]:
         return self._raw_response
 
-    def to_consumptions(self) -> Sequence[Consumption]:
+    def to_consumptions(self, duration: float) -> Sequence[Consumption]:
         consumption_calculator = OpenAIConsumptionCalculator(self.model)
-        return consumption_calculator.get_openai_consumptions(self.usage)
+        return consumption_calculator.get_openai_consumptions(duration, self.usage)
 
     @staticmethod
     def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:
@@ -289,13 +293,15 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         context.logger.debug(
             f'message="Sending chat GPT completions request to {self._name}" payload="{truncate_dict_values_to_str(payload, 100)}"'
         )
+        start = time.time()
         r = self._post_request(payload)
+        duration = time.time() - start
         context.logger.debug(
             f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
         )
         return LLMResult(
             choices=[c.message.content for c in r.choices],
-            consumptions=r.to_consumptions(),
+            consumptions=r.to_consumptions(duration),
             raw_response=r.raw_response,
         )
 

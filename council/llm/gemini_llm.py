@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, List, Mapping, Optional, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
@@ -67,16 +68,18 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         history, last = self._to_chat_history(messages=messages)
         chat = self._model.start_chat(history=history)
+        start = time.time()
         response = chat.send_message(last)
-        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(response))
+        duration = time.time() - start
+        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(duration, response))
 
-    def to_consumptions(self, response: GenerateContentResponse) -> Sequence[Consumption]:
+    def to_consumptions(self, duration: float, response: GenerateContentResponse) -> Sequence[Consumption]:
         model = self._configuration.model_name()
         prompt_tokens = response.usage_metadata.prompt_token_count
         completion_tokens = response.usage_metadata.candidates_token_count
 
         consumption_calculator = GeminiConsumptionCalculator(model, prompt_tokens)
-        return consumption_calculator.get_consumptions(prompt_tokens, completion_tokens)
+        return consumption_calculator.get_consumptions(duration, prompt_tokens, completion_tokens)
 
     @staticmethod
     def from_env() -> GeminiLLM:

@@ -83,14 +83,22 @@ class Consumption:
 
     @staticmethod
     def call(value: int, kind: str) -> Consumption:
+        """Returns a Consumption instance with "call" unit."""
         return Consumption(value, "call", kind)
 
     @staticmethod
+    def duration(value: float, kind: str) -> Consumption:
+        """Returns a Consumption instance with "second" unit."""
+        return Consumption(value, "second", kind)
+
+    @staticmethod
     def token(value: int, kind: str) -> Consumption:
+        """Returns a Consumption instance with "token" unit."""
         return Consumption(value, "token", kind)
 
     @staticmethod
     def cost(value: float, kind: str) -> Consumption:
+        """Returns a Consumption instance with "USD" unit."""
         return Consumption(value, "USD", kind)
 
 
