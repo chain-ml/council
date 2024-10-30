@@ -125,10 +125,10 @@ class Usage:
 
 class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
     _cost_manager = LLMCostManagerObject.openai()
-    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["gpt_35_turbo_family"]
-    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["gpt_4_family"]
-    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["gpt_4o_family"]
-    COSTS_o1_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["o1_family"]
+    COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_35_turbo_family")
+    COSTS_gpt_4_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_4_family")
+    COSTS_gpt_4o_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("gpt_4o_family")
+    COSTS_o1_FAMILY: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("o1_family")
 
     def find_model_costs(self) -> Optional[LLMCostCard]:
         if self.model.startswith("o1"):

@@ -179,3 +179,9 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
     @staticmethod
     def openai():
         return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, OPENAI_COSTS_FILENAME))
+
+    def get_cost_map(self, category: str) -> Dict[str, LLMCostCard]:
+        if category not in self.spec.costs:
+            raise ValueError(f"Unexpected category `{category}` for LLMCostManager")
+
+        return self.spec.costs["category"]

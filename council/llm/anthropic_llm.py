@@ -39,8 +39,8 @@ class AnthropicTokenCounter(LLMMessageTokenCounterBase):
 
 class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
     _cost_manager = LLMCostManagerObject.anthropic()
-    COSTS: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["default"]
-    COSTS_CACHING: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["caching"]
+    COSTS: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("default")
+    COSTS_CACHING: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("caching")
 
     def find_model_costs(self) -> Optional[LLMCostCard]:
         return self.COSTS.get(self.model)

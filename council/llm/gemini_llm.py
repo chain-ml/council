@@ -24,8 +24,8 @@ from google.generativeai.types import GenerateContentResponse, HarmBlockThreshol
 
 class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
     _cost_manager = LLMCostManagerObject.gemini()
-    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["under_128k"]
-    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["over_128k"]
+    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("under_128k")
+    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("over_128k")
 
     def __init__(self, model: str, num_tokens: int) -> None:
         super().__init__(model)
