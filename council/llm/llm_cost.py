@@ -170,7 +170,6 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
         with open(filename, "r", encoding="utf-8") as f:
             values = yaml.safe_load(f)
             cls._check_kind(values, "LLMCostManager")
-            print(values)
             return LLMCostManagerObject.from_dict(values)
 
     @staticmethod
