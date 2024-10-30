@@ -1,4 +1,15 @@
-from typing import Dict
+import time
+from typing import ContextManager, Dict
+
+
+class DurationManager(ContextManager):
+    def __enter__(self):
+        self.start_time = time.time()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.end_time = time.time()
+        self.duration = self.end_time - self.start_time
 
 
 def truncate_dict_values_to_str(data: Dict, max_length: int = 20):

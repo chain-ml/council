@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from anthropic import Anthropic, APIStatusError, APITimeoutError
@@ -17,12 +16,13 @@ from council.llm import (
     LLMMessageTokenCounterBase,
     LLMProviders,
     LLMResult,
+    TokenKind,
 )
+from council.utils.utils import DurationManager
 
 from .anthropic import AnthropicAPIClientWrapper
 from .anthropic_completion_llm import AnthropicCompletionLLM
 from .anthropic_messages_llm import AnthropicMessagesLLM
-from .llm_cost import TokenKind
 
 
 class AnthropicTokenCounter(LLMMessageTokenCounterBase):
@@ -136,13 +136,12 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         try:
-            start = time.time()
-            response = self._api.post_chat_request(messages=messages)
-            duration = time.time() - start
+            with DurationManager() as timer:
+                response = self._api.post_chat_request(messages=messages)
             usage = response.raw_response["usage"] if response.raw_response is not None else {}
             return LLMResult(
                 choices=response.choices,
-                consumptions=self.to_consumptions(duration, usage),
+                consumptions=self.to_consumptions(timer.duration, usage),
                 raw_response=response.raw_response,
             )
         except APITimeoutError as e:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, List, Mapping, Optional, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
@@ -16,6 +15,7 @@ from council.llm import (
     LLMProviders,
     LLMResult,
 )
+from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
@@ -68,10 +68,9 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         history, last = self._to_chat_history(messages=messages)
         chat = self._model.start_chat(history=history)
-        start = time.time()
-        response = chat.send_message(last)
-        duration = time.time() - start
-        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(duration, response))
+        with DurationManager() as timer:
+            response = chat.send_message(last)
+        return LLMResult(choices=[response.text], consumptions=self.to_consumptions(timer.duration, response))
 
     def to_consumptions(self, duration: float, response: GenerateContentResponse) -> Sequence[Consumption]:
         model = self._configuration.model_name()

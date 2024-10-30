@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, Dict, List, Mapping, Optional, Protocol, Sequence
 
 import httpx
@@ -14,10 +13,9 @@ from council.llm import (
     LLMMessage,
     LLMMessageTokenCounterBase,
     LLMResult,
+    TokenKind,
 )
-
-from ..utils import truncate_dict_values_to_str
-from .llm_cost import TokenKind
+from council.utils.utils import DurationManager, truncate_dict_values_to_str
 
 
 class Provider(Protocol):
@@ -293,15 +291,14 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
         context.logger.debug(
             f'message="Sending chat GPT completions request to {self._name}" payload="{truncate_dict_values_to_str(payload, 100)}"'
         )
-        start = time.time()
-        r = self._post_request(payload)
-        duration = time.time() - start
+        with DurationManager() as timer:
+            r = self._post_request(payload)
         context.logger.debug(
             f'message="Got chat GPT completions result from {self._name}" id="{r.id}" model="{r.model}" {r.usage}'
         )
         return LLMResult(
             choices=[c.message.content for c in r.choices],
-            consumptions=r.to_consumptions(duration),
+            consumptions=r.to_consumptions(timer.duration),
             raw_response=r.raw_response,
         )
 
