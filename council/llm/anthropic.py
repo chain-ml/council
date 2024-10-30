@@ -32,11 +32,13 @@ class Usage:
         cache_read_prompt_tokens = values.get("cache_read_input_tokens", 0)
         return Usage(prompt_tokens, completion_tokens, cache_creation_prompt_tokens, cache_read_prompt_tokens)
 
+    @staticmethod
+    def empty() -> Usage:
+        return Usage(0, 0, 0, 0)
+
 
 class AnthropicAPIClientResult:
-    def __init__(
-        self, choices: List[str], usage: Optional[Usage] = None, raw_response: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def __init__(self, choices: List[str], usage: Usage, raw_response: Optional[Dict[str, Any]] = None) -> None:
         self._choices = choices
         self._usage = usage
         self._raw_response = raw_response
@@ -46,7 +48,7 @@ class AnthropicAPIClientResult:
         return self._choices
 
     @property
-    def usage(self) -> Optional[Usage]:
+    def usage(self) -> Usage:
         return self._usage
 
     @property
@@ -56,7 +58,7 @@ class AnthropicAPIClientResult:
     @staticmethod
     def from_completion(result: Completion) -> AnthropicAPIClientResult:
         """For legacy completion API"""
-        return AnthropicAPIClientResult(choices=[result.completion])
+        return AnthropicAPIClientResult(choices=[result.completion], usage=Usage.empty())
 
 
 class AnthropicAPIClientWrapper(ABC):

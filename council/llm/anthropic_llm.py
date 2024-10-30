@@ -60,7 +60,7 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
     def find_caching_costs(self) -> Optional[LLMCostCard]:
         return self.COSTS_CACHING.get(self.model)
 
-    def get_anthropic_consumptions(self, duration: float, usage: Optional[Usage]) -> List[Consumption]:
+    def get_anthropic_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         """
         Get consumptions specific for Anthropic prompt caching:
             - 1 call
@@ -68,9 +68,6 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
             - cache_creation_prompt, cache_read_prompt, prompt, completion and total tokens
             - costs if both regular and caching LLMCostCards can be found
         """
-        if usage is None:
-            # legacy completion API
-            return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
 
         consumptions = self.get_anthropic_base_consumptions(duration, usage) + self.get_anthropic_cost_consumptions(
             usage
@@ -146,7 +143,7 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         except APIStatusError as e:
             raise LLMCallException(code=e.status_code, error=e.message, llm_name=self._name) from e
 
-    def to_consumptions(self, duration: float, usage: Optional[Usage]) -> Sequence[Consumption]:
+    def to_consumptions(self, duration: float, usage: Usage) -> Sequence[Consumption]:
         model = self._configuration.model_name()
         consumption_calculator = AnthropicConsumptionCalculator(model)
         return consumption_calculator.get_anthropic_consumptions(duration, usage)
