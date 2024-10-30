@@ -66,8 +66,8 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         prompt_tokens = response.usage_metadata.prompt_token_count
         completion_tokens = response.usage_metadata.candidates_token_count
 
-        consumption_calculator = GeminiConsumptionCalculator(model, prompt_tokens)
-        return consumption_calculator.get_consumptions(duration, prompt_tokens, completion_tokens)
+        calculator = GeminiConsumptionCalculator(model, prompt_tokens)
+        return calculator.get_consumptions(duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
     @staticmethod
     def from_env() -> GeminiLLM:

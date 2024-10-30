@@ -83,13 +83,17 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         kind = token_kind.value
         return f"{self.model}:{kind}_tokens" if not cost else f"{self.model}:{kind}_tokens_cost"
 
-    def get_consumptions(self, duration: float, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+    def get_consumptions(self, duration: float, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
         """Get base and cost consumptions if any"""
-        return self.get_base_consumptions(duration, prompt_tokens, completion_tokens) + self.get_cost_consumptions(
-            prompt_tokens, completion_tokens
+        base_consumptions = self.get_base_consumptions(
+            duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
         )
+        cost_consumptions = self.get_cost_consumptions(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return base_consumptions + cost_consumptions
 
-    def get_base_consumptions(self, duration: float, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+    def get_base_consumptions(
+        self, duration: float, *, prompt_tokens: int, completion_tokens: int
+    ) -> List[Consumption]:
         """
         Get base consumptions:
             - 1 call
@@ -104,7 +108,7 @@ class LLMConsumptionCalculatorBase(abc.ABC):
             Consumption.token(prompt_tokens + completion_tokens, self.format_kind(TokenKind.total)),
         ]
 
-    def get_cost_consumptions(self, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+    def get_cost_consumptions(self, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
         """Get cost for prompt, completion and total tokens if LLMCostCard can be found."""
         cost_card = self.find_model_costs()
         if cost_card is None:
