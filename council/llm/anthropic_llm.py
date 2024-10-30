@@ -10,7 +10,7 @@ from council.llm import (
     LLMCallException,
     LLMCallTimeoutException,
     LLMConfigObject,
-    LLMConsumptionCalculator,
+    LLMConsumptionCalculatorBase,
     LLMCostCard,
     LLMMessage,
     LLMMessageTokenCounterBase,
@@ -34,7 +34,7 @@ class AnthropicTokenCounter(LLMMessageTokenCounterBase):
         return tokens
 
 
-class AnthropicConsumptionCalculator(LLMConsumptionCalculator):
+class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
     # https://www.anthropic.com/pricing#anthropic-api
     COSTS: Mapping[str, LLMCostCard] = {
         "claude-3-haiku-20240307": LLMCostCard(input=0.25, output=1.25),

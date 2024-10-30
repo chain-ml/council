@@ -144,7 +144,7 @@ class LLMCostCard:
         return self.input_cost(prompt_tokens), self.output_cost(completion_tokens)
 
 
-class LLMConsumptionCalculator(abc.ABC):
+class LLMConsumptionCalculatorBase(abc.ABC):
     """Helper class to manage LLM consumptions."""
 
     def __init__(self, model: str):
@@ -162,7 +162,9 @@ class LLMConsumptionCalculator(abc.ABC):
         ]
         result = f"{self.model}:_"
         if token_kind not in options:
-            raise ValueError(f"Unknown kind for LLMConsumptionCalculator; expected one of `{','.join(options)}`")
+            raise ValueError(
+                f"Unknown kind `{token_kind}` for LLMConsumptionCalculator; expected one of `{','.join(options)}`"
+            )
 
         result += f"{token_kind}_tokens"
 

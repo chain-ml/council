@@ -8,7 +8,7 @@ from council.llm import (
     GeminiLLMConfiguration,
     LLMBase,
     LLMConfigObject,
-    LLMConsumptionCalculator,
+    LLMConsumptionCalculatorBase,
     LLMCostCard,
     LLMMessage,
     LLMMessageRole,
@@ -20,7 +20,7 @@ from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
 
-class GeminiConsumptionCalculator(LLMConsumptionCalculator):
+class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
     # https://ai.google.dev/pricing
     # different strategy for prompt up to 128k tokens
     COSTS_UNDER_128k: Mapping[str, LLMCostCard] = {

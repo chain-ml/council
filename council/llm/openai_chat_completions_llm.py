@@ -7,7 +7,7 @@ from council.contexts import Consumption, LLMContext
 
 from ..utils import truncate_dict_values_to_str
 from . import ChatGPTConfigurationBase
-from .llm_base import LLMBase, LLMConsumptionCalculator, LLMCostCard, LLMResult
+from .llm_base import LLMBase, LLMConsumptionCalculatorBase, LLMCostCard, LLMResult
 from .llm_exception import LLMCallException
 from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
@@ -116,7 +116,7 @@ class Usage:
         return Usage(_completion_tokens, _prompt_tokens, _total_tokens, _reasoning_tokens, _cached_tokens)
 
 
-class OpenAIConsumptionCalculator(LLMConsumptionCalculator):
+class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
     # https://openai.com/api/pricing/
     COSTS_gpt_35_turbo_FAMILY: Mapping[str, LLMCostCard] = {
         "gpt-3.5-turbo-0125": LLMCostCard(input=0.50, output=1.50),
