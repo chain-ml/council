@@ -48,7 +48,11 @@ class TestLlmFunctionWithPrompt(unittest.TestCase):
 
     def test_simple_prompt(self):
         llm_func = LLMFunctionWithPrompt(self.llm, SQLResult.from_response, self.prompt_config_simple)
-        sql_result = llm_func.execute()
+        llm_function_response = llm_func.execute_with_llm_response()
+
+        self.assertTrue(llm_function_response.duration > 0)
+        self.assertTrue(len(llm_function_response.consumptions) > 0)
+        sql_result = llm_function_response.response
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
