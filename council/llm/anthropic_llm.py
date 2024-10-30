@@ -12,6 +12,7 @@ from council.llm import (
     LLMConfigObject,
     LLMConsumptionCalculatorBase,
     LLMCostCard,
+    LLMCostManagerObject,
     LLMMessage,
     LLMMessageTokenCounterBase,
     LLMProviders,
@@ -37,22 +38,9 @@ class AnthropicTokenCounter(LLMMessageTokenCounterBase):
 
 
 class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
-    # https://www.anthropic.com/pricing#anthropic-api
-    COSTS: Mapping[str, LLMCostCard] = {
-        "claude-3-haiku-20240307": LLMCostCard(input=0.25, output=1.25),
-        "claude-3-sonnet-20240229": LLMCostCard(input=3.00, output=15.00),
-        "claude-3-5-sonnet-20240620": LLMCostCard(input=3.00, output=15.00),
-        "claude-3-5-sonnet-20241022": LLMCostCard(input=3.00, output=15.00),
-        "claude-3-opus-20240229": LLMCostCard(input=15.00, output=75.00),
-    }
-
-    # input - cache write; output - cache read; note - not all model support prompt caching
-    COSTS_CACHING: Mapping[str, LLMCostCard] = {
-        "claude-3-haiku-20240307": LLMCostCard(input=0.30, output=0.03),
-        "claude-3-5-sonnet-20240620": LLMCostCard(input=3.75, output=0.30),
-        "claude-3-5-sonnet-20241022": LLMCostCard(input=3.75, output=0.30),
-        "claude-3-opus-20240229": LLMCostCard(input=18.75, output=1.50),
-    }
+    _cost_manager = LLMCostManagerObject.anthropic()
+    COSTS: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["default"]
+    COSTS_CACHING: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["caching"]
 
     def find_model_costs(self) -> Optional[LLMCostCard]:
         return self.COSTS.get(self.model)

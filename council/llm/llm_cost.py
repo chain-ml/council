@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 import abc
+import os
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
+import yaml
 from council.contexts import Consumption
+from council.utils import DataObject, DataObjectSpecBase
+
+DATA_PATH: Final[str] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+ANTHROPIC_COSTS_FILENAME: Final[str] = "anthropic-costs.yaml"
+GEMINI_COSTS_FILENAME: Final[str] = "gemini-costs.yaml"
+OPENAI_COSTS_FILENAME: Final[str] = "openai-costs.yaml"
 
 
 class LLMCostCard:
@@ -112,3 +120,62 @@ class LLMConsumptionCalculatorBase(abc.ABC):
     @staticmethod
     def filter_zeros(consumptions: List[Consumption]) -> List[Consumption]:
         return list(filter(lambda consumption: consumption.value > 0, consumptions))
+
+
+class LLMCostManagerSpec(DataObjectSpecBase):
+    def __init__(self, costs: Dict[str, Dict[str, LLMCostCard]]) -> None:
+        """
+        Initializes a new instance of LLMCostManagerSpec
+
+        Args:
+            costs (Dict[str, Dict[str, LLMCostCard]]): collection of cost cards of shape
+            {category: {model_1: LLMCostCard, model_2: LLMCostCard}, another_category: {...}}
+        """
+        self.costs = costs
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, Any]) -> LLMCostManagerSpec:
+        costs = {
+            category: {
+                model: LLMCostCard.from_dict(model_data) for model, model_data in category_data["models"].items()
+            }
+            for category, category_data in values.items()
+        }
+
+        return LLMCostManagerSpec(costs)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return self.costs
+
+    def __str__(self) -> str:
+        return f"LLMCostCards for {len(self.costs.keys())} categories"
+
+
+class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
+    """
+    Helper class to instantiate an LLMCostManagerObject from a YAML file
+    """
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, Any]) -> LLMCostManagerObject:
+        return super()._from_dict(LLMCostManagerSpec, values)
+
+    @classmethod
+    def from_yaml(cls, filename: str) -> LLMCostManagerObject:
+        with open(filename, "r", encoding="utf-8") as f:
+            values = yaml.safe_load(f)
+            cls._check_kind(values, "LLMCostManager")
+            print(values)
+            return LLMCostManagerObject.from_dict(values)
+
+    @staticmethod
+    def anthropic():
+        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, ANTHROPIC_COSTS_FILENAME))
+
+    @staticmethod
+    def gemini():
+        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, GEMINI_COSTS_FILENAME))
+
+    @staticmethod
+    def openai():
+        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, OPENAI_COSTS_FILENAME))

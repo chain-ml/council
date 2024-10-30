@@ -10,6 +10,7 @@ from council.llm import (
     LLMConfigObject,
     LLMConsumptionCalculatorBase,
     LLMCostCard,
+    LLMCostManagerObject,
     LLMMessage,
     LLMMessageRole,
     LLMProviders,
@@ -22,21 +23,9 @@ from google.generativeai.types import GenerateContentResponse, HarmBlockThreshol
 
 
 class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
-    # https://ai.google.dev/pricing
-    # different strategy for prompt up to 128k tokens
-    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = {
-        "gemini-1.5-flash": LLMCostCard(input=0.075, output=0.30),
-        "gemini-1.5-flash-8b": LLMCostCard(input=0.0375, output=0.15),
-        "gemini-1.5-pro": LLMCostCard(input=1.25, output=5.00),
-        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
-    }
-
-    COSTS_OVER_128k: Mapping[str, LLMCostCard] = {
-        "gemini-1.5-flash": LLMCostCard(input=0.15, output=0.60),
-        "gemini-1.5-flash-8b": LLMCostCard(input=0.075, output=0.30),
-        "gemini-1.5-pro": LLMCostCard(input=2.50, output=10.00),
-        "gemini-1.0-pro": LLMCostCard(input=0.50, output=1.50),
-    }
+    _cost_manager = LLMCostManagerObject.gemini()
+    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["under_128k"]
+    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.spec.costs["over_128k"]
 
     def __init__(self, model: str, num_tokens: int) -> None:
         super().__init__(model)
