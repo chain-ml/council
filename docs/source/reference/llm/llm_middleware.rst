@@ -61,7 +61,7 @@ Example usage with :class:`council.llm.LLMFunction`.
         print(consumption)
     # sample output:
     # claude-3-haiku-20240307 consumption: 1 call
-    # claude-3-haiku-20240307 consumption: 0.3583369255065918 second
+    # claude-3-haiku-20240307 consumption: 0.3583 second
     # claude-3-haiku-20240307:prompt_tokens consumption: 19 token
     # ...
     # claude-3-haiku-20240307:total_tokens_cost consumption: 1.852e-05 USD
@@ -73,7 +73,7 @@ Example usage with :class:`council.llm.LLMFunction`.
         print(consumption)
     # sample output:
     # claude-3-haiku-20240307 consumption: 1 cached_call
-    # claude-3-haiku-20240307 consumption: 0.3583369255065918 cached_second
+    # claude-3-haiku-20240307 consumption: 0.3583 cached_second
     # claude-3-haiku-20240307:prompt_tokens consumption: 19 cached_token
     # ...
     # claude-3-haiku-20240307:total_tokens_cost consumption: 1.852e-05 cached_USD
