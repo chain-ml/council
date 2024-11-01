@@ -1,6 +1,6 @@
-Integrations
-------------
+# Integrations
 
+```{eval-rst}
 .. toctree::
     :maxdepth: 1
     :caption: Integrations
@@ -8,3 +8,4 @@ Integrations
 
     llamaindex_integration.ipynb
     langchain_llm_integration.ipynb
+```
