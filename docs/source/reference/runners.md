@@ -1,8 +1,10 @@
+```{eval-rst}
 .. _runners-ref-label:
+````
 
-Runners
-=======
+# Runners
 
+```{eval-rst}
 .. autoclasstree::
     council.runners.ParallelFor
     council.runners.Parallel
@@ -13,10 +15,11 @@ Runners
     council.runners.While
     :full:
     :namespace: council.runners
+```
 
-RunnerErrors
-------------
+# RunnerErrors
 
+```{eval-rst}
 .. autoclasstree::
     council.runners.RunnerGeneratorError
     council.runners.RunnerPredicateError
@@ -24,12 +27,14 @@ RunnerErrors
     council.runners.RunnerTimeoutError
     :full:
     :namespace: council.runners
+```
 
-Classes
--------
+# Classes
 
+```{eval-rst}
 .. toctree::
     :maxdepth: 1
     :glob:
 
     runners/*
+```

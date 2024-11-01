@@ -1,14 +1,15 @@
-ParallelFor
-===========
+# ParallelFor
 
+```{eval-rst}
 .. autoclass::
     council.runners.ParallelFor
+```
 
-Example 1
----------
+## Example 1
 
 The example below demonstrate how to use the parallel for in a chain.
 
+```{eval-rst}
 .. testcode::
 
     from council.chains import Chain
@@ -21,12 +22,13 @@ The example below demonstrate how to use the parallel for in a chain.
             yield "hi"
 
     chain = Chain(name="name", description="parallel for", runners=[ParallelFor(generator, MockSkill())])
+```
 
-Example 2
----------
+## Example 2
 
 This example builds on the previous one and shows how to consume the iteration into a skill.
 
+```{eval-rst}
 .. testcode::
 
     from council.chains import Chain
@@ -52,9 +54,11 @@ This example builds on the previous one and shows how to consume the iteration i
     chain.execute(context)
     for message in context.messages:
         print(message.message)
+```
 
 The output would looks like.
 
+```{eval-rst}
 .. testoutput::
 
     index 0, hi 0
@@ -62,3 +66,4 @@ The output would looks like.
     index 2, hi 2
     index 3, hi 3
     index 4, hi 4
+```
