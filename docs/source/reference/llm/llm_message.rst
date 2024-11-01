@@ -2,6 +2,7 @@ LLMMessage
 ----------
 
 .. autoclass:: council.llm.LLMMessage
+   :member-order: bysource
 
 LLMMessageData
 --------------
@@ -13,6 +14,9 @@ LLMCacheControlData
 
 .. autoclass:: council.llm.llm_message.LLMCacheControlData
     :no-inherited-members:
+
+Code Example
+^^^^^^^^^^^^
 
 Here's how you can use Anthropic prompt caching with council.
 

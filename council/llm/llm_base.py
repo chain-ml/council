@@ -39,18 +39,22 @@ class LLMResult:
 
     @property
     def first_choice(self) -> str:
+        """First choice, e.g. LLM response."""
         return self._choices[0]
 
     @property
     def choices(self) -> Sequence[str]:
+        """List of LLM responses."""
         return self._choices
 
     @property
     def consumptions(self) -> Sequence[Consumption]:
+        """List of consumptions associated with LLM call."""
         return self._consumptions
 
     @property
     def raw_response(self) -> Dict[str, Any]:
+        """Raw response from LLM provider API."""
         return self._raw_response
 
 

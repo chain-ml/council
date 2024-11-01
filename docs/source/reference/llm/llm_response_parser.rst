@@ -22,6 +22,9 @@ CodeBlocksResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 
+Code Example
+^^^^^^^^^^^^
+
 Here's how you can simplify :class:`council.llm.LLMFunction` example for a sample SQL generation task.
 
 .. code-block:: python
@@ -70,7 +73,8 @@ YAMLBlockResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 
-Usage example:
+Code Example
+^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -137,6 +141,9 @@ JSONResponseParser
 .. autoclass:: council.llm.llm_response_parser.JSONResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
+
+Code Example
+^^^^^^^^^^^^
 
 Usage example with OpenAI json mode:
 

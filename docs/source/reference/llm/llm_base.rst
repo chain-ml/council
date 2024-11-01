@@ -7,3 +7,4 @@ LLMResult
 ---------
 
 .. autoclass:: council.llm.LLMResult
+   :member-order: bysource

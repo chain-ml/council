@@ -95,12 +95,19 @@ class LLMPromptConfigObject(DataObject[LLMPromptConfigSpec]):
 
     @property
     def has_user_prompt_template(self) -> bool:
+        """Return True, if user prompt template was specified in yaml file."""
         return bool(self.spec.user_prompts)
 
     def get_system_prompt_template(self, model: str) -> str:
+        """Return system prompt template for a given model."""
         return self._get_prompt_template(self.spec.system_prompts, model)
 
     def get_user_prompt_template(self, model: str) -> str:
+        """
+        Return user prompt template for a given model.
+        Raises ValueError if no user prompt template was provided.
+        """
+
         if not self.has_user_prompt_template:
             raise ValueError("No user prompt template provided")
         return self._get_prompt_template(self.spec.user_prompts, model)

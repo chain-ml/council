@@ -3,6 +3,9 @@ LLMPromptConfigObject
 
 .. autoclass:: council.prompt.LLMPromptConfigObject
 
+Code Example
+^^^^^^^^^^^^
+
 The following code illustrates the way to load prompt from a YAML file.
 
 .. testcode::
@@ -12,6 +15,8 @@ The following code illustrates the way to load prompt from a YAML file.
     prompt = LLMPromptConfigObject.from_yaml("data/prompts/llm-prompt-sql-template.yaml")
     system_prompt = prompt.get_system_prompt_template("default")
     user_prompt = prompt.get_user_prompt_template("default")
+
+Sample yaml file:
 
 .. literalinclude:: ../../../data/prompts/llm-prompt-sql-template.yaml
     :language: yaml

@@ -54,7 +54,9 @@ Azure Config Example
 Fallback Config Example
 -----------------------
 
-Note that `provider` and `fallbackProvider` can be any providers from above.
+.. tip::
+
+    Note that `provider` and `fallbackProvider` can be any providers from above.
 
 .. literalinclude:: ../../../data/configs/llm-config-with-fallback.yaml
     :language: yaml
