@@ -27,6 +27,44 @@ Supported providers are: :class:`~council.llm.OpenAILLM`, :class:`~council.llm.A
     # will adjust provider class automatically based on config file
     llm = get_llm_from_config("data/configs/llm-config-openai.yaml")
 
+Post Chat Request and Cost Management
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use `llm.post_chat_request` to send a request to LLM. The object you will get back (:class:`~council.llm.LLMResult`) contains LLM response as well as list of :class:`~council.contexts.Consumption` associated with the call, including duration, token usage and cost.
+
+.. code-block:: python
+
+    import dotenv
+    from council import LLMContext
+    from council.llm import LLMMessage, get_llm_from_config
+
+    llm = get_llm_from_config("data/configs/llm-config-openai.yaml")
+    result = llm.post_chat_request(
+        LLMContext.empty(),
+        messages=[LLMMessage.user_message("Hello world")]
+    )
+
+    print(result.first_choice)
+    # sample output:
+    # Hello! How can I assist you today?
+
+    for consumption in result.consumptions:
+        print(consumption)
+    # sample output:
+    # gpt-4o-mini-2024-07-18 consumption: 1 call
+    # gpt-4o-mini-2024-07-18 consumption: 0.9346139430999756 second
+    # gpt-4o-mini-2024-07-18:prompt_tokens consumption: 9 token
+    # gpt-4o-mini-2024-07-18:completion_tokens consumption: 9 token
+    # gpt-4o-mini-2024-07-18:total_tokens consumption: 18 token
+    # gpt-4o-mini-2024-07-18:prompt_tokens_cost consumption: 1.3499e-06 USD
+    # gpt-4o-mini-2024-07-18:completion_tokens_cost consumption: 5.399e-06 USD
+    # gpt-4o-mini-2024-07-18:total_tokens_cost consumption: 6.7499e-06 USD
+
+Anthropic Prompt Caching
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :class:`~council.llm.llm_message.LLMCacheControlData` to see an example of how to enable Anthropic prompt caching.
+
 LLM Functions
 ~~~~~~~~~~~~~
 
