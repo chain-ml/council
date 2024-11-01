@@ -11,14 +11,14 @@ LLM
 Overview
 --------
 
-The `council.llm` module provides a unified interface for interacting with various LLM providers, along with tools for handling responses, caching, logging and tracking consumptions easily.
+The `council.llm` module provides a unified interface for interacting with various LLM providers, along with tools for handling responses, caching, logging and tracking consumptions metrics.
 
 LLMs
 ~~~~
 
-Create your LLM easily from yaml :class:`~council.llm.LLMConfigObject` (see for different config examples).
+Create your LLM instance from YAML config file with :class:`~council.llm.LLMConfigObject` (see for different config examples).
 
-Supported providers are: :class:`~council.llm.OpenAILLM`, :class:`~council.llm.AnthropicLLM`, :class:`~council.llm.GeminiLLM`, :class:`~council.llm.AzureLLM`.
+Currently supported providers include: :class:`~council.llm.OpenAILLM`, :class:`~council.llm.AnthropicLLM`, :class:`~council.llm.GeminiLLM`, :class:`~council.llm.AzureLLM`.
 
 .. testcode::
 
@@ -27,10 +27,10 @@ Supported providers are: :class:`~council.llm.OpenAILLM`, :class:`~council.llm.A
     # will adjust provider class automatically based on config file
     llm = get_llm_from_config("data/configs/llm-config-openai.yaml")
 
-Post Chat Request and Cost Management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Making Requests and Managing Costs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use `llm.post_chat_request` to send a request to LLM. The object you will get back (:class:`~council.llm.LLMResult`) contains LLM response as well as list of :class:`~council.contexts.Consumption` associated with the call, including duration, token usage and cost.
+Use `llm.post_chat_request()` method to interact with an LLM. The returned :class:`~council.llm.LLMResult` object contains LLM response as well as list of :class:`~council.contexts.Consumption` metrics associated with the call, including duration, token usage and costs.
 
 .. code-block:: python
 
@@ -52,7 +52,7 @@ Use `llm.post_chat_request` to send a request to LLM. The object you will get ba
         print(consumption)
     # sample output:
     # gpt-4o-mini-2024-07-18 consumption: 1 call
-    # gpt-4o-mini-2024-07-18 consumption: 0.9346139430999756 second
+    # gpt-4o-mini-2024-07-18 consumption: 0.9347 second
     # gpt-4o-mini-2024-07-18:prompt_tokens consumption: 9 token
     # gpt-4o-mini-2024-07-18:completion_tokens consumption: 9 token
     # gpt-4o-mini-2024-07-18:total_tokens consumption: 18 token
@@ -60,39 +60,39 @@ Use `llm.post_chat_request` to send a request to LLM. The object you will get ba
     # gpt-4o-mini-2024-07-18:completion_tokens_cost consumption: 5.399e-06 USD
     # gpt-4o-mini-2024-07-18:total_tokens_cost consumption: 6.7499e-06 USD
 
-Anthropic Prompt Caching
-^^^^^^^^^^^^^^^^^^^^^^^^
+Anthropic Prompt Caching Support
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :class:`~council.llm.llm_message.LLMCacheControlData` to see an example of how to enable Anthropic prompt caching.
+For information about enabling Anthropic prompt caching, refer to :class:`~council.llm.llm_message.LLMCacheControlData`.
 
 LLM Functions
 ~~~~~~~~~~~~~
 
 LLM Functions provide structured ways to interact with LLMs including built-in response parsing, error handling and retries.
 
-- See :class:`~council.llm.LLMFunction`
-- Or create :class:`~council.llm.LLMFunctionWithPrompt` with :class:`~council.prompt.LLMPromptConfigObject`
+- See :class:`~council.llm.LLMFunction` for a code example
+- Use :class:`~council.llm.LLMFunctionWithPrompt` to create an LLMFunction with :class:`~council.prompt.LLMPromptConfigObject`
 
 Response Parsers
 ~~~~~~~~~~~~~~~~
 
-To use LLMFunctions conveniently, you can leverage response parsers to parse common response formats automatically.
+Response parsers help automate the parsing of common response formats to use LLMFunctions conveniently:
 
-- Raw response: :class:`~council.llm.llm_response_parser.EchoResponseParser`
-- Plain test: :class:`~council.llm.llm_response_parser.StringResponseParser`
-- Code blocks: :class:`~council.llm.llm_response_parser.CodeBlocksResponseParser`
-- YAML responses in code block or plain text: :class:`~council.llm.llm_response_parser.YAMLBlockResponseParser` and :class:`~council.llm.llm_response_parser.YAMLResponseParser`
-- JSON responses in code block or plain text: :class:`~council.llm.llm_response_parser.JSONBlockResponseParser` and :class:`~council.llm.llm_response_parser.JSONResponseParser`
+- :class:`~council.llm.llm_response_parser.EchoResponseParser` for raw :class:`~council.llm.LLMResponse`
+- :class:`~council.llm.llm_response_parser.StringResponseParser` for plain text
+- :class:`~council.llm.llm_response_parser.CodeBlocksResponseParser` for code blocks
+- :class:`~council.llm.llm_response_parser.YAMLBlockResponseParser` and :class:`~council.llm.llm_response_parser.YAMLResponseParser` for YAML
+- :class:`~council.llm.llm_response_parser.JSONBlockResponseParser` and :class:`~council.llm.llm_response_parser.JSONResponseParser` for JSON
 
-LLMMiddleware
-~~~~~~~~~~~~~
+LLM Middleware
+~~~~~~~~~~~~~~
 
-Enhance LLM interactions with middleware components that could modify requests and responses introducing custom logic, such as logging, caching, updating LLM configs, etc.
+Middleware components allow you to enhance LLM interactions by modifying requests and responses introducing custom logic, such as logging, caching, configuration updates, etc.
 
 Core middlewares:
 
-- :class:`~council.llm.LLMCachingMiddleware`
-- :class:`~council.llm.LLMLoggingMiddleware` and :class:`~council.llm.LLMFileLoggingMiddleware`
+- Caching: :class:`~council.llm.LLMCachingMiddleware`
+- Logging: :class:`~council.llm.LLMLoggingMiddleware` and :class:`~council.llm.LLMFileLoggingMiddleware`
 
 Middleware management:
 
