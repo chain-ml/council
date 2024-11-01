@@ -7,14 +7,16 @@ metadata:
 spec:
   description: "Model used to do ABC"
   provider:
-    name: CML-OpenAI
+    name: OpenAI
     openAISpec:
-      model: gpt-4-1106-preview
+      # https://platform.openai.com/docs/models/
+      model: gpt-4o-mini-2024-07-18
       timeout: 60
+      # specify API key directly
       apiKey: sk-my-api-key
-# Alternatively, get the api key from an environment variable
+      # or use environment variable (recommended)
 #      apiKey:
 #        fromEnvVar: OPENAI_API_KEY
   parameters:
-    n: 3
-    temperature: 0.5
+    n: 1
+    temperature: 0
