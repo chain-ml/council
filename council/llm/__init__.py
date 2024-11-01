@@ -1,4 +1,4 @@
-"""This package provides clients to use various LLMs"""
+"""This package provides clients to use various LLMs."""
 
 from typing import Optional
 from ..utils import read_env_str

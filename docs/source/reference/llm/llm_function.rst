@@ -9,7 +9,14 @@ LLMFunction
 
 .. autoclass:: council.llm.LLMFunction
 
+Code Example
+^^^^^^^^^^^^
+
 Here's how you can use LLMFunction for a sample SQL generation task.
+
+.. tip::
+
+    You can simplify this example with :class:`council.llm.llm_response_parser.CodeBlocksResponseParser`.
 
 .. code-block:: python
 
@@ -104,8 +111,6 @@ Here's how you can use LLMFunction for a sample SQL generation task.
     )
     print(type(response))
     print(response.sql)
-
-You can simplify this example with :class:`council.llm.llm_response_parser.CodeBlocksResponseParser`.
 
 LLMFunctionError
 ----------------
