@@ -1,6 +1,9 @@
+```{eval-rst}
 .. _budget-ref-label:
+```
 
-Budget
-------
+# Budget
 
+```{eval-rst}
 .. autoclass:: council.contexts.Budget
+```

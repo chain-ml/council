@@ -1,7 +1,10 @@
+```{eval-rst}
 .. _budgetConsumption-ref-label:
+```
 
-Consumption
------------
+# Consumption
 
+```{eval-rst}
 .. autoclass:: council.contexts.Consumption
    :member-order: bysource
+```

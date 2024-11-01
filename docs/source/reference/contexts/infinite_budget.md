@@ -1,6 +1,9 @@
+```{eval-rst}
 .. _infiniteBudget-ref-label:
+```
 
-InfiniteBudget
---------------
+# InfiniteBudget
 
+```{eval-rst}
 .. autoclass:: council.contexts.InfiniteBudget
+```
