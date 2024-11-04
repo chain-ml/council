@@ -10,7 +10,7 @@ toml~=0.10.2
 PyYAML~=6.0.1
 
 # LLMs
-anthropic>=0.34.2
+anthropic~=0.34.2
 google-generativeai>=0.7.0
 
 # Skills
