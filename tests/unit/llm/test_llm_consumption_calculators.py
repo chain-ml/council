@@ -1,8 +1,10 @@
 import unittest
 
+from council.llm import CodeBlocksResponseParser, LLMFunction
 from council.llm.anthropic_llm import AnthropicConsumptionCalculator, Usage as AnthropicUsage
 from council.llm.gemini_llm import GeminiConsumptionCalculator
 from council.llm.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage as OpenAIUsage
+from council.mocks import MockLLM, MockMultipleResponses
 
 
 class TestAnthropicConsumptionCalculator(unittest.TestCase):
@@ -301,3 +303,25 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
 
         self.assertEqual(reasoning_cost, 12.00)
         self.assertEqual(completion_cost, 12.00)
+
+
+class Response(CodeBlocksResponseParser):
+    block: str
+
+
+class TestSelfCorrectionConsumptions(unittest.TestCase):
+    incorrect_response = "incorrect"
+    correct_response = """
+```block
+correct
+```
+"""
+    responses = [[incorrect_response], [correct_response]]
+
+    def test_self_correction_consumptions(self):
+        llm = MockLLM(action=MockMultipleResponses(responses=self.responses))
+        llm_func = LLMFunction(llm, Response.from_response, system_message="")
+
+        llm_func_response = llm_func.execute_with_llm_response(user_message="")
+
+        assert len(llm_func_response.consumptions) == 2  # two "call" consumptions
