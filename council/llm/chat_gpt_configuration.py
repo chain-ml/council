@@ -106,8 +106,8 @@ class ChatGPTConfigurationBase(LLMConfigurationBase, ABC):
         self.presence_penalty.from_env(env_var_prefix + "LLM_PRESENCE_PENALTY")
         self.frequency_penalty.from_env(env_var_prefix + "LLM_FREQUENCY_PENALTY")
 
-    def build_default_payload(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {}
+    def build_default_payload(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {}
 
         def add_param(parameter: Parameter):
             if parameter.is_some():
