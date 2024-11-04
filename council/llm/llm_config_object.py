@@ -14,6 +14,7 @@ class LLMProviders(str, Enum):
     Azure = "azureSpec"
     Anthropic = "anthropicSpec"
     Gemini = "googleGeminiSpec"
+    Ollama = "ollamaSpec"
 
 
 class LLMProvider:
@@ -47,6 +48,9 @@ class LLMProvider:
         spec = values.get(LLMProviders.Gemini)
         if spec is not None:
             return LLMProvider(name, description, spec, LLMProviders.Gemini)
+        spec = values.get(LLMProviders.Ollama)
+        if spec is not None:
+            return LLMProvider(name, description, spec, LLMProviders.Ollama)
         raise ValueError("Unsupported model provider")
 
     def to_dict(self) -> Dict[str, Any]:
@@ -59,6 +63,8 @@ class LLMProvider:
             result[LLMProviders.Anthropic] = self._specs
         elif self.is_of_kind(LLMProviders.Gemini):
             result[LLMProviders.Gemini] = self._specs
+        elif self.is_of_kind(LLMProviders.Ollama):
+            result[LLMProviders.Ollama] = self._specs
         return result
 
     def must_get_value(self, key: str) -> Any:

@@ -51,6 +51,9 @@ from .anthropic_llm import AnthropicLLM
 from .gemini_llm_configuration import GeminiLLMConfiguration
 from .gemini_llm import GeminiLLM
 
+from .ollama_llm_configuration import OllamaLLMConfiguration
+from .ollama_llm import OllamaLLM
+
 
 def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
     provider = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
