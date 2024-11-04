@@ -100,5 +100,7 @@ def _build_llm(llm_config: LLMConfigObject) -> LLMBase:
         return AnthropicLLM.from_config(llm_config)
     elif provider.is_of_kind(LLMProviders.Gemini):
         return GeminiLLM.from_config(llm_config)
+    elif provider.is_of_kind(LLMProviders.Ollama):
+        return OllamaLLM.from_config(llm_config)
 
     raise ValueError(f"Provider `{provider.kind}` not supported by Council")
