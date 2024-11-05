@@ -13,7 +13,7 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
         for model in calculator.COSTS_CACHING.keys():
             self.assertIn(model, calculator.COSTS)
 
-    def test_haiku_cost_calculation(self):
+    def test_haiku_3_cost_calculation(self):
         cost_card = AnthropicConsumptionCalculator("claude-3-haiku-20240307").find_model_costs()
 
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
@@ -24,7 +24,18 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
         self.assertEqual(prompt_cost, 0.025)  # $0.25 * 0.1
         self.assertEqual(completion_cost, 0.0625)  # $1.25 * 0.05
 
-    def test_haiku_cache_cost_calculation(self):
+    def test_haiku_35_cost_calculation(self):
+        cost_card = AnthropicConsumptionCalculator("claude-3-5-haiku-20241022").find_model_costs()
+
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 1.00)  # $1.00 per 1M tokens for input * 1M tokens = $1.00
+        self.assertEqual(completion_cost, 2.50)  # $5.00 per 1M tokens for output * 0.5M tokens = $2.50
+
+        prompt_cost, completion_cost = cost_card.get_costs(100_000, 50_000)
+        self.assertEqual(prompt_cost, 0.10)  # $1.00 * 0.1
+        self.assertEqual(completion_cost, 0.25)  # $5.00 * 0.05
+
+    def test_haiku_3_cache_cost_calculation(self):
         consumptions = AnthropicConsumptionCalculator("claude-3-haiku-20240307").get_anthropic_cost_consumptions(
             AnthropicUsage(
                 prompt_tokens=100_000,
@@ -39,6 +50,22 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
 
         self.assertEqual(cache_creation_cost.value, 0.30)  # $0.30 per 1M tokens * 1M tokens
         self.assertEqual(cache_read_cost.value, 0.015)  # $0.03 per 1M tokens * 0.5M tokens
+
+    def test_haiku_35_cache_cost_calculation(self):
+        consumptions = AnthropicConsumptionCalculator("claude-3-5-haiku-20241022").get_anthropic_cost_consumptions(
+            AnthropicUsage(
+                prompt_tokens=100_000,
+                completion_tokens=50_000,
+                cache_creation_prompt_tokens=1_000_000,
+                cache_read_prompt_tokens=500_000,
+            )
+        )
+
+        cache_creation_cost = next(c for c in consumptions if "cache_creation_prompt_tokens_cost" in c.kind)
+        cache_read_cost = next(c for c in consumptions if "cache_read_prompt_tokens_cost" in c.kind)
+
+        self.assertEqual(cache_creation_cost.value, 1.25)  # $1.25 per 1M tokens * 1M tokens
+        self.assertEqual(cache_read_cost.value, 0.05)  # $0.10 per 1M tokens * 0.5M tokens
 
     def test_sonnet_cost_calculation(self):
         sonnet_versions = ["claude-3-sonnet-20240229", "claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022"]
