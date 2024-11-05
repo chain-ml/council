@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Iterable, List, Optional, Protocol, Sequence
 
 from council import LLMContext
+from council.contexts import Consumption
 from council.llm import (
     LLMBase,
     LLMConfigurationBase,
@@ -49,9 +50,8 @@ class MockLLM(LLMBase[MockLLMConfiguration]):
         self._action = action
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
-        if self._action is not None:
-            return LLMResult(choices=self._action(messages))
-        return LLMResult(choices=[f"{self.__class__.__name__}"])
+        choices = self._action(messages) if self._action is not None else [f"{self.__class__.__name__}"]
+        return LLMResult(choices=choices, consumptions=[Consumption.call(1, "mock_llm")])
 
     @staticmethod
     def from_responses(responses: List[str]) -> MockLLM:
