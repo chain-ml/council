@@ -77,17 +77,22 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
             response = self.client.chat(model=self.model_name, messages=messages_payload)
 
         return LLMResult(
-            choices=[response["message"]["content"]], consumptions=self.to_consumptions(timer.duration, response)
+            choices=self.to_choices(response),
+            consumptions=self.to_consumptions(timer.duration, response),
+            raw_response=dict(response),
         )
 
     @staticmethod
     def _build_messages_payload(messages: Sequence[LLMMessage]) -> List[Message]:
         return [Message(role=message.role.value, content=message.content) for message in messages]
 
-    def to_consumptions(self, duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
-        model = self._configuration.model_name()
+    @staticmethod
+    def to_choices(response: Mapping[str, Any]) -> List[str]:
+        return [response["message"]["content"]]
 
-        calculator = OllamaConsumptionCalculator(model)
+    @staticmethod
+    def to_consumptions(duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
+        calculator = OllamaConsumptionCalculator(response["model"])
         return calculator.get_ollama_consumptions(duration, response)
 
     @staticmethod

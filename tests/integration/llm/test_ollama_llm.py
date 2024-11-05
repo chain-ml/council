@@ -34,8 +34,15 @@ class TestOllamaLLM(unittest.TestCase):
 
         assert "Eiffel" in result.first_choice
 
+    def test_load(self):
+        result = self.llama_32.post_chat_request(LLMContext.empty(), [])
+
+        assert result.raw_response["done_reason"] == "load"
+
     def test_consumptions(self):
         messages = [LLMMessage.user_message("What is the capital of France?")]
         result = self.llama_32.post_chat_request(LLMContext.empty(), messages)
 
         assert len(result.consumptions) == 9  # 2 base, 3 tokens and 4 ollama specific durations
+        for consumption in result.consumptions:
+            assert consumption.kind.startswith("llama3.2")
