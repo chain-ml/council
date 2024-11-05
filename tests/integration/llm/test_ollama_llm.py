@@ -14,9 +14,13 @@ class TestOllamaLLM(unittest.TestCase):
 
     def test_single_message(self):
         messages = [LLMMessage.user_message("What is the capital of France?")]
-        result = self.llama_32.post_chat_request(LLMContext.empty(), messages)
+        result_v1 = self.llama_32.post_chat_request(LLMContext.empty(), messages)
 
-        assert "Paris" in result.first_choice
+        assert "Paris" in result_v1.first_choice
+
+        result_v2 = self.llama_32.post_chat_request(LLMContext.empty(), messages)
+
+        assert result_v1.first_choice == result_v2.first_choice  # same seed
 
     def test_messages(self):
         messages = [LLMMessage.user_message("What is the capital of France?")]

@@ -171,7 +171,8 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
     @staticmethod
     def from_env() -> OllamaLLMConfiguration:
         model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
-        keep_alive = read_env_str(_env_var_prefix + "KEEP_ALIVE").unwrap()
+        keep_alive_env_str = read_env_str(_env_var_prefix + "KEEP_ALIVE", required=False)
+        keep_alive = keep_alive_env_str.unwrap() if keep_alive_env_str.is_some() else None
 
         config = OllamaLLMConfiguration(model=model, keep_alive=keep_alive)
         return config
