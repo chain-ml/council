@@ -68,6 +68,8 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
         llm = AnthropicLLM.from_env()
     elif provider == LLMProviders.Gemini.lower():
         llm = GeminiLLM.from_env()
+    elif provider == LLMProviders.Ollama.lower():
+        llm = OllamaLLM.from_env()
 
     if llm is None:
         raise ValueError(f"Provider {provider} not supported by Council.")
