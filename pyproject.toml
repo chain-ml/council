@@ -21,6 +21,7 @@ Documentation = "https://council.dev"
 include = [
     "council/**/*.py",
     "council/py.typed",
+    "council/**/*.yaml",
 ]
 
 package = ['council_ai']
