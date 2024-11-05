@@ -17,7 +17,13 @@ The `council.llm` module provides a unified interface for interacting with vario
 
 Create your LLM instance from YAML config file with {class}`~council.llm.LLMConfigObject` (see for different config examples).
 
-Currently supported providers include: {class}`~council.llm.OpenAILLM`, {class}`~council.llm.AnthropicLLM`, {class}`~council.llm.GeminiLLM`, {class}`~council.llm.AzureLLM`.
+Currently supported providers include: 
+
+- OpenAI's GPT and o1 - {class}`~council.llm.OpenAILLM`
+- Anthropic's Claude - {class}`~council.llm.AnthropicLLM`
+- Google's Gemini - {class}`~council.llm.GeminiLLM`
+- Microsoft's Azure - {class}`~council.llm.AzureLLM`
+- and local models with [ollama](https://ollama.com/) - {class}`~council.llm.OllamaLLM`
 
 ```{eval-rst}
 .. testcode::

@@ -1,0 +1,15 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: a-local-deployed-model
+  labels:
+    provider: Ollama
+spec:
+  description: "Model used to do ABC"
+  provider:
+    name: Ollama
+    ollamaSpec:
+      # https://ollama.com/library
+      model: llama3.2
+  parameters:
+    temperature: 0
