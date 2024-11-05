@@ -17,6 +17,11 @@ def greater_than_validator(value: int) -> Validator:
     return validator
 
 
+def zero_to_one_validator(x: float) -> None:
+    if x < 0.0 or x > 1.0:
+        raise ValueError("must be in the range [0.0..1.0]")
+
+
 def prefix_validator(value: str) -> Validator:
     def validator(x: str) -> None:
         if not x.startswith(value):

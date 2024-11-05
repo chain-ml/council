@@ -3,18 +3,16 @@ from __future__ import annotations
 from typing import Any, Final, Optional
 
 from council.llm import LLMConfigSpec, LLMConfigurationBase
-from council.utils import Parameter, greater_than_validator, prefix_validator, read_env_int, read_env_str
+from council.utils import (
+    Parameter,
+    greater_than_validator,
+    prefix_validator,
+    read_env_int,
+    read_env_str,
+    zero_to_one_validator,
+)
 
 _env_var_prefix: Final[str] = "ANTHROPIC_"
-
-
-def _tv(x: float) -> None:
-    """
-    Temperature and Top_p Validators
-    Sampling temperature to use, between 0. and 1.
-    """
-    if x < 0.0 or x > 1.0:
-        raise ValueError("must be in the range [0.0..1.0]")
 
 
 class AnthropicLLMConfiguration(LLMConfigurationBase):
@@ -43,8 +41,10 @@ class AnthropicLLMConfiguration(LLMConfigurationBase):
         self._timeout = Parameter.int(
             name="timeout", required=False, default=self.default_timeout, validator=greater_than_validator(0)
         )
-        self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
-        self._top_p = Parameter.float(name="top_p", required=False, validator=_tv)
+        self._temperature = Parameter.float(
+            name="temperature", required=False, default=0.0, validator=zero_to_one_validator
+        )
+        self._top_p = Parameter.float(name="top_p", required=False, validator=zero_to_one_validator)
         self._top_k = Parameter.int(name="top_k", required=False, validator=greater_than_validator(0))
 
     def model_name(self) -> str:

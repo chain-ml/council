@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, Final, List, Mapping, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext
 from council.llm import (
@@ -20,7 +20,7 @@ from ollama._types import Message, Options
 
 
 class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
-    DURATION_KEYS = ["prompt_eval_duration", "eval_duration", "load_duration", "total_duration"]
+    DURATION_KEYS: Final[List[str]] = ["prompt_eval_duration", "eval_duration", "load_duration", "total_duration"]
 
     def get_ollama_consumptions(self, duration: float, response: Mapping[str, Any]) -> List[Consumption]:
         return (
