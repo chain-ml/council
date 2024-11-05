@@ -35,9 +35,14 @@ class TestOllamaLLM(unittest.TestCase):
         assert "Eiffel" in result.first_choice
 
     def test_load(self):
-        result = self.llama_32.post_chat_request(LLMContext.empty(), [])
+        response = self.llama_32.load()
 
-        assert result.raw_response["done_reason"] == "load"
+        assert response["done_reason"] == "load"
+
+    def test_unload(self):
+        response = self.llama_32.unload()
+
+        assert response["done_reason"] == "unload"
 
     def test_consumptions(self):
         messages = [LLMMessage.user_message("What is the capital of France?")]

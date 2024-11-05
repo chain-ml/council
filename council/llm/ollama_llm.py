@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, List, Mapping, Optional, Sequence, Union
 
 from council.contexts import Consumption, LLMContext
 from council.llm import (
@@ -69,12 +69,21 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
 
     @property
     def client(self) -> Client:
+        """Ollama Client."""
         return self._client
+
+    def load(self, keep_alive: Optional[Union[float, str]] = None) -> Mapping[str, Any]:
+        """Load LLM in memory."""
+        return self.client.chat(model=self.model_name, messages=[], keep_alive=keep_alive)
+
+    def unload(self) -> Mapping[str, Any]:
+        """Unload LLM from memory."""
+        return self.client.chat(model=self.model_name, messages=[], keep_alive=0)
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         messages_payload = self._build_messages_payload(messages)
         with DurationManager() as timer:
-            response = self.client.chat(model=self.model_name, messages=messages_payload)
+            response = self.client.chat(model=self.model_name, messages=messages_payload, **kwargs)
 
         return LLMResult(
             choices=self.to_choices(response),
