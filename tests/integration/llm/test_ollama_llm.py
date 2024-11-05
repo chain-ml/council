@@ -17,7 +17,6 @@ class TestOllamaLLM(unittest.TestCase):
         result = self.llama_32.post_chat_request(LLMContext.empty(), messages)
 
         assert "Paris" in result.first_choice
-        print(result.first_choice)
 
     def test_messages(self):
         messages = [LLMMessage.user_message("What is the capital of France?")]
@@ -34,3 +33,9 @@ class TestOllamaLLM(unittest.TestCase):
         result = self.llama_32.post_chat_request(LLMContext.empty(), messages)
 
         assert "Eiffel" in result.first_choice
+
+    def test_consumptions(self):
+        messages = [LLMMessage.user_message("What is the capital of France?")]
+        result = self.llama_32.post_chat_request(LLMContext.empty(), messages)
+
+        assert len(result.consumptions) == 9  # 2 base, 3 tokens and 4 ollama specific durations

@@ -12,6 +12,7 @@ from council.llm import (
     LLMProviders,
     LLMResult,
     OllamaLLMConfiguration,
+    TokenKind,
 )
 from council.utils.utils import DurationManager
 from ollama import Client
@@ -19,6 +20,37 @@ from ollama._types import Message
 
 
 class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
+    DURATION_KEYS = ["prompt_eval_duration", "eval_duration", "load_duration", "total_duration"]
+
+    def get_ollama_consumptions(self, duration: float, response: Mapping[str, Any]) -> List[Consumption]:
+        return (
+            self.get_ollama_base_consumptions(duration)
+            + self.get_ollama_prompt_consumptions(response)
+            + self.get_ollama_duration_consumptions(response)
+        )
+
+    def get_ollama_base_consumptions(self, duration: float) -> List[Consumption]:
+        return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
+
+    def get_ollama_prompt_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
+        if not all(key in response for key in ["prompt_eval_count", "eval_count"]):
+            return []
+
+        prompt_tokens = response["prompt_eval_count"]
+        completion_tokens = response["eval_count"]
+        return [
+            Consumption.token(prompt_tokens, self.format_kind(TokenKind.prompt)),
+            Consumption.token(completion_tokens, self.format_kind(TokenKind.completion)),
+            Consumption.token(prompt_tokens + completion_tokens, self.format_kind(TokenKind.total)),
+        ]
+
+    def get_ollama_duration_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
+        if not all(key in response for key in self.DURATION_KEYS):
+            return []
+
+        # from nanoseconds to seconds
+        return [Consumption.duration(response[key] / 1e9, f"{self.model}:ollama_{key}") for key in self.DURATION_KEYS]
+
     def find_model_costs(self) -> Optional[LLMCostCard]:
         return None
 
@@ -56,7 +88,7 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
         model = self._configuration.model_name()
 
         calculator = OllamaConsumptionCalculator(model)
-        return calculator.get_consumptions(duration, prompt_tokens=0, completion_tokens=0)
+        return calculator.get_ollama_consumptions(duration, response)
 
     @staticmethod
     def from_env() -> OllamaLLM:
