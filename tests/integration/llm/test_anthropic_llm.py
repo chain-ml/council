@@ -92,7 +92,7 @@ class TestAnthropicLLM(unittest.TestCase):
             LLMMessage.system_message(self.large_content),
             LLMMessage.user_message("What's the capital of France?", data=[LLMCacheControlData.ephemeral()]),
         ]
-        with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-haiku-20240307"):
+        with OsEnviron("ANTHROPIC_LLM_MODEL", "claude-3-5-haiku-20241022"):
             instance = AnthropicLLM.from_env()
             context = LLMContext.empty()
             result = instance.post_chat_request(context, messages)
