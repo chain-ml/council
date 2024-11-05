@@ -10,5 +10,10 @@ spec:
     name: Ollama
     ollamaSpec:
       model: llama3.2
+      keep_alive: 300
   parameters:
-    temperature: 0
+    temperature: 0.8
+    repeatPenalty: 0.7
+    topP: 0.2
+    seed: 42
+    mirostatEta: 0.314
