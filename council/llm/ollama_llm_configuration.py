@@ -21,7 +21,8 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         """
         super().__init__()
         self._model = Parameter.string(name="model", required=True, value=model)
-        self._keep_alive = keep_alive
+        keep_alive_value = keep_alive if keep_alive is None else str(keep_alive)
+        self._keep_alive = Parameter.string(name="keep_alive", required=False, value=keep_alive_value)
         self._json_mode = Parameter.bool(name="json_mode", required=False, value=json_mode)
 
         # https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
@@ -51,12 +52,24 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         return self._model
 
     @property
-    def keep_alive(self) -> Optional[Union[float, str]]:
+    def keep_alive(self) -> Parameter[str]:
         """
         Number of seconds / duration string to keep model in memory.
         See https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-keep-a-model-loaded-in-memory-or-make-it-unload-immediately
         """
         return self._keep_alive
+
+    @property
+    def keep_alive_value(self) -> Optional[Union[float, str]]:
+        """Convert keep_alive to a format expected by ollama"""
+        keep_alive_value = self.keep_alive.value
+        if keep_alive_value is None:
+            return None
+
+        try:
+            return float(keep_alive_value)
+        except ValueError:
+            return keep_alive_value
 
     @property
     def json_mode(self) -> Parameter[bool]:
@@ -180,7 +193,7 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
 
         value = spec.provider.get_value("keep_alive")
         if value is not None:
-            config._keep_alive = value
+            config.keep_alive.set(value)
 
         value = spec.provider.get_value("json_mode")
         if value is not None:

@@ -74,7 +74,7 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
 
     def load(self) -> Mapping[str, Any]:
         """Load LLM in memory."""
-        return self.client.chat(model=self.model_name, messages=[], keep_alive=self._configuration.keep_alive)
+        return self.client.chat(model=self.model_name, messages=[], keep_alive=self._configuration.keep_alive_value)
 
     def unload(self) -> Mapping[str, Any]:
         """Unload LLM from memory."""
@@ -87,7 +87,7 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
                 model=self.model_name,
                 messages=messages_payload,
                 stream=False,
-                keep_alive=self._configuration.keep_alive,
+                keep_alive=self._configuration.keep_alive_value,
                 format=self._configuration.format,
                 options=Options(**self._configuration.params_to_options()),  # type: ignore
             )
