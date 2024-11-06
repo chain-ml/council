@@ -48,21 +48,18 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
     def find_caching_costs(self) -> Optional[LLMCostCard]:
         return self.COSTS_CACHING.get(self.model)
 
-    def get_anthropic_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
+    def get_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         """
-        Get consumptions specific for Anthropic prompt caching:
+        Get consumptions specific for Anthropic supporting prompt caching:
             - 1 call
             - specified duration
             - cache_creation_prompt, cache_read_prompt, prompt, completion and total tokens
-            - costs if both regular and caching LLMCostCards can be found
+            - corresponding costs if both regular and caching LLMCostCards can be found
         """
-
-        consumptions = self.get_anthropic_base_consumptions(duration, usage) + self.get_anthropic_cost_consumptions(
-            usage
-        )
+        consumptions = self.get_base_consumptions(duration, usage) + self.get_cost_consumptions(usage)
         return self.filter_zeros(consumptions)  # could occur for cache tokens
 
-    def get_anthropic_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
+    def get_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         return [
             Consumption.call(1, self.model),
             Consumption.duration(duration, self.model),
@@ -73,7 +70,7 @@ class AnthropicConsumptionCalculator(LLMConsumptionCalculatorBase):
             Consumption.token(usage.total_tokens, self.format_kind(TokenKind.total)),
         ]
 
-    def get_anthropic_cost_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_cost_consumptions(self, usage: Usage) -> List[Consumption]:
         cost_card = self.find_model_costs()
         caching_cost_card = self.find_caching_costs()
 
@@ -134,7 +131,7 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
     def to_consumptions(self, duration: float, usage: Usage) -> Sequence[Consumption]:
         model = self._configuration.model_name()
         consumption_calculator = AnthropicConsumptionCalculator(model)
-        return consumption_calculator.get_anthropic_consumptions(duration, usage)
+        return consumption_calculator.get_consumptions(duration, usage)
 
     def _get_api_wrapper(self) -> AnthropicAPIClientWrapper:
         if self._configuration is not None and self._configuration.model_name() == "claude-2":
