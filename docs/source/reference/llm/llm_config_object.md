@@ -59,6 +59,13 @@ Or use `council.llm.get_llm_from_config` to determine provider class automatical
     :language: yaml
 ```
 
+## Ollama Config Example
+
+```{eval-rst}
+.. literalinclude:: ../../../data/configs/llm-config-ollama.yaml
+    :language: yaml
+```
+
 ## Fallback Config Example
 
 **Note** that `provider` and `fallbackProvider` can be any providers from above.

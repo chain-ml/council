@@ -1,0 +1,22 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: a-local-deployed-model
+  labels:
+    provider: Ollama
+spec:
+  description: "Model used to do ABC"
+  provider:
+    name: Ollama
+    ollamaSpec:
+      model: llama3.2
+      keep_alive: 300
+      json_mode: true
+  parameters:
+    temperature: 0.8
+    repeatPenalty: 0.7
+    topP: 0.2
+    seed: 42
+    mirostatEta: 0.314
+    numCtx: 4096
+    numPredict: 512

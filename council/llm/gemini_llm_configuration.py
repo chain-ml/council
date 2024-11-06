@@ -2,20 +2,18 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
-from council.utils import Parameter, greater_than_validator, not_empty_validator, prefix_validator, read_env_str
+from council.utils import (
+    Parameter,
+    greater_than_validator,
+    not_empty_validator,
+    prefix_validator,
+    read_env_str,
+    zero_to_one_validator,
+)
 
 from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "GEMINI_"
-
-
-def _tv(x: float) -> None:
-    """
-    Temperature and Top_p Validators
-    Sampling temperature to use, between 0. and 1.
-    """
-    if x < 0.0 or x > 1.0:
-        raise ValueError("must be in the range [0.0..1.0]")
 
 
 class GeminiLLMConfiguration(LLMConfigurationBase):
@@ -30,8 +28,10 @@ class GeminiLLMConfiguration(LLMConfigurationBase):
         super().__init__()
         self._model = Parameter.string(name="model", required=True, value=model, validator=prefix_validator("gemini-"))
         self._api_key = Parameter.string(name="api_key", required=True, value=api_key, validator=not_empty_validator)
-        self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
-        self._top_p = Parameter.float(name="top_p", required=False, validator=_tv)
+        self._temperature = Parameter.float(
+            name="temperature", required=False, default=0.0, validator=zero_to_one_validator
+        )
+        self._top_p = Parameter.float(name="top_p", required=False, validator=zero_to_one_validator)
         self._top_k = Parameter.int(name="top_k", required=False, validator=greater_than_validator(0))
 
     def model_name(self) -> str:

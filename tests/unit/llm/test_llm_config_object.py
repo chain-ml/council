@@ -1,5 +1,11 @@
 from council import OpenAILLM, AzureLLM, AnthropicLLM, GeminiLLM
-from council.llm import get_llm_from_config, LLMFallback, OpenAIChatGPTConfiguration
+from council.llm import (
+    get_llm_from_config,
+    LLMFallback,
+    OpenAIChatGPTConfiguration,
+    OllamaLLM,
+    OllamaLLMConfiguration,
+)
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
@@ -79,3 +85,26 @@ def test_azure_with_openai_fallback_from_yaml():
         assert isinstance(llm, LLMFallback)
         assert isinstance(llm.llm, AzureLLM)
         assert isinstance(llm.fallback, OpenAILLM)
+
+
+def test_ollama_from_yaml():
+    filename = get_data_filename(LLModels.Ollama)
+
+    actual = LLMConfigObject.from_yaml(filename)
+    llm = OllamaLLM.from_config(actual)
+    assert isinstance(llm, OllamaLLM)
+
+    config: OllamaLLMConfiguration = llm.configuration
+    assert config.model.value == "llama3.2"
+    assert config.keep_alive_value == 300
+    assert config.json_mode.value
+    assert config.temperature.value == 0.8
+    assert config.repeat_penalty.value == 0.7
+    assert config.top_p.value == 0.2
+    assert config.seed.value == 42
+    assert config.mirostat_eta.value == 0.314
+    assert config.num_ctx.value == 4096
+    assert config.num_predict.value == 512
+
+    llm = get_llm_from_config(filename)
+    assert isinstance(llm, OllamaLLM)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Generic, Iterable, Optional, TypeVar, Union
 
-from council.utils import Option, read_env_float, read_env_int, read_env_str
+from council.utils import Option, read_env_bool, read_env_float, read_env_int, read_env_str
 
 T = TypeVar("T")
 Validator = Callable[[T], None]
@@ -15,6 +15,11 @@ def greater_than_validator(value: int) -> Validator:
             raise ValueError(f"must be greater than {value}")
 
     return validator
+
+
+def zero_to_one_validator(x: float) -> None:
+    if x < 0.0 or x > 1.0:
+        raise ValueError("must be in the range [0.0..1.0]")
 
 
 def prefix_validator(value: str) -> Validator:
@@ -203,6 +208,23 @@ class Parameter(Generic[T]):
             required=required,
             value=value,
             converter=read_env_float,
+            default=default,
+            validator=validator,
+        )
+
+    @staticmethod
+    def bool(
+        name: str,
+        required: bool,
+        value: OptionalOrUndefined[bool] = _undefined,
+        default: OptionalOrUndefined[bool] = _undefined,
+        validator: Optional[Validator] = None,
+    ) -> Parameter[bool]:
+        return Parameter(
+            name=name,
+            required=required,
+            value=value,
+            converter=read_env_bool,
             default=default,
             validator=validator,
         )

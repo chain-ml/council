@@ -281,7 +281,7 @@ class OpenAIChatCompletionsModel(LLMBase[ChatGPTConfigurationBase]):
 
         return OpenAIChatCompletionsResult.from_response(response.json())
 
-    def _build_payload(self, messages: Sequence[LLMMessage]):
+    def _build_payload(self, messages: Sequence[LLMMessage]) -> Dict[str, Any]:
         payload = self._configuration.build_default_payload()
         msgs = []
         for message in messages:

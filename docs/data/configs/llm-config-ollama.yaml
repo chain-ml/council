@@ -1,0 +1,20 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: a-local-deployed-model
+  labels:
+    provider: Ollama
+spec:
+  description: "Model used to do ABC"
+  provider:
+    name: Ollama
+    ollamaSpec:
+      # https://ollama.com/library
+      model: llama3.2
+      keep_alive: 300  # seconds to keep model in memory
+      json_mode: false
+  parameters:
+    temperature: 0
+    seed: 42
+    numCtx: 2048  # context window
+    numPredict: 128  # number of tokens to predict
