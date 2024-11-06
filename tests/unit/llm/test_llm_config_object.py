@@ -1,5 +1,11 @@
 from council import OpenAILLM, AzureLLM, AnthropicLLM, GeminiLLM
-from council.llm import get_llm_from_config, LLMFallback, OpenAIChatGPTConfiguration, OllamaLLM, OllamaLLMConfiguration
+from council.llm import (
+    get_llm_from_config,
+    LLMFallback,
+    OpenAIChatGPTConfiguration,
+    OllamaLLM,
+    OllamaLLMConfiguration,
+)
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
@@ -91,7 +97,7 @@ def test_ollama_from_yaml():
     config: OllamaLLMConfiguration = llm.configuration
     assert config.model.value == "llama3.2"
     assert config.keep_alive_value == 300
-    assert not config.json_mode.value
+    assert config.json_mode.value
     assert config.temperature.value == 0.8
     assert config.repeat_penalty.value == 0.7
     assert config.top_p.value == 0.2

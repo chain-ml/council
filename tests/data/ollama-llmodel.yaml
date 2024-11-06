@@ -11,7 +11,7 @@ spec:
     ollamaSpec:
       model: llama3.2
       keep_alive: 300
-      json_mode: False
+      json_mode: true
   parameters:
     temperature: 0.8
     repeatPenalty: 0.7

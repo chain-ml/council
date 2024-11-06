@@ -12,7 +12,7 @@ spec:
       # https://ollama.com/library
       model: llama3.2
       keep_alive: 300  # seconds to keep model in memory
-      json_mode: False
+      json_mode: false
   parameters:
     temperature: 0
     seed: 42

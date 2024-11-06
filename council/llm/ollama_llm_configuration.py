@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Final, Literal, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Dict, Final, List, Literal, Mapping, Optional, Tuple, Type, Union
 
 from council.utils import Parameter, greater_than_validator, read_env_str, zero_to_one_validator
 
@@ -127,6 +127,11 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         return self._stop
 
     @property
+    def stop_value(self) -> Optional[List[str]]:
+        """Format `stop` parameter. Only single value is supported currently."""
+        return [self.stop.value] if self.stop.value is not None else None
+
+    @property
     def tfs_z(self) -> Parameter[float]:
         """Tail free sampling parameter."""
         return self._tfs_z
@@ -169,7 +174,7 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
             "repeat_penalty": self.repeat_penalty.value,
             "temperature": self.temperature.value,
             "seed": self.seed.value,
-            "stop": self.stop.value,
+            "stop": self.stop_value,
             "tfs_z": self.tfs_z.value,
             "num_predict": self.num_predict.value,
             "top_k": self.top_k.value,
