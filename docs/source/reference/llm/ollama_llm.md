@@ -8,4 +8,5 @@
 
 ```{eval-rst}
 .. autoclass:: council.llm.OllamaLLM
+   :member-order: bysource
 ```

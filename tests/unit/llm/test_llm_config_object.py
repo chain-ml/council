@@ -91,11 +91,14 @@ def test_ollama_from_yaml():
     config: OllamaLLMConfiguration = llm.configuration
     assert config.model.value == "llama3.2"
     assert config.keep_alive_value == 300
+    assert not config.json_mode.value
     assert config.temperature.value == 0.8
     assert config.repeat_penalty.value == 0.7
     assert config.top_p.value == 0.2
     assert config.seed.value == 42
     assert config.mirostat_eta.value == 0.314
+    assert config.num_ctx.value == 4096
+    assert config.num_predict.value == 512
 
     llm = get_llm_from_config(filename)
     assert isinstance(llm, OllamaLLM)

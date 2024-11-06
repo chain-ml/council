@@ -11,9 +11,12 @@ spec:
     ollamaSpec:
       model: llama3.2
       keep_alive: 300
+      json_mode: False
   parameters:
     temperature: 0.8
     repeatPenalty: 0.7
     topP: 0.2
     seed: 42
     mirostatEta: 0.314
+    numCtx: 4096
+    numPredict: 512

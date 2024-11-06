@@ -79,7 +79,7 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
 
         return self._client
 
-    def pull(self):
+    def pull(self) -> Mapping[str, Any]:
         """Download the model from the ollama library."""
         return self.client.pull(model=self.model_name)
 
