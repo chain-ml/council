@@ -10,20 +10,19 @@ _env_var_prefix: Final[str] = "OLLAMA_"
 
 
 class OllamaLLMConfiguration(LLMConfigurationBase):
-    def __init__(
-        self, model: str, keep_alive: Optional[Union[float, str]] = None, format: Literal["", "json"] = ""
-    ) -> None:
+    def __init__(self, model: str, keep_alive: Optional[Union[float, str]] = None, json_mode: bool = False) -> None:
         """
         Initialize a new instance
 
         Args:
             model (str): model name to use from https://ollama.com/library
-
+            keep_alive (Optional[float | str]): ollama keep_alive parameter
+            json_mode (bool): whenever to use json mode, default False
         """
         super().__init__()
         self._model = Parameter.string(name="model", required=True, value=model)
         self._keep_alive = keep_alive
-        self._format = format
+        self._json_mode = Parameter.bool(name="json_mode", required=False, value=json_mode)
 
         # https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
         self._mirostat = Parameter.int(name="mirostat", required=False)
@@ -60,9 +59,14 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         return self._keep_alive
 
     @property
+    def json_mode(self) -> Parameter[bool]:
+        """Whenever to return json. Will be converted into ollama format parameter."""
+        return self._json_mode
+
+    @property
     def format(self) -> Literal["", "json"]:
         """The format to return a response in."""
-        return self._format
+        return "" if not self.json_mode.value else "json"
 
     @property
     def mirostat(self) -> Parameter[int]:
@@ -178,9 +182,9 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         if value is not None:
             config._keep_alive = value
 
-        value = spec.provider.get_value("format")
+        value = spec.provider.get_value("json_mode")
         if value is not None:
-            config._format = value
+            config.json_mode.set(value)
 
         if spec.parameters is not None:
             param_mapping: Mapping[str, Tuple[Parameter, Type]] = {

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Generic, Iterable, Optional, TypeVar, Union
 
-from council.utils import Option, read_env_float, read_env_int, read_env_str
+from council.utils import Option, read_env_bool, read_env_float, read_env_int, read_env_str
 
 T = TypeVar("T")
 Validator = Callable[[T], None]
@@ -208,6 +208,23 @@ class Parameter(Generic[T]):
             required=required,
             value=value,
             converter=read_env_float,
+            default=default,
+            validator=validator,
+        )
+
+    @staticmethod
+    def bool(
+        name: str,
+        required: bool,
+        value: OptionalOrUndefined[bool] = _undefined,
+        default: OptionalOrUndefined[bool] = _undefined,
+        validator: Optional[Validator] = None,
+    ) -> Parameter[bool]:
+        return Parameter(
+            name=name,
+            required=required,
+            value=value,
+            converter=read_env_bool,
             default=default,
             validator=validator,
         )
