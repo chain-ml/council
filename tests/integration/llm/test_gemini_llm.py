@@ -66,3 +66,14 @@ class TestGeminiLLM(unittest.TestCase):
             action = LLMMessage.user_message("What is in the image?")
             result = instance.post_chat_request(LLMContext.empty(), [message, action])
             print(result.first_choice)
+
+    def test_consumptions(self):
+        messages = [LLMMessage.user_message("Hello how are you?")]
+        dotenv.load_dotenv()
+        with OsEnviron("GEMINI_LLM_MODEL", "gemini-1.5-flash-8b"):
+            instance = GeminiLLM.from_env()
+            result = instance.post_chat_request(LLMContext.empty(), messages)
+
+            assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
+            for consumption in result.consumptions:
+                assert consumption.kind.startswith("gemini-1.5-flash-8b")

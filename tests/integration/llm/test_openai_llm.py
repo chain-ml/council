@@ -62,3 +62,19 @@ class TestLlmOpenAI(unittest.TestCase):
         messages = [LLMMessage.user_message("Hello")]
         result = self.llm.post_chat_request(LLMContext.empty(), messages, model="o1-mini")
         print(result.first_choice)
+
+    def test_consumptions(self):
+        messages = [LLMMessage.user_message("Hello how are you?")]
+
+        result = self.llm.post_chat_request(LLMContext.empty(), messages, model="gpt-4o-mini")
+        assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
+        for consumption in result.consumptions:
+            assert consumption.kind.startswith("gpt-4o-mini")
+
+    def test_o1_consumptions(self):
+        messages = [LLMMessage.user_message("Hello how are you?")]
+
+        result = self.llm.post_chat_request(LLMContext.empty(), messages, model="o1-mini")
+        assert len(result.consumptions) == 10  # call, duration, 3 token kinds + reasoning and 4 cost kinds
+        for consumption in result.consumptions:
+            assert consumption.kind.startswith("o1-mini")
