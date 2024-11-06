@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Final, List, Mapping, Optional, Sequence
+from typing import Any, Final, List, Mapping, Optional, Sequence, Union
 
 from council.contexts import Consumption, LLMContext
 from council.llm import (
@@ -69,12 +69,24 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
 
     @property
     def client(self) -> Client:
-        """Ollama Client."""
+        """
+        Ollama Client.
+
+        While self._post_chat_request() focuses on chat-based LLM interactions, you can use the client for broader
+        model management, such as listing, pulling, and deleting models, generating completions and embeddings, etc.
+        See https://github.com/ollama/ollama/blob/main/docs/api.md
+        """
+
         return self._client
 
-    def load(self) -> Mapping[str, Any]:
+    def pull(self):
+        """Download the model from the ollama library."""
+        return self.client.pull(model=self.model_name)
+
+    def load(self, keep_alive: Optional[Union[float, str]] = None) -> Mapping[str, Any]:
         """Load LLM in memory."""
-        return self.client.chat(model=self.model_name, messages=[], keep_alive=self._configuration.keep_alive_value)
+        keep_alive_value = keep_alive if keep_alive is not None else self._configuration.keep_alive_value
+        return self.client.chat(model=self.model_name, messages=[], keep_alive=keep_alive_value)
 
     def unload(self) -> Mapping[str, Any]:
         """Unload LLM from memory."""

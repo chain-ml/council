@@ -38,6 +38,13 @@ class TestOllamaLLM(unittest.TestCase):
 
         assert "Eiffel" in result.first_choice
 
+    def test_pull(self):
+        response = self.llama_32.client.delete(self.llama_32.model_name)
+        assert response["status"] == "success"
+
+        response = self.llama_32.pull()
+        assert response["status"] == "success"
+
     def test_load(self):
         response = self.llama_32.load()
 

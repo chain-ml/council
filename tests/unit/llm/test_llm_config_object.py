@@ -90,7 +90,7 @@ def test_ollama_from_yaml():
 
     config: OllamaLLMConfiguration = llm.configuration
     assert config.model.value == "llama3.2"
-    assert config.keep_alive == 300
+    assert config.keep_alive_value == 300
     assert config.temperature.value == 0.8
     assert config.repeat_penalty.value == 0.7
     assert config.top_p.value == 0.2

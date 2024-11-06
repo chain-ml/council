@@ -61,7 +61,7 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
 
     @property
     def keep_alive_value(self) -> Optional[Union[float, str]]:
-        """Convert keep_alive to a format expected by ollama"""
+        """Convert keep_alive parameter to a format expected by ollama."""
         keep_alive_value = self.keep_alive.value
         if keep_alive_value is None:
             return None
