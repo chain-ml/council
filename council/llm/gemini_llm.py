@@ -5,10 +5,10 @@ from typing import Any, List, Mapping, Optional, Sequence, Tuple
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
 from council.llm import (
+    DefaultLLMConsumptionCalculator,
     GeminiLLMConfiguration,
     LLMBase,
     LLMConfigObject,
-    LLMConsumptionCalculatorBase,
     LLMCostCard,
     LLMCostManagerObject,
     LLMMessage,
@@ -22,7 +22,7 @@ from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
 
-class GeminiConsumptionCalculator(LLMConsumptionCalculatorBase):
+class GeminiConsumptionCalculator(DefaultLLMConsumptionCalculator):
     _cost_manager = LLMCostManagerObject.gemini()
     COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("under_128k")
     COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("over_128k")

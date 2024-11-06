@@ -142,18 +142,18 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
 
         return None
 
-    def get_openai_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
+    def get_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         """
         Get consumptions specific for OpenAI:
             - 1 call
             - specified duration
             - cache_read_prompt, prompt, reasoning, completion and total tokens
-            - costs LLMCostCard can be found
+            - corresponding costs if LLMCostCard can be found
         """
-        consumptions = self.get_openai_base_consumptions(duration, usage) + self.get_openai_cost_consumptions(usage)
+        consumptions = self.get_base_consumptions(duration, usage) + self.get_cost_consumptions(usage)
         return self.filter_zeros(consumptions)  # could occur for cache/reasoning tokens
 
-    def get_openai_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
+    def get_base_consumptions(self, duration: float, usage: Usage) -> List[Consumption]:
         return [
             Consumption.call(1, self.model),
             Consumption.duration(duration, self.model),
@@ -164,7 +164,7 @@ class OpenAIConsumptionCalculator(LLMConsumptionCalculatorBase):
             Consumption.token(usage.total_tokens, self.format_kind(TokenKind.total)),
         ]
 
-    def get_openai_cost_consumptions(self, usage: Usage) -> List[Consumption]:
+    def get_cost_consumptions(self, usage: Usage) -> List[Consumption]:
         cost_card = self.find_model_costs()
         if cost_card is None:
             return []
@@ -226,7 +226,7 @@ class OpenAIChatCompletionsResult:
 
     def to_consumptions(self, duration: float) -> Sequence[Consumption]:
         consumption_calculator = OpenAIConsumptionCalculator(self.model)
-        return consumption_calculator.get_openai_consumptions(duration, self.usage)
+        return consumption_calculator.get_consumptions(duration, self.usage)
 
     @staticmethod
     def from_response(response: Dict[str, Any]) -> OpenAIChatCompletionsResult:

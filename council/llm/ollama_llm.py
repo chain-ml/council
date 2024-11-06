@@ -22,17 +22,25 @@ from ollama._types import Message, Options
 class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
     DURATION_KEYS: Final[List[str]] = ["prompt_eval_duration", "eval_duration", "load_duration", "total_duration"]
 
-    def get_ollama_consumptions(self, duration: float, response: Mapping[str, Any]) -> List[Consumption]:
+    def get_consumptions(self, duration: float, response: Mapping[str, Any]) -> List[Consumption]:
+        """
+        Get consumptions specific for ollama:
+            - 1 call
+            - specified duration
+            - prompt, completion and total tokens if response contains "prompt_eval_count" and "eval_count" keys
+            - ollama durations if response contains DURATION_KEYS.
+        """
+
         return (
-            self.get_ollama_base_consumptions(duration)
-            + self.get_ollama_prompt_consumptions(response)
-            + self.get_ollama_duration_consumptions(response)
+            self.get_base_consumptions(duration)
+            + self.get_prompt_consumptions(response)
+            + self.get_duration_consumptions(response)
         )
 
-    def get_ollama_base_consumptions(self, duration: float) -> List[Consumption]:
+    def get_base_consumptions(self, duration: float) -> List[Consumption]:
         return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
 
-    def get_ollama_prompt_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
+    def get_prompt_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
         if not all(key in response for key in ["prompt_eval_count", "eval_count"]):
             return []
 
@@ -44,7 +52,7 @@ class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
             Consumption.token(prompt_tokens + completion_tokens, self.format_kind(TokenKind.total)),
         ]
 
-    def get_ollama_duration_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
+    def get_duration_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
         if not all(key in response for key in self.DURATION_KEYS):
             return []
 
@@ -121,7 +129,7 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
     @staticmethod
     def _to_consumptions(duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
         calculator = OllamaConsumptionCalculator(response["model"])
-        return calculator.get_ollama_consumptions(duration, response)
+        return calculator.get_consumptions(duration, response)
 
     @staticmethod
     def from_env() -> OllamaLLM:
