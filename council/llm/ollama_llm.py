@@ -105,8 +105,8 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
             )
 
         return LLMResult(
-            choices=self.to_choices(response),
-            consumptions=self.to_consumptions(timer.duration, response),
+            choices=self._to_choices(response),
+            consumptions=self._to_consumptions(timer.duration, response),
             raw_response=dict(response),
         )
 
@@ -115,11 +115,11 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
         return [Message(role=message.role.value, content=message.content) for message in messages]
 
     @staticmethod
-    def to_choices(response: Mapping[str, Any]) -> List[str]:
+    def _to_choices(response: Mapping[str, Any]) -> List[str]:
         return [response["message"]["content"]]
 
     @staticmethod
-    def to_consumptions(duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
+    def _to_consumptions(duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
         calculator = OllamaConsumptionCalculator(response["model"])
         return calculator.get_ollama_consumptions(duration, response)
 
