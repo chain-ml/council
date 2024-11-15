@@ -1,0 +1,15 @@
+kind: LLMCostManager
+version: 0.1
+metadata:
+  name: groq-costs
+  labels:
+    provider: Groq
+    reference: https://groq.com/pricing/
+spec:
+  default:
+    description: |
+      Costs for Groq LLMs
+    models:
+      llama-3.2-1b-preview:
+        input: 0.04
+        output: 0.04
