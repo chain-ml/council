@@ -12,13 +12,12 @@ class TestGroqLLM(unittest.TestCase):
         dotenv.load_dotenv()
         with OsEnviron("GROQ_LLM_MODEL", "llama-3.2-1b-preview"):
             instance = GroqLLM.from_env()
-            context = LLMContext.empty()
-            result = instance.post_chat_request(context, messages)
 
-            assert "Paris" in result.choices[0]
+        result = instance.post_chat_request(LLMContext.empty(), messages)
+        assert "Paris" in result.choices[0]
 
         messages.append(LLMMessage.user_message("give a famous monument of that place"))
-        result = instance.post_chat_request(context, messages)
+        result = instance.post_chat_request(LLMContext.empty(), messages)
 
         assert "Eiffel" in result.choices[0]
 
