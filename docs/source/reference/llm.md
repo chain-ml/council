@@ -23,6 +23,7 @@ Currently supported providers include:
 - Anthropic's Claude - {class}`~council.llm.AnthropicLLM`
 - Google's Gemini - {class}`~council.llm.GeminiLLM`
 - Microsoft's Azure - {class}`~council.llm.AzureLLM`
+- Groq - {class}`~council.llm.GroqLLM`
 - and local models with [ollama](https://ollama.com/) - {class}`~council.llm.OllamaLLM`
 
 ```{eval-rst}

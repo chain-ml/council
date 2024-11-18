@@ -1,0 +1,18 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: a-groq-deployed-model
+  labels:
+    provider: Groq
+spec:
+  description: "Model used to do UVW"
+  provider:
+    name: Groq
+    groqSpec:
+      # https://console.groq.com/docs/models
+      model: llama-3.2-1b-preview
+      apiKey:
+        fromEnvVar: GROQ_API_KEY
+  parameters:
+    n: 1
+    temperature: 0
