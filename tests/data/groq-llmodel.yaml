@@ -13,4 +13,9 @@ spec:
       apiKey:
         fromEnvVar: GROQ_API_KEY
   parameters:
+    frequencyPenalty: 0.7
+    maxTokens: 24
+    presencePenalty: -0.4
+    seed: 42
     temperature: 0.5
+    topP: 0.1

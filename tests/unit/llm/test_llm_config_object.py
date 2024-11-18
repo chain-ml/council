@@ -5,6 +5,8 @@ from council.llm import (
     OpenAIChatGPTConfiguration,
     OllamaLLM,
     OllamaLLMConfiguration,
+    GroqLLM,
+    GroqLLMConfiguration,
 )
 from council.llm.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
@@ -108,3 +110,23 @@ def test_ollama_from_yaml():
 
     llm = get_llm_from_config(filename)
     assert isinstance(llm, OllamaLLM)
+
+
+def test_groq_from_yaml():
+    filename = get_data_filename(LLModels.Groq)
+
+    with OsEnviron("GROQ_API_KEY", "a-key"):
+        actual = LLMConfigObject.from_yaml(filename)
+        llm = GroqLLM.from_config(actual)
+        assert isinstance(llm, GroqLLM)
+        config: GroqLLMConfiguration = llm.configuration
+        assert config.model.value == "llama-3.2-1b-preview"
+        assert config.frequency_penalty.value == 0.7
+        assert config.max_tokens.value == 24
+        assert config.presence_penalty.value == -0.4
+        assert config.seed.value == 42
+        assert config.temperature.value == 0.5
+        assert config.top_p.value == 0.1
+
+        llm = get_llm_from_config(filename)
+        assert isinstance(llm, GroqLLM)
