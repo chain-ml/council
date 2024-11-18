@@ -17,9 +17,29 @@ def greater_than_validator(value: int) -> Validator:
     return validator
 
 
+def positive_validator(x: float) -> None:
+    if x <= 0.0:
+        raise ValueError("must be positive")
+
+
+def a_to_b_validator(a: float, b: float) -> Validator:
+    def validator(x: float) -> None:
+        if x < a or x > b:
+            raise ValueError(f"must be in the range [{a}..{b}]")
+
+    return validator
+
+
 def zero_to_one_validator(x: float) -> None:
-    if x < 0.0 or x > 1.0:
-        raise ValueError("must be in the range [0.0..1.0]")
+    return a_to_b_validator(0.0, 1.0)(x)
+
+
+def zero_to_two_validator(x: float) -> None:
+    return a_to_b_validator(0.0, 2.0)(x)
+
+
+def penalty_validator(x: float) -> None:
+    return a_to_b_validator(-2.0, 2.0)(x)
 
 
 def prefix_validator(value: str) -> Validator:
