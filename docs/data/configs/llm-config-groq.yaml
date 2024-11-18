@@ -14,4 +14,6 @@ spec:
       apiKey:
         fromEnvVar: GROQ_API_KEY
   parameters:
+    maxTokens: 128
+    seed: 42
     temperature: 0
