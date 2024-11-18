@@ -82,7 +82,8 @@ class GroqLLM(LLMBase[GroqLLMConfiguration]):
             response = self._client.chat.completions.create(
                 messages=formatted_messages,
                 model=self._configuration.model_name(),
-                temperature=self._configuration.temperature.value,
+                **self._configuration.params_to_args(),
+                **kwargs,
             )
 
         return LLMResult(

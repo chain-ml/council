@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Final, List, Mapping, Optional, Tuple, Type
+from typing import Any, Dict, Final, Mapping, Tuple, Type
 
 from council.utils import (
     Parameter,
@@ -92,11 +92,6 @@ class GroqLLMConfiguration(LLMConfigurationBase):
         return self._stop
 
     @property
-    def stop_value(self) -> Optional[List[str]]:
-        """Format `stop` parameter. Only single value is supported currently."""
-        return [self.stop.value] if self.stop.value is not None else None
-
-    @property
     def temperature(self) -> Parameter[float]:
         """
         What sampling temperature to use, between 0 and 2.
@@ -107,6 +102,18 @@ class GroqLLMConfiguration(LLMConfigurationBase):
     def top_p(self) -> Parameter[float]:
         """Nucleus sampling threshold."""
         return self._top_p
+
+    def params_to_args(self) -> Dict[str, Any]:
+        """Convert parameters to options dict"""
+        return {
+            "frequency_penalty": self.frequency_penalty.value,
+            "max_tokens": self.max_tokens.value,
+            "presence_penalty": self.presence_penalty.value,
+            "seed": self.seed.value,
+            "stop": self.stop.value,
+            "temperature": self.temperature.value,
+            "top_p": self.top_p.value,
+        }
 
     @staticmethod
     def from_env() -> GroqLLMConfiguration:
