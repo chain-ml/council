@@ -37,7 +37,7 @@ class GroqConsumptionCalculator(DefaultLLMConsumptionCalculator):
     # TODO: naming
     def get_groq_consumptions(self, duration: float, usage: Optional[CompletionUsage]) -> List[Consumption]:
         if usage is None:
-            return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
+            return self.get_default_consumptions(duration)
 
         prompt_tokens = usage.prompt_tokens
         completion_tokens = usage.completion_tokens

@@ -89,6 +89,10 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         """Each calculator will implement with its own parameters."""
         pass
 
+    def get_default_consumptions(self, duration: float) -> List[Consumption]:
+        """1 call and specified duration consumptions. To use when token info is not available"""
+        return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
+
     @abc.abstractmethod
     def find_model_costs(self) -> Optional[LLMCostCard]:
         """Get LLMCostCard for self to calculate cost consumptions."""
