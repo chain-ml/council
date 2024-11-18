@@ -86,7 +86,9 @@ class GroqLLM(LLMBase[GroqLLMConfiguration]):
             )
 
         return LLMResult(
-            choices=self._to_choices(response.choices), consumptions=self._to_consumptions(timer.duration, response)
+            choices=self._to_choices(response.choices),
+            consumptions=self._to_consumptions(timer.duration, response),
+            raw_response=response.to_dict(),
         )
 
     @staticmethod
