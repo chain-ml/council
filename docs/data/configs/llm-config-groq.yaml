@@ -14,5 +14,4 @@ spec:
       apiKey:
         fromEnvVar: GROQ_API_KEY
   parameters:
-    n: 1
     temperature: 0
