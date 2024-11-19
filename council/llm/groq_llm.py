@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext
 from council.llm import (
@@ -48,15 +48,18 @@ class GroqConsumptionCalculator(DefaultLLMConsumptionCalculatorHelper):
 
     def get_duration_consumptions(self, usage: CompletionUsage) -> List[Consumption]:
         """Optional duration consumptions specific to Groq."""
+        usage_times: Dict[str, Optional[float]] = {
+            "queue_time": usage.queue_time,
+            "prompt_time": usage.prompt_time,
+            "completion_time": usage.completion_time,
+            "total_time": usage.total_time,
+        }
+
         consumptions = []
-        if usage.queue_time is not None:
-            consumptions.append(Consumption.duration(usage.queue_time, f"{self.model}:groq_queue_time"))
-        if usage.prompt_time is not None:
-            consumptions.append(Consumption.duration(usage.prompt_time, f"{self.model}:groq_prompt_time"))
-        if usage.completion_time is not None:
-            consumptions.append(Consumption.duration(usage.completion_time, f"{self.model}:groq_completion_time"))
-        if usage.total_time is not None:
-            consumptions.append(Consumption.duration(usage.total_time, f"{self.model}:groq_total_time"))
+        for key, value in usage_times.items():
+            if value is not None:
+                consumptions.append(Consumption.duration(value, f"{self.model}:groq_{key}"))
+
         return consumptions
 
     def find_model_costs(self) -> Optional[LLMCostCard]:
