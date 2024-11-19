@@ -103,21 +103,7 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         return list(filter(lambda consumption: consumption.value > 0, consumptions))
 
 
-class DefaultLLMConsumptionCalculator(LLMConsumptionCalculatorBase, abc.ABC):
-    def get_consumptions(self, duration: float, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
-        """
-        Get default consumptions:
-            - 1 call
-            - specified duration
-            - prompt, completion and total tokens
-            - corresponding costs if LLMCostCard can be found.
-        """
-        base_consumptions = self.get_base_consumptions(
-            duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
-        )
-        cost_consumptions = self.get_cost_consumptions(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
-        return base_consumptions + cost_consumptions
-
+class DefaultLLMConsumptionCalculatorHelper(LLMConsumptionCalculatorBase, abc.ABC):
     def get_base_consumptions(
         self, duration: float, *, prompt_tokens: int, completion_tokens: int
     ) -> List[Consumption]:
@@ -140,6 +126,22 @@ class DefaultLLMConsumptionCalculator(LLMConsumptionCalculatorBase, abc.ABC):
             Consumption.cost(completion_tokens_cost, self.format_kind(TokenKind.completion, cost=True)),
             Consumption.cost(prompt_tokens_cost + completion_tokens_cost, self.format_kind(TokenKind.total, cost=True)),
         ]
+
+
+class DefaultLLMConsumptionCalculator(DefaultLLMConsumptionCalculatorHelper, abc.ABC):
+    def get_consumptions(self, duration: float, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """
+        Get default consumptions:
+            - 1 call
+            - specified duration
+            - prompt, completion and total tokens
+            - corresponding costs if LLMCostCard can be found.
+        """
+        base_consumptions = self.get_base_consumptions(
+            duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
+        )
+        cost_consumptions = self.get_cost_consumptions(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return base_consumptions + cost_consumptions
 
 
 class LLMCostManagerSpec(DataObjectSpecBase):

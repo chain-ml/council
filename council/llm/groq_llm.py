@@ -4,7 +4,7 @@ from typing import Any, List, Mapping, Optional, Sequence
 
 from council.contexts import Consumption, LLMContext
 from council.llm import (
-    DefaultLLMConsumptionCalculator,
+    DefaultLLMConsumptionCalculatorHelper,
     GroqLLMConfiguration,
     LLMBase,
     LLMConfigObject,
@@ -27,15 +27,14 @@ from groq.types.chat import (
 from groq.types.chat.chat_completion import ChatCompletion, Choice
 
 
-class GroqConsumptionCalculator(DefaultLLMConsumptionCalculator):
+class GroqConsumptionCalculator(DefaultLLMConsumptionCalculatorHelper):
     _cost_manager = LLMCostManagerObject.groq()
     COSTS: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("default")
 
     def __init__(self, model: str) -> None:
         super().__init__(model)
 
-    # TODO: naming
-    def get_groq_consumptions(self, duration: float, usage: Optional[CompletionUsage]) -> List[Consumption]:
+    def get_consumptions(self, duration: float, usage: Optional[CompletionUsage]) -> List[Consumption]:
         if usage is None:
             return self.get_default_consumptions(duration)
 
@@ -113,7 +112,7 @@ class GroqLLM(LLMBase[GroqLLMConfiguration]):
     @staticmethod
     def _to_consumptions(duration: float, response: ChatCompletion) -> Sequence[Consumption]:
         calculator = GroqConsumptionCalculator(response.model)
-        return calculator.get_groq_consumptions(duration, response.usage)
+        return calculator.get_consumptions(duration, response.usage)
 
     @staticmethod
     def from_env() -> GroqLLM:
