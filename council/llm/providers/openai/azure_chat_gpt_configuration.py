@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Final, Optional
 
-from council.llm import ChatGPTConfigurationBase
-from council.llm.llm_config_object import LLMConfigSpec
+from council.llm import LLMConfigSpec
 from council.utils import Parameter, greater_than_validator, not_empty_validator, read_env_str
+
+from .chat_gpt_configuration import ChatGPTConfigurationBase
 
 _env_var_prefix: Final[str] = "AZURE_"
 

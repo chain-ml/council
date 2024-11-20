@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Mapping, Optional, Protocol, Sequence
 import httpx
 from council.contexts import Consumption, LLMContext
 from council.llm import (
-    ChatGPTConfigurationBase,
     LLMBase,
     LLMCallException,
     LLMConsumptionCalculatorBase,
@@ -17,6 +16,8 @@ from council.llm import (
     TokenKind,
 )
 from council.utils.utils import DurationManager, truncate_dict_values_to_str
+
+from .chat_gpt_configuration import ChatGPTConfigurationBase
 
 
 class Provider(Protocol):

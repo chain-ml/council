@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Any, Optional
 
 import httpx
+from council.llm import LLMCallException, LLMCallTimeoutException, LLMConfigObject, LLMProviders
 from httpx import HTTPStatusError, TimeoutException
 
-from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel
 from .azure_chat_gpt_configuration import AzureChatGPTConfiguration
-from .llm_config_object import LLMConfigObject, LLMProviders
+from .openai_chat_completions_llm import OpenAIChatCompletionsModel
 
 
 class AzureOpenAIChatCompletionsModelProvider:
