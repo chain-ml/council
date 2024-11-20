@@ -5,7 +5,6 @@ from typing import Any, List, Mapping, Optional, Sequence
 from anthropic import Anthropic, APIStatusError, APITimeoutError
 from council.contexts import Consumption, LLMContext
 from council.llm import (
-    AnthropicLLMConfiguration,
     LLMBase,
     LLMCallException,
     LLMCallTimeoutException,
@@ -23,6 +22,7 @@ from council.utils.utils import DurationManager
 
 from .anthropic import AnthropicAPIClientWrapper, Usage
 from .anthropic_completion_llm import AnthropicCompletionLLM
+from .anthropic_llm_configuration import AnthropicLLMConfiguration
 from .anthropic_messages_llm import AnthropicMessagesLLM
 
 

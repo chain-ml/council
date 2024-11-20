@@ -2,8 +2,10 @@ from typing import Sequence
 
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
-from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
-from council.llm.anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper
+from council.llm import LLMMessage, LLMMessageRole
+
+from .anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper
+from .anthropic_llm_configuration import AnthropicLLMConfiguration
 
 _HUMAN_TURN = Anthropic.HUMAN_PROMPT
 _ASSISTANT_TURN = Anthropic.AI_PROMPT

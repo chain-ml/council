@@ -5,9 +5,11 @@ from typing import Any, Dict, Iterable, List, Literal, Sequence
 from anthropic import Anthropic
 from anthropic._types import NOT_GIVEN
 from anthropic.types import MessageParam, TextBlock
-from council.llm import AnthropicLLMConfiguration, LLMMessage, LLMMessageRole
-from council.llm.anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper, Usage
+from council.llm import LLMMessage, LLMMessageRole
 from council.llm.llm_message import LLMCacheControlData
+
+from .anthropic import AnthropicAPIClientResult, AnthropicAPIClientWrapper, Usage
+from .anthropic_llm_configuration import AnthropicLLMConfiguration
 
 
 class AnthropicMessagesLLM(AnthropicAPIClientWrapper):

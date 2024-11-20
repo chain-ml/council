@@ -1,7 +1,7 @@
 import unittest
 
 from council.llm import LLMMessage
-from council.llm.anthropic_completion_llm import AnthropicCompletionLLM
+from council.llm.providers.anthropic.anthropic_completion_llm import AnthropicCompletionLLM
 
 
 class TestAnthropicLLM(unittest.TestCase):

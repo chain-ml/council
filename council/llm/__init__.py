@@ -52,10 +52,10 @@ from .azure_llm import AzureLLM
 from .openai_chat_gpt_configuration import OpenAIChatGPTConfiguration
 from .openai_llm import OpenAILLM
 
-from .anthropic_llm_configuration import AnthropicLLMConfiguration
-from .anthropic_llm import AnthropicLLM
 
 from .providers import (
+    AnthropicLLM,
+    AnthropicLLMConfiguration,
     GeminiLLM,
     GeminiLLMConfiguration,
     GroqLLM,
