@@ -60,7 +60,7 @@ class LLMResult:
 
 class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     """
-    Abstract base class representing a language model.
+    Abstract base class representing chat LLM.
     """
 
     def __init__(

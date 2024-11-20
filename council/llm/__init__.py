@@ -59,6 +59,7 @@ from .providers import (
 
 
 def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
+    """Get default LLM based on `COUNCIL_DEFAULT_LLM_PROVIDER` env variable."""
     provider = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
     provider = provider.lower() + "spec"
     llm: Optional[LLMBase] = None
@@ -86,6 +87,7 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
 
 
 def get_llm_from_config(filename: str) -> LLMBase:
+    """Get LLM from a yaml LLMConfigObject file."""
     llm_config = LLMConfigObject.from_yaml(filename)
 
     llm = _build_llm(llm_config)
