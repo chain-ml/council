@@ -8,7 +8,7 @@ from tests import get_data_filename
 from .. import LLMPrompts
 
 
-class TestLLMFallBack(unittest.TestCase):
+class TestLLMPromptConfig(unittest.TestCase):
     def test_llm_prompt_from_yaml(self):
         filename = get_data_filename(LLMPrompts.sample)
         actual = LLMPromptConfigObject.from_yaml(filename)
