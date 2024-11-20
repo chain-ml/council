@@ -2,34 +2,7 @@ from abc import ABC
 from typing import Any, Dict, Optional
 
 from council.llm.llm_base import LLMConfigurationBase
-from council.utils import Parameter
-
-
-def _tv(x: float):
-    """
-    Temperature Validator
-    Sampling temperature to use, between 0. and 2.
-    """
-    if x < 0.0 or x > 2.0:
-        raise ValueError("must be in the range [0.0..2.0]")
-
-
-def _pv(x: float):
-    """
-    Penalty Validator
-    Penalty must be between -2.0 and 2.0
-    """
-    if x < -2.0 or x > 2.0:
-        raise ValueError("must be in the range [-2.0..2.0]")
-
-
-def _mtv(x: int):
-    """
-    Max Token Validator
-    Must be positive
-    """
-    if x <= 0:
-        raise ValueError("must be positive")
+from council.utils import Parameter, penalty_validator, positive_validator, zero_to_one_validator, zero_to_two_validator
 
 
 class ChatGPTConfigurationBase(LLMConfigurationBase, ABC):
@@ -38,12 +11,14 @@ class ChatGPTConfigurationBase(LLMConfigurationBase, ABC):
     """
 
     def __init__(self) -> None:
-        self._temperature = Parameter.float(name="temperature", required=False, default=0.0, validator=_tv)
-        self._max_tokens = Parameter.int(name="max_tokens", required=False, validator=_mtv)
-        self._top_p = Parameter.float(name="top_p", required=False)
-        self._n = Parameter.int(name="n", required=False, default=1)
-        self._presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=_pv)
-        self._frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=_pv)
+        self._temperature = Parameter.float(
+            name="temperature", required=False, default=0.0, validator=zero_to_two_validator
+        )
+        self._max_tokens = Parameter.int(name="max_tokens", required=False, validator=positive_validator)
+        self._top_p = Parameter.float(name="top_p", required=False, validator=zero_to_one_validator)
+        self._n = Parameter.int(name="n", required=False, default=1, validator=positive_validator)
+        self._presence_penalty = Parameter.float(name="presence_penalty", required=False, validator=penalty_validator)
+        self._frequency_penalty = Parameter.float(name="frequency_penalty", required=False, validator=penalty_validator)
 
     @property
     def temperature(self) -> Parameter[float]:

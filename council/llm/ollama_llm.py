@@ -32,13 +32,10 @@ class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
         """
 
         return (
-            self.get_base_consumptions(duration)
+            self.get_default_consumptions(duration)
             + self.get_prompt_consumptions(response)
             + self.get_duration_consumptions(response)
         )
-
-    def get_base_consumptions(self, duration: float) -> List[Consumption]:
-        return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
 
     def get_prompt_consumptions(self, response: Mapping[str, Any]) -> List[Consumption]:
         if not all(key in response for key in ["prompt_eval_count", "eval_count"]):

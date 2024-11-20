@@ -5,6 +5,7 @@ class LLModels:
     AzureWithFallback: str = "azure-with-fallback-llmodel.yaml"
     Gemini: str = "gemini-llmodel.yaml"
     Ollama: str = "ollama-llmodel.yaml"
+    Groq: str = "groq-llmodel.yaml"
 
 
 class LLMPrompts:

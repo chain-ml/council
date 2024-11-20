@@ -13,6 +13,7 @@ from .llm_cost import (
     LLMCostCard,
     LLMConsumptionCalculatorBase,
     DefaultLLMConsumptionCalculator,
+    DefaultLLMConsumptionCalculatorHelper,
     TokenKind,
     LLMCostManagerSpec,
     LLMCostManagerObject,
@@ -61,6 +62,9 @@ from .gemini_llm import GeminiLLM
 from .ollama_llm_configuration import OllamaLLMConfiguration
 from .ollama_llm import OllamaLLM
 
+from .groq_llm_configuration import GroqLLMConfiguration
+from .groq_llm import GroqLLM
+
 
 def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
     provider = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
@@ -77,6 +81,8 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
         llm = GeminiLLM.from_env()
     elif provider == LLMProviders.Ollama.lower():
         llm = OllamaLLM.from_env()
+    elif provider == LLMProviders.Groq.lower():
+        llm = GroqLLM.from_env()
 
     if llm is None:
         raise ValueError(f"Provider {provider} not supported by Council.")
@@ -111,5 +117,7 @@ def _build_llm(llm_config: LLMConfigObject) -> LLMBase:
         return GeminiLLM.from_config(llm_config)
     elif provider.is_of_kind(LLMProviders.Ollama):
         return OllamaLLM.from_config(llm_config)
+    elif provider.is_of_kind(LLMProviders.Groq):
+        return GroqLLM.from_config(llm_config)
 
     raise ValueError(f"Provider `{provider.kind}` not supported by Council")

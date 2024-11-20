@@ -52,6 +52,13 @@ Or use `council.llm.get_llm_from_config` to determine provider class automatical
     :language: yaml
 ```
 
+## Groq Config Example
+
+```{eval-rst}
+.. literalinclude:: ../../../data/configs/llm-config-groq.yaml
+    :language: yaml
+```
+
 ## Azure Config Example
 
 ```{eval-rst}

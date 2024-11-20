@@ -13,6 +13,7 @@ DATA_PATH: Final[str] = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 ANTHROPIC_COSTS_FILENAME: Final[str] = "anthropic-costs.yaml"
 GEMINI_COSTS_FILENAME: Final[str] = "gemini-costs.yaml"
 OPENAI_COSTS_FILENAME: Final[str] = "openai-costs.yaml"
+GROQ_COSTS_FILENAME: Final[str] = "groq-costs.yaml"
 
 
 class LLMCostCard:
@@ -88,6 +89,10 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         """Each calculator will implement with its own parameters."""
         pass
 
+    def get_default_consumptions(self, duration: float) -> List[Consumption]:
+        """1 call and specified duration consumptions. To use when token info is not available"""
+        return [Consumption.call(1, self.model), Consumption.duration(duration, self.model)]
+
     @abc.abstractmethod
     def find_model_costs(self) -> Optional[LLMCostCard]:
         """Get LLMCostCard for self to calculate cost consumptions."""
@@ -98,21 +103,7 @@ class LLMConsumptionCalculatorBase(abc.ABC):
         return list(filter(lambda consumption: consumption.value > 0, consumptions))
 
 
-class DefaultLLMConsumptionCalculator(LLMConsumptionCalculatorBase, abc.ABC):
-    def get_consumptions(self, duration: float, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
-        """
-        Get default consumptions:
-            - 1 call
-            - specified duration
-            - prompt, completion and total tokens
-            - corresponding costs if LLMCostCard can be found.
-        """
-        base_consumptions = self.get_base_consumptions(
-            duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
-        )
-        cost_consumptions = self.get_cost_consumptions(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
-        return base_consumptions + cost_consumptions
-
+class DefaultLLMConsumptionCalculatorHelper(LLMConsumptionCalculatorBase, abc.ABC):
     def get_base_consumptions(
         self, duration: float, *, prompt_tokens: int, completion_tokens: int
     ) -> List[Consumption]:
@@ -135,6 +126,22 @@ class DefaultLLMConsumptionCalculator(LLMConsumptionCalculatorBase, abc.ABC):
             Consumption.cost(completion_tokens_cost, self.format_kind(TokenKind.completion, cost=True)),
             Consumption.cost(prompt_tokens_cost + completion_tokens_cost, self.format_kind(TokenKind.total, cost=True)),
         ]
+
+
+class DefaultLLMConsumptionCalculator(DefaultLLMConsumptionCalculatorHelper, abc.ABC):
+    def get_consumptions(self, duration: float, *, prompt_tokens: int, completion_tokens: int) -> List[Consumption]:
+        """
+        Get default consumptions:
+            - 1 call
+            - specified duration
+            - prompt, completion and total tokens
+            - corresponding costs if LLMCostCard can be found.
+        """
+        base_consumptions = self.get_base_consumptions(
+            duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
+        )
+        cost_consumptions = self.get_cost_consumptions(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return base_consumptions + cost_consumptions
 
 
 class LLMCostManagerSpec(DataObjectSpecBase):
@@ -196,6 +203,11 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
     def openai():
         """Get LLMCostManager for OpenAI models"""
         return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, OPENAI_COSTS_FILENAME))
+
+    @staticmethod
+    def groq():
+        """Get LLMCostManager for Groq models"""
+        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, GROQ_COSTS_FILENAME))
 
     def get_cost_map(self, category: str) -> Dict[str, LLMCostCard]:
         """Get cost mapping {model: LLMCostCard} for a given category"""

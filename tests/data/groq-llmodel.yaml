@@ -1,0 +1,21 @@
+kind: LLMConfig
+version: 0.1
+metadata:
+  name: an-groq-deployed-model
+  labels:
+    provider: Groq
+spec:
+  description: "Model used to do DEF"
+  provider:
+    name: CML-Groq
+    groqSpec:
+      model: llama-3.2-1b-preview
+      apiKey:
+        fromEnvVar: GROQ_API_KEY
+  parameters:
+    frequencyPenalty: 0.7
+    maxTokens: 24
+    presencePenalty: -0.4
+    seed: 42
+    temperature: 0.5
+    topP: 0.1
