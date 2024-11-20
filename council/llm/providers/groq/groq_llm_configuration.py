@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Final, Mapping, Tuple, Type
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import (
     Parameter,
     not_empty_validator,
@@ -11,8 +12,6 @@ from council.utils import (
     zero_to_one_validator,
     zero_to_two_validator,
 )
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "GROQ_"
 

@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 from council.contexts import Consumption, LLMContext
 from council.llm import (
     DefaultLLMConsumptionCalculatorHelper,
-    GroqLLMConfiguration,
     LLMBase,
     LLMConfigObject,
     LLMCostCard,
@@ -25,6 +24,8 @@ from groq.types.chat import (
     ChatCompletionUserMessageParam,
 )
 from groq.types.chat.chat_completion import ChatCompletion, Choice
+
+from .groq_llm_configuration import GroqLLMConfiguration
 
 
 class GroqConsumptionCalculator(DefaultLLMConsumptionCalculatorHelper):

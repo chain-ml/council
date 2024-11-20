@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Final, List, Literal, Mapping, Optional, Tuple, Type, Union
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import Parameter, greater_than_validator, read_env_str, zero_to_one_validator
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "OLLAMA_"
 

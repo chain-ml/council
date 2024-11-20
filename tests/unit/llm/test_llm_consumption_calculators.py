@@ -2,8 +2,8 @@ import unittest
 
 from council.llm import CodeBlocksResponseParser, LLMFunction
 from council.llm.anthropic_llm import AnthropicConsumptionCalculator, Usage as AnthropicUsage
-from council.llm.gemini_llm import GeminiConsumptionCalculator
 from council.llm.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage as OpenAIUsage
+from council.llm.providers.gemini.gemini_llm import GeminiConsumptionCalculator
 from council.mocks import MockLLM, MockMultipleResponses
 
 

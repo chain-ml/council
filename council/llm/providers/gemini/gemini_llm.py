@@ -6,7 +6,6 @@ import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
 from council.llm import (
     DefaultLLMConsumptionCalculator,
-    GeminiLLMConfiguration,
     LLMBase,
     LLMConfigObject,
     LLMCostCard,
@@ -20,6 +19,8 @@ from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
+
+from .gemini_llm_configuration import GeminiLLMConfiguration
 
 
 class GeminiConsumptionCalculator(DefaultLLMConsumptionCalculator):

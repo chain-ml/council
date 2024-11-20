@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase
 from council.utils import (
     Parameter,
     greater_than_validator,
@@ -10,8 +11,6 @@ from council.utils import (
     read_env_str,
     zero_to_one_validator,
 )
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "GEMINI_"
 

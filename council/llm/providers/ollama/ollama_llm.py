@@ -11,12 +11,13 @@ from council.llm import (
     LLMMessage,
     LLMProviders,
     LLMResult,
-    OllamaLLMConfiguration,
     TokenKind,
 )
 from council.utils.utils import DurationManager
 from ollama import Client
 from ollama._types import Message, Options
+
+from .ollama_llm_configuration import OllamaLLMConfiguration
 
 
 class OllamaConsumptionCalculator(LLMConsumptionCalculatorBase):
