@@ -77,7 +77,7 @@ class TestLLMDataset(unittest.TestCase):
 
         with TemporaryDirectory() as tmp_dir:
             output_path = os.path.join(tmp_dir, "batch.jsonl")
-            dataset.save_jsonl_request(output_path, "gpt-4o-mini")
+            dataset.save_jsonl_requests(output_path, "gpt-4o-mini")
 
             self.assertTrue(os.path.exists(output_path))
             saved_data = LLMDatasetObject.read_jsonl(output_path)

@@ -153,6 +153,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         """
         Save the dataset as JSONL messages file(s), optionally splitting into training and validation sets.
         JSONL file then can be used for fine-tuning.
+        See https://platform.openai.com/docs/guides/fine-tuning.
 
         Args:
             path: Base path for saving the file(s)
@@ -185,9 +186,10 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         self._save_jsonl(f"{base_path}_train.jsonl", train_lines)
         self._save_jsonl(f"{base_path}_val.jsonl", val_lines)
 
-    def save_jsonl_request(self, path: str, model: str, url: str = "/v1/chat/completions") -> None:
+    def save_jsonl_requests(self, path: str, model: str, url: str = "/v1/chat/completions") -> None:
         """
         Save the dataset as JSONL request file, which can be used for batch API.
+        See https://platform.openai.com/docs/guides/batch.
 
         Args:
             path: Path to the output file
