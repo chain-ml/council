@@ -2,11 +2,11 @@ import unittest
 
 from council.llm import CodeBlocksResponseParser, LLMFunction
 from council.llm.providers.anthropic.anthropic_llm import AnthropicConsumptionCalculator, Usage as AnthropicUsage
-from council.llm.providers.gemini.gemini_llm import GeminiConsumptionCalculator
+from council.llm.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
 from council.llm.providers.openai.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage as OpenAIUsage
 from council.mocks import MockLLM, MockMultipleResponses
 
-
+# TODO: groq tests
 class TestAnthropicConsumptionCalculator(unittest.TestCase):
     def test_all_cache_models_have_base_costs(self):
         calculator = AnthropicConsumptionCalculator("model")

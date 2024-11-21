@@ -1,41 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
-from council.llm import (
-    DefaultLLMConsumptionCalculator,
-    LLMBase,
-    LLMConfigObject,
-    LLMCostCard,
-    LLMCostManagerObject,
-    LLMMessage,
-    LLMMessageRole,
-    LLMProviders,
-    LLMResult,
-)
+from council.llm import LLMBase, LLMConfigObject, LLMMessage, LLMMessageRole, LLMProviders, LLMResult
 from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
 from .gemini_llm_configuration import GeminiLLMConfiguration
-
-
-class GeminiConsumptionCalculator(DefaultLLMConsumptionCalculator):
-    _cost_manager = LLMCostManagerObject.gemini()
-    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("under_128k")
-    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("over_128k")
-
-    def __init__(self, model: str, num_tokens: int) -> None:
-        super().__init__(model)
-        self.num_tokens = num_tokens
-
-    def find_model_costs(self) -> Optional[LLMCostCard]:
-        if self.num_tokens <= 128_000:
-            return self.COSTS_UNDER_128k.get(self.model)
-        return self.COSTS_OVER_128k.get(self.model)
+from .gemini_llm_cost import GeminiConsumptionCalculator
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
