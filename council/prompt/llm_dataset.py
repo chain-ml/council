@@ -10,6 +10,10 @@ from council.utils import DataObject, DataObjectSpecBase
 
 
 class LLMDatasetMessage:
+    """
+    Represents a single chat message in a conversation.
+    """
+
     def __init__(self, role: str, content: str):
         self.role = role
         self.content = content.strip()
@@ -27,6 +31,10 @@ class LLMDatasetMessage:
 
 
 class LLMDatasetConversation:
+    """
+    Represents a conversation between user and assistant with optional labels.
+    """
+
     def __init__(self, messages: List[Dict[str, str]], labels: Optional[Mapping[str, str]]):
         self.messages = [LLMDatasetMessage(msg["role"], msg["content"]) for msg in messages]
         self.labels: Dict[str, str] = dict(labels) if labels is not None else {}
@@ -122,8 +130,8 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
                 for label_key, label_value in conversation.labels.items():
                     label_counters[label_key][label_value] += 1
         return label_counters
-
-    def to_jsonl_format(self) -> List[Dict[str, List[Dict[str, str]]]]:
+    
+    def to_jsonl_messages(self) -> List[Dict[str, List[Dict[str, str]]]]:
         """
         Convert the dataset to JSONL format with OpenAI messages structure.
         Returns a list of dictionaries containing messages.
@@ -139,15 +147,10 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
 
         return jsonl_lines
 
-    @staticmethod
-    def _save_jsonl(filename: str, lines: List[Dict[str, Any]]) -> None:
-        with open(filename, "w", encoding="utf-8") as f:
-            for line in lines:
-                f.write(json.dumps(line) + "\n")
-
-    def save_jsonl(self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None) -> None:
+    def save_jsonl_messages(self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None) -> None:
         """
-        Save the dataset as JSONL file(s), optionally splitting into training and validation sets.
+        Save the dataset as JSONL messages file(s), optionally splitting into training and validation sets.
+        JSONL file then can be used for fine-tuning.
 
         Args:
             path: Base path for saving the file(s)
@@ -163,7 +166,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
             dataset.save_jsonl("my_dataset.jsonl", random_seed=42, val_split=0.2)
         """
 
-        jsonl_lines = self.to_jsonl_format()
+        jsonl_lines = self.to_jsonl_messages()
         if random_seed is not None:
             random.seed(random_seed)
             random.shuffle(jsonl_lines)
@@ -179,3 +182,41 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
 
         self._save_jsonl(f"{base_path}_train.jsonl", train_lines)
         self._save_jsonl(f"{base_path}_val.jsonl", val_lines)
+
+
+    def save_jsonl_request(self, path: str, model: str, url: str = "/v1/chat/completions") -> None:
+        """
+        Save the dataset as JSONL request file, which can be used for batch API.
+
+        Args:
+            path: Path to the output file
+            model: OpenAI model name
+            url: OpenAI API URL (default: "/v1/chat/completions")
+
+        Examples:
+            dataset.save_jsonl_request("my_batch.jsonl", "gpt-4o-mini")
+        """
+        messages_lines = self.to_jsonl_messages()
+
+        request_lines = [{"custom_id": f"request-{i}", "method": "POST", "url": url, "body": {"model": model, "messages": message_line["messages"]}} 
+                         for i, message_line in enumerate(messages_lines)]
+
+        self._save_jsonl(path, request_lines)
+
+    @staticmethod
+    def _save_jsonl(filename: str, lines: List[Dict[str, Any]]) -> None:
+        """Helper method to save lines to JSONL file."""
+        with open(filename, "w", encoding="utf-8") as f:
+            for line in lines:
+                f.write(json.dumps(line) + "\n")
+
+    @staticmethod
+    def read_jsonl(path: str) -> List[Dict[str, Any]]:
+        """Helper method to read JSONL file into list of dictionaries."""
+        data = []
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    data.append(json.loads(line))
+        return data
