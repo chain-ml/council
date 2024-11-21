@@ -1,7 +1,5 @@
-import json
 import os
 import unittest
-from typing import List, Dict, Any
 
 from tempfile import TemporaryDirectory
 
@@ -12,6 +10,13 @@ from .. import LLMDatasets
 
 
 class TestLLMDataset(unittest.TestCase):
+    def _validate_messages(self, messages):
+        for message in messages:
+            self.assertIn("role", message)
+            self.assertIn("content", message)
+            self.assertIsInstance(message["role"], str)
+            self.assertIsInstance(message["content"], str)
+
     def test_llm_dataset_from_yaml(self):
         filename = get_data_filename(LLMDatasets.sample)
         actual = LLMDatasetObject.from_yaml(filename)
@@ -25,6 +30,7 @@ class TestLLMDataset(unittest.TestCase):
 
         with TemporaryDirectory() as tmp_dir:
             output_path = os.path.join(tmp_dir, "dataset.jsonl")
+            dataset.save_jsonl_messages(output_path)
 
             self.assertTrue(os.path.exists(output_path))
             saved_data = LLMDatasetObject.read_jsonl(output_path)
@@ -33,12 +39,7 @@ class TestLLMDataset(unittest.TestCase):
             for entry in saved_data:
                 self.assertIn("messages", entry)
                 self.assertIsInstance(entry["messages"], list)
-
-                for message in entry["messages"]:
-                    self.assertIn("role", message)
-                    self.assertIn("content", message)
-                    self.assertIsInstance(message["role"], str)
-                    self.assertIsInstance(message["content"], str)
+                self._validate_messages(entry["messages"])
 
             if dataset.system_prompt:
                 for entry in saved_data:
@@ -87,18 +88,13 @@ class TestLLMDataset(unittest.TestCase):
                 self.assertIn("method", entry)
                 self.assertIn("url", entry)
                 self.assertIn("body", entry)
-                
+
                 self.assertEqual(entry["method"], "POST")
                 self.assertEqual(entry["url"], "/v1/chat/completions")
-                
+
                 body = entry["body"]
                 self.assertIn("model", body)
                 self.assertEqual(body["model"], "gpt-4o-mini")
                 self.assertIn("messages", body)
                 self.assertIsInstance(body["messages"], list)
-
-                for message in body["messages"]:
-                    self.assertIn("role", message)
-                    self.assertIn("content", message)
-                    self.assertIsInstance(message["role"], str)
-                    self.assertIsInstance(message["content"], str)
+                self._validate_messages(body["messages"])

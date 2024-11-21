@@ -130,7 +130,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
                 for label_key, label_value in conversation.labels.items():
                     label_counters[label_key][label_value] += 1
         return label_counters
-    
+
     def to_jsonl_messages(self) -> List[Dict[str, List[Dict[str, str]]]]:
         """
         Convert the dataset to JSONL format with OpenAI messages structure.
@@ -147,7 +147,9 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
 
         return jsonl_lines
 
-    def save_jsonl_messages(self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None) -> None:
+    def save_jsonl_messages(
+        self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None
+    ) -> None:
         """
         Save the dataset as JSONL messages file(s), optionally splitting into training and validation sets.
         JSONL file then can be used for fine-tuning.
@@ -183,7 +185,6 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         self._save_jsonl(f"{base_path}_train.jsonl", train_lines)
         self._save_jsonl(f"{base_path}_val.jsonl", val_lines)
 
-
     def save_jsonl_request(self, path: str, model: str, url: str = "/v1/chat/completions") -> None:
         """
         Save the dataset as JSONL request file, which can be used for batch API.
@@ -198,8 +199,15 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         """
         messages_lines = self.to_jsonl_messages()
 
-        request_lines = [{"custom_id": f"request-{i}", "method": "POST", "url": url, "body": {"model": model, "messages": message_line["messages"]}} 
-                         for i, message_line in enumerate(messages_lines)]
+        request_lines = [
+            {
+                "custom_id": f"request-{i}",
+                "method": "POST",
+                "url": url,
+                "body": {"model": model, "messages": message_line["messages"]},
+            }
+            for i, message_line in enumerate(messages_lines)
+        ]
 
         self._save_jsonl(path, request_lines)
 
