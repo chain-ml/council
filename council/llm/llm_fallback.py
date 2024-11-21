@@ -1,8 +1,18 @@
+from __future__ import annotations
+
 import time
 from typing import Any, Sequence
 
 from council.contexts import LLMContext
-from council.llm import LLMBase, LLMCallException, LLMConfigurationBase, LLMException, LLMMessage, LLMResult
+from council.llm import (
+    LLMBase,
+    LLMCallException,
+    LLMConfigObject,
+    LLMConfigurationBase,
+    LLMException,
+    LLMMessage,
+    LLMResult,
+)
 from council.llm.llm_base import T_Configuration
 
 
@@ -75,3 +85,11 @@ class LLMFallback(LLMBase[LLMFallbackConfiguration]):
     @staticmethod
     def _is_retryable(code: int) -> bool:
         return code == 408 or code == 429 or code == 503 or code == 504
+
+    @classmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> LLMFallback:
+        raise ValueError("LLMFallback doesn't support from_env() initialization.")
+
+    @classmethod
+    def from_config(cls, llm_config: LLMConfigObject) -> LLMFallback:
+        raise ValueError("LLMFallback doesn't support from_config() initialization.")

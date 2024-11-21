@@ -2,7 +2,9 @@ import abc
 from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
+from typing_extensions import Self
 
+from . import LLMConfigObject
 from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
@@ -116,4 +118,14 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
 
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> Self:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_config(cls, config_object: LLMConfigObject) -> Self:
         pass
