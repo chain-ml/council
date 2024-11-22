@@ -16,4 +16,5 @@ class LLMPrompts:
 
 
 class LLMDatasets:
-    sample: str = "dataset-toy.yaml"
+    batch: str = "dataset-batch.yaml"
+    finetuning: str = "dataset-fine-tuning.yaml"

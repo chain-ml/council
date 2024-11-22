@@ -18,14 +18,14 @@ class TestLLMDataset(unittest.TestCase):
             self.assertIsInstance(message["content"], str)
 
     def test_llm_dataset_from_yaml(self):
-        filename = get_data_filename(LLMDatasets.sample)
+        filename = get_data_filename(LLMDatasets.finetuning)
         actual = LLMDatasetObject.from_yaml(filename)
 
         assert isinstance(actual, LLMDatasetObject)
         assert actual.kind == "LLMDataset"
 
     def test_save_jsonl_messages(self):
-        filename = get_data_filename(LLMDatasets.sample)
+        filename = get_data_filename(LLMDatasets.finetuning)
         dataset = LLMDatasetObject.from_yaml(filename)
 
         with TemporaryDirectory() as tmp_dir:
@@ -47,12 +47,12 @@ class TestLLMDataset(unittest.TestCase):
                     self.assertEqual(entry["messages"][0]["content"], dataset.system_prompt)
 
     def test_save_jsonl_messages_with_split(self):
-        filename = get_data_filename(LLMDatasets.sample)
+        filename = get_data_filename(LLMDatasets.finetuning)
         dataset = LLMDatasetObject.from_yaml(filename)
 
         with TemporaryDirectory() as tmp_dir:
             base_path = os.path.join(tmp_dir, "dataset.jsonl")
-            val_split = 0.2
+            val_split = 0.25
             dataset.save_jsonl_messages(base_path, random_seed=1, val_split=val_split)
 
             train_path = os.path.join(tmp_dir, "dataset_train.jsonl")
@@ -72,7 +72,7 @@ class TestLLMDataset(unittest.TestCase):
             self.assertEqual(len(val_data), expected_val_size)
 
     def test_save_jsonl_request(self):
-        filename = get_data_filename(LLMDatasets.sample)
+        filename = get_data_filename(LLMDatasets.batch)
         dataset = LLMDatasetObject.from_yaml(filename)
 
         with TemporaryDirectory() as tmp_dir:
@@ -98,3 +98,24 @@ class TestLLMDataset(unittest.TestCase):
                 self.assertIn("messages", body)
                 self.assertIsInstance(body["messages"], list)
                 self._validate_messages(body["messages"])
+
+    def test_format_markdown(self):
+        filename = get_data_filename(LLMDatasets.finetuning)
+        dataset = LLMDatasetObject.from_yaml(filename)
+        examples = dataset.format_examples(start_prefix="# Example {i}")
+
+        assert examples[0] == """# Example 1
+user: I fell off my bike today.
+assistant: It's great that you're getting exercise outdoors!
+"""
+
+    def test_format_xml(self):
+        filename = get_data_filename(LLMDatasets.finetuning)
+        dataset = LLMDatasetObject.from_yaml(filename)
+        examples = dataset.format_examples(start_prefix="<example_{i}>", end_prefix="</example_{i}>")
+
+        assert examples[0] == """<example_1>
+user: I fell off my bike today.
+assistant: It's great that you're getting exercise outdoors!
+</example_1>"""
+

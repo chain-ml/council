@@ -59,6 +59,15 @@ class LLMDatasetConversation:
             result["labels"] = self.labels
         return result
 
+    def format(self, start_prefix: str, end_prefix: str) -> str:
+        """Format conversation as a few shot example."""
+
+        parts = [start_prefix]
+        parts.extend([f"{message.role}: {message.content}" for message in self.messages])
+        parts.append(end_prefix)
+
+        return "\n".join(parts)
+
     @staticmethod
     def get_message_pair(*, user: str, assistant: str) -> List[Dict[str, str]]:
         return [{"role": "user", "content": user}, {"role": "assistant", "content": assistant}]
@@ -151,7 +160,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         return jsonl_lines
 
     def save_jsonl_messages(
-        self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None
+            self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None
     ) -> None:
         """
         Save the dataset as JSONL messages file(s), optionally splitting into training and validation sets.
@@ -215,6 +224,20 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         ]
 
         self._save_jsonl(path, request_lines)
+
+    def format_examples(self, start_prefix: str = "# Example {i}", end_prefix: str = "") -> List[str]:
+        """
+        Format dataset conversations as a few shot examples. Does not include system prompt.
+        If `start_prefix` or `end_prefix` contain `{i}`, it will be replaced with the example number.
+        """
+
+        examples = []
+        for i, conversation in enumerate(self.conversations, start=1):
+            start_prefix_formatted = start_prefix.format(i=i) if "{i}" in start_prefix else start_prefix
+            end_prefix_formatted = end_prefix.format(i=i) if "{i}" in end_prefix else end_prefix
+            examples.append(conversation.format(start_prefix_formatted, end_prefix_formatted))
+
+        return examples
 
     @staticmethod
     def _save_jsonl(filename: str, lines: List[Dict[str, Any]]) -> None:
