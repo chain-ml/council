@@ -160,7 +160,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
         return jsonl_lines
 
     def save_jsonl_messages(
-            self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None
+        self, path: str, random_seed: Optional[int] = None, val_split: Optional[float] = None
     ) -> None:
         """
         Save the dataset as JSONL messages file(s), optionally splitting into training and validation sets.
@@ -256,3 +256,49 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
                 if line:
                     data.append(json.loads(line))
         return data
+
+
+class LLMDatasetValidationException(Exception):
+    """Exception raised for validation errors in LLMDatasetObject."""
+
+
+class LLMDatasetValidator:
+    """
+    Helper class to validate the content of LLMDatasetObject.
+    """
+
+    @staticmethod
+    def validate_for_batch_api(dataset: LLMDatasetObject) -> None:
+        """
+        Validate dataset for batch API.
+
+        Raises:
+            LLMDatasetValidationException if dataset contains conversations that do not end with a user message.
+        """
+
+        for idx, conversation in enumerate(dataset.conversations, start=1):
+            assert conversation.messages[-1].role == "user", f"Conversation #{idx}: must end with a user message"
+
+        print("All conversations end with a user message.")
+
+    @staticmethod
+    def validate_for_fine_tuning(dataset: LLMDatasetObject) -> None:
+        """
+        Validate dataset for fine-tuning.
+
+        Raises:
+            LLMDatasetValidationException if dataset contains conversations that does not follow the pattern:
+                user -> assistant -> user -> assistant -> ...
+        """
+
+        for idx, conversation in enumerate(dataset.conversations, start=1):
+            prefix = f"Conversation #{idx}:"
+
+            assert len(conversation.messages) % 2 == 0, f"{prefix} There must be an even number of messages"
+            for i in range(0, len(conversation.messages), 2):
+                assert conversation.messages[i].role == "user", f"{prefix} Message #{i} must be a user message"
+                assert (
+                    conversation.messages[i + 1].role == "assistant"
+                ), f"{prefix} Message #{i + 1} must be an assistant message"
+
+        print("All conversations have an even number of messages with alternating user/assistant roles.")

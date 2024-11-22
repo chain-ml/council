@@ -4,6 +4,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from council.prompt import LLMDatasetObject
+from council.prompt.llm_dataset import LLMDatasetValidator
 
 from tests import get_data_filename
 from .. import LLMDatasets
@@ -27,6 +28,7 @@ class TestLLMDataset(unittest.TestCase):
     def test_save_jsonl_messages(self):
         filename = get_data_filename(LLMDatasets.finetuning)
         dataset = LLMDatasetObject.from_yaml(filename)
+        LLMDatasetValidator.validate_for_fine_tuning(dataset)
 
         with TemporaryDirectory() as tmp_dir:
             output_path = os.path.join(tmp_dir, "dataset.jsonl")
@@ -49,6 +51,7 @@ class TestLLMDataset(unittest.TestCase):
     def test_save_jsonl_messages_with_split(self):
         filename = get_data_filename(LLMDatasets.finetuning)
         dataset = LLMDatasetObject.from_yaml(filename)
+        LLMDatasetValidator.validate_for_fine_tuning(dataset)
 
         with TemporaryDirectory() as tmp_dir:
             base_path = os.path.join(tmp_dir, "dataset.jsonl")
@@ -74,6 +77,7 @@ class TestLLMDataset(unittest.TestCase):
     def test_save_jsonl_request(self):
         filename = get_data_filename(LLMDatasets.batch)
         dataset = LLMDatasetObject.from_yaml(filename)
+        LLMDatasetValidator.validate_for_batch_api(dataset)
 
         with TemporaryDirectory() as tmp_dir:
             output_path = os.path.join(tmp_dir, "batch.jsonl")
@@ -104,18 +108,23 @@ class TestLLMDataset(unittest.TestCase):
         dataset = LLMDatasetObject.from_yaml(filename)
         examples = dataset.format_examples(start_prefix="# Example {i}")
 
-        assert examples[0] == """# Example 1
+        assert (
+            examples[0]
+            == """# Example 1
 user: I fell off my bike today.
 assistant: It's great that you're getting exercise outdoors!
 """
+        )
 
     def test_format_xml(self):
         filename = get_data_filename(LLMDatasets.finetuning)
         dataset = LLMDatasetObject.from_yaml(filename)
         examples = dataset.format_examples(start_prefix="<example_{i}>", end_prefix="</example_{i}>")
 
-        assert examples[0] == """<example_1>
+        assert (
+            examples[0]
+            == """<example_1>
 user: I fell off my bike today.
 assistant: It's great that you're getting exercise outdoors!
 </example_1>"""
-
+        )
