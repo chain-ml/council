@@ -105,7 +105,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
     """
     Helper class to instantiate a LLMDataset from a YAML file.
 
-    LLMDataset represents a dataset to be used for fine-tuning / batch API.
+    LLMDataset represents a dataset to be used for fine-tuning / batch API or managing few shot examples.
     Contains a list of conversations between user and assistant and optional system prompt;
     if specified, it will be a system prompt for every conversation in the dataset.
     """
@@ -273,7 +273,8 @@ class LLMDatasetValidator:
         Validate dataset for batch API.
 
         Raises:
-            LLMDatasetValidationException if dataset contains conversations that do not end with a user message.
+            LLMDatasetValidationException
+                If dataset contains conversations that do not end with a user message.
         """
 
         for idx, conversation in enumerate(dataset.conversations, start=1):
@@ -287,7 +288,8 @@ class LLMDatasetValidator:
         Validate dataset for fine-tuning.
 
         Raises:
-            LLMDatasetValidationException if dataset contains conversations that does not follow the pattern:
+            LLMDatasetValidationException
+                If dataset contains conversations that does not follow the pattern:
                 user -> assistant -> user -> assistant -> ...
         """
 

@@ -1,0 +1,37 @@
+kind: LLMDataset
+version: 0.1
+metadata:
+  name: "ToyBatchDataset"
+  description: "Dataset for sentiment prediction (positive, neutral, negative)"
+  labels:
+    kind: batch
+spec:
+  system_prompt: |
+    Classify the sentiment of user inputs into one of three categories: 
+    positive, neutral, or negative. 
+    Respond with just the sentiment label.
+  conversations:
+    - messages:
+        - role: user
+          content: |
+            I had a wonderful day at the park with my family.
+    - messages:
+        - role: user
+          content: |
+            The weather was okay, not too bad, not too great.
+    - messages:
+        - role: user
+          content: |
+            My car broke down on the way to work, and it ruined my entire day.
+    - messages:
+        - role: user
+          content: |
+            I received a promotion at work today, and I'm feeling ecstatic!
+    - messages:
+        - role: user
+          content: |
+            The movie was average; it wasn't what I expected.
+    - messages:
+        - role: user
+          content: |
+            I missed my flight and had to reschedule everything, which was frustrating.
