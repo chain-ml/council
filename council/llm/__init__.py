@@ -85,7 +85,10 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
 def get_llm_from_config(filename: str) -> LLMBase:
     """Get LLM from a yaml LLMConfigObject file."""
     llm_config = LLMConfigObject.from_yaml(filename)
+    return get_llm_from_config_obj(llm_config)
 
+
+def get_llm_from_config_obj(llm_config: LLMConfigObject):
     llm = _build_llm(llm_config)
     fallback_provider = llm_config.spec.fallback_provider
     if fallback_provider is not None:

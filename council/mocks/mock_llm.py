@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional, Protocol, Sequence, Type
+from typing import Any, Iterable, List, Optional, Protocol, Sequence
 
 from council import LLMContext
 from council.contexts import Consumption
@@ -74,10 +74,6 @@ class MockLLM(LLMBase[MockLLMConfiguration]):
     def from_multi_line_response(responses: Iterable[str]) -> MockLLM:
         response = "\n".join(responses)
         return MockLLM(action=(lambda x: [response]))
-
-    @staticmethod
-    def _get_configuration_class() -> Type[MockLLMConfiguration]:
-        return MockLLMConfiguration
 
 
 class MockErrorLLM(LLMBase):

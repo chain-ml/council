@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Sequence, Type
+from typing import Any, Sequence
 
 from council.contexts import LLMContext
 from council.llm import (
@@ -35,7 +35,10 @@ class LLMFallbackConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> LLMFallbackConfiguration:
-        raise ValueError("LLMFallbackConfiguration doesn't support from_spec() initialization.")
+        raise ValueError(
+            "LLMFallbackConfiguration doesn't support direct from_spec() initialization. "
+            "Use council.llm.get_llm_from_config() instead."
+        )
 
 
 class LLMFallback(LLMBase[LLMFallbackConfiguration]):
@@ -93,7 +96,3 @@ class LLMFallback(LLMBase[LLMFallbackConfiguration]):
     @staticmethod
     def _is_retryable(code: int) -> bool:
         return code == 408 or code == 429 or code == 503 or code == 504
-
-    @staticmethod
-    def _get_configuration_class() -> Type[LLMFallbackConfiguration]:
-        return LLMFallbackConfiguration
