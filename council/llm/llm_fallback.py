@@ -35,7 +35,7 @@ class LLMFallbackConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> LLMFallbackConfiguration:
-        raise ValueError(
+        raise NotImplementedError(
             "LLMFallbackConfiguration doesn't support direct from_spec() initialization. "
             "Use council.llm.get_llm_from_config() instead."
         )
