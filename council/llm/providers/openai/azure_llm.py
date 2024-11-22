@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Optional
 
 import httpx
-from council.llm import LLMCallException, LLMCallTimeoutException
+from council.llm import LLMCallException, LLMCallTimeoutException, LLMConfigObject
 from httpx import HTTPStatusError, TimeoutException
 
 from .azure_chat_gpt_configuration import AzureChatGPTConfiguration
@@ -50,6 +50,7 @@ class AzureLLM(OpenAIChatCompletionsModel):
         config: AzureChatGPTConfiguration = AzureChatGPTConfiguration.from_env(deployment_name)
         return AzureLLM(config, deployment_name)
 
-    @staticmethod
-    def _get_configuration_class() -> Type[AzureChatGPTConfiguration]:
-        return AzureChatGPTConfiguration
+    @classmethod
+    def from_config(cls, config_object: LLMConfigObject) -> AzureLLM:
+        config = AzureChatGPTConfiguration.from_spec(config_object.spec)
+        return AzureLLM(config=config, name=config_object.metadata.name)

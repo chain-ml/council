@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Sequence, Type
+from typing import Any, Optional, Sequence
 
 from anthropic import Anthropic, APIStatusError, APITimeoutError
 from council.contexts import Consumption, LLMContext
@@ -49,7 +49,3 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         if self._configuration is not None and self._configuration.model_name() == "claude-2":
             return AnthropicCompletionLLM(client=self._client, config=self.configuration)
         return AnthropicMessagesLLM(client=self._client, config=self.configuration)
-
-    @staticmethod
-    def _get_configuration_class() -> Type[AnthropicLLMConfiguration]:
-        return AnthropicLLMConfiguration

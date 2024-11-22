@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Final, Generic, Optional, Sequence, Type, TypeVar
+from typing import Any, Dict, Final, Generic, Optional, Sequence, Type, TypeVar, get_args, get_origin
 
 from council.contexts import Consumption, LLMContext, Monitorable
 from typing_extensions import Self
@@ -130,14 +130,22 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         pass
 
-    @staticmethod
-    @abc.abstractmethod
-    def _get_configuration_class() -> Type[T_Configuration]:
+    @classmethod
+    def _get_configuration_class(cls) -> Type[T_Configuration]:
         """
-        Abstract method that subclasses must implement to return their configuration class
+        Infers and returns the configuration class type from the generic argument
         to enable from_env() and from_config().
         """
-        pass
+        for base in getattr(cls, "__orig_bases__", []):
+            if get_origin(base) is LLMBase:
+                args = get_args(base)
+                if args and issubclass(args[0], LLMConfigurationBase):
+                    return args[0]
+
+        raise NotImplementedError(
+            "Could not automatically determine the configuration class type. "
+            "Ensure the subclass is properly annotated with a specific LLMConfiguration."
+        )
 
     @classmethod
     def from_env(cls) -> Self:

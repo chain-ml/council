@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence, Type, Union
+from typing import Any, List, Mapping, Optional, Sequence, Union
 
 from council.contexts import Consumption, LLMContext
 from council.llm import LLMBase, LLMMessage, LLMResult
@@ -79,7 +79,3 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
     def _to_consumptions(duration: float, response: Mapping[str, Any]) -> Sequence[Consumption]:
         calculator = OllamaConsumptionCalculator(response["model"])
         return calculator.get_consumptions(duration, response)
-
-    @staticmethod
-    def _get_configuration_class() -> Type[OllamaLLMConfiguration]:
-        return OllamaLLMConfiguration

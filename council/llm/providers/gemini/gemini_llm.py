@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Tuple, Type
+from typing import Any, List, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
@@ -78,7 +78,3 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
             else:
                 parts.append({"inline_data": {"mime_type": data.mime_type, "data": data.content}})
         return parts
-
-    @staticmethod
-    def _get_configuration_class() -> Type[GeminiLLMConfiguration]:
-        return GeminiLLMConfiguration

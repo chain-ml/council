@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Type
+from typing import Any, List, Sequence
 
 from council.contexts import Consumption, LLMContext
 from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
@@ -68,7 +68,3 @@ class GroqLLM(LLMBase[GroqLLMConfiguration]):
     def _to_consumptions(duration: float, response: ChatCompletion) -> Sequence[Consumption]:
         calculator = GroqConsumptionCalculator(response.model)
         return calculator.get_consumptions(duration, response.usage)
-
-    @staticmethod
-    def _get_configuration_class() -> Type[GroqLLMConfiguration]:
-        return GroqLLMConfiguration

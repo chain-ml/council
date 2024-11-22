@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Optional
 
 import httpx
-from council.llm import LLMCallException, LLMCallTimeoutException
+from council.llm import LLMCallException, LLMCallTimeoutException, LLMConfigObject
 from httpx import HTTPStatusError, TimeoutException
 
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel
@@ -57,6 +57,7 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         config: OpenAIChatGPTConfiguration = OpenAIChatGPTConfiguration.from_env(model=model, api_host=api_host)
         return OpenAILLM(config)
 
-    @staticmethod
-    def _get_configuration_class() -> Type[OpenAIChatGPTConfiguration]:
-        return OpenAIChatGPTConfiguration
+    @classmethod
+    def from_config(cls, config_object: LLMConfigObject) -> OpenAILLM:
+        config = OpenAIChatGPTConfiguration.from_spec(config_object.spec)
+        return OpenAILLM(config=config, name=config_object.metadata.name)
