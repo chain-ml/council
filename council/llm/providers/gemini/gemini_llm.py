@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple, Type
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
-from council.llm import LLMBase, LLMConfigObject, LLMMessage, LLMMessageRole, LLMProviders, LLMResult
+from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
 from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
@@ -47,26 +47,6 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
         return calculator.get_consumptions(duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
     @staticmethod
-    def from_env() -> GeminiLLM:
-        """
-        Helper function that create a new instance by getting the configuration from environment variables.
-
-        Returns:
-            GeminiLLM
-        """
-
-        return GeminiLLM(GeminiLLMConfiguration.from_env())
-
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> GeminiLLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.Gemini):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Gemini}")
-
-        config = GeminiLLMConfiguration.from_spec(config_object.spec)
-        return GeminiLLM(config=config)
-
-    @staticmethod
     def _to_chat_history(messages: Sequence[LLMMessage]) -> Tuple[List[Any], Any]:
         history = []
         for message in messages[:-1]:
@@ -98,3 +78,7 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
             else:
                 parts.append({"inline_data": {"mime_type": data.mime_type, "data": data.content}})
         return parts
+
+    @staticmethod
+    def _get_configuration_class() -> Type[GeminiLLMConfiguration]:
+        return GeminiLLMConfiguration

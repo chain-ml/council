@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Sequence
+from typing import Any, Sequence, Type
 
 from council.contexts import LLMContext
 from council.llm import (
     LLMBase,
     LLMCallException,
-    LLMConfigObject,
+    LLMConfigSpec,
     LLMConfigurationBase,
     LLMException,
     LLMMessage,
@@ -28,6 +28,14 @@ class LLMFallbackConfiguration(LLMConfigurationBase):
 
     def model_name(self) -> str:
         return f"{self._llm_config.model_name()} with fallback_{self._llm_fallback_config.model_name()}"
+
+    @classmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> LLMFallbackConfiguration:
+        raise ValueError("LLMFallbackConfiguration doesn't support from_env() initialization.")
+
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> LLMFallbackConfiguration:
+        raise ValueError("LLMFallbackConfiguration doesn't support from_spec() initialization.")
 
 
 class LLMFallback(LLMBase[LLMFallbackConfiguration]):
@@ -86,10 +94,6 @@ class LLMFallback(LLMBase[LLMFallbackConfiguration]):
     def _is_retryable(code: int) -> bool:
         return code == 408 or code == 429 or code == 503 or code == 504
 
-    @classmethod
-    def from_env(cls, *args: Any, **kwargs: Any) -> LLMFallback:
-        raise ValueError("LLMFallback doesn't support from_env() initialization.")
-
-    @classmethod
-    def from_config(cls, llm_config: LLMConfigObject) -> LLMFallback:
-        raise ValueError("LLMFallback doesn't support from_config() initialization.")
+    @staticmethod
+    def _get_configuration_class() -> Type[LLMFallbackConfiguration]:
+        return LLMFallbackConfiguration

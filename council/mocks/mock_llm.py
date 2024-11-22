@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional, Protocol, Sequence
+from typing import Any, Iterable, List, Optional, Protocol, Sequence, Type
 
 from council import LLMContext
 from council.contexts import Consumption
 from council.llm import (
     LLMBase,
-    LLMConfigObject,
+    LLMConfigSpec,
     LLMConfigurationBase,
     LLMException,
     LLMMessage,
@@ -44,6 +44,14 @@ class MockLLMConfiguration(LLMConfigurationBase):
         self._timeout = timeout
         self._token_limit = token_limit
 
+    @classmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> MockLLMConfiguration:
+        raise ValueError("MockLLMConfiguration doesn't support from_env() initialization.")
+
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> MockLLMConfiguration:
+        raise ValueError("MockLLMConfiguration doesn't support from_spec() initialization.")
+
 
 class MockLLM(LLMBase[MockLLMConfiguration]):
     def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1) -> None:
@@ -67,13 +75,9 @@ class MockLLM(LLMBase[MockLLMConfiguration]):
         response = "\n".join(responses)
         return MockLLM(action=(lambda x: [response]))
 
-    @classmethod
-    def from_env(cls, *args: Any, **kwargs: Any) -> MockLLM:
-        raise ValueError("MockLLM doesn't support from_env() initialization.")
-
-    @classmethod
-    def from_config(cls, llm_config: LLMConfigObject) -> MockLLM:
-        raise ValueError("MockLLM doesn't support from_config() initialization.")
+    @staticmethod
+    def _get_configuration_class() -> Type[MockLLMConfiguration]:
+        return MockLLMConfiguration
 
 
 class MockErrorLLM(LLMBase):
@@ -83,11 +87,3 @@ class MockErrorLLM(LLMBase):
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         raise self.exception
-
-    @classmethod
-    def from_env(cls, *args: Any, **kwargs: Any) -> MockErrorLLM:
-        raise ValueError("MockErrorLLM doesn't support from_env() initialization.")
-
-    @classmethod
-    def from_config(cls, llm_config: LLMConfigObject) -> MockErrorLLM:
-        raise ValueError("MockErrorLLM doesn't support from_config() initialization.")

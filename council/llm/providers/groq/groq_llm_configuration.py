@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Final, Mapping, Tuple, Type
 
-from council.llm import LLMConfigSpec, LLMConfigurationBase
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import (
     Parameter,
     not_empty_validator,
@@ -121,8 +121,11 @@ class GroqLLMConfiguration(LLMConfigurationBase):
         config = GroqLLMConfiguration(model=model, api_key=api_key)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> GroqLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> GroqLLMConfiguration:
+        if not spec.provider.is_of_kind(LLMProviders.Groq):
+            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Groq}")
+
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")
         config = GroqLLMConfiguration(model=str(model), api_key=str(api_key))

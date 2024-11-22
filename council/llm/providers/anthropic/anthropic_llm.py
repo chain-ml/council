@@ -1,18 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Type
 
 from anthropic import Anthropic, APIStatusError, APITimeoutError
 from council.contexts import Consumption, LLMContext
-from council.llm import (
-    LLMBase,
-    LLMCallException,
-    LLMCallTimeoutException,
-    LLMConfigObject,
-    LLMMessage,
-    LLMProviders,
-    LLMResult,
-)
+from council.llm import LLMBase, LLMCallException, LLMCallTimeoutException, LLMMessage, LLMResult
 from council.utils.utils import DurationManager
 
 from .anthropic import AnthropicAPIClientWrapper, Usage
@@ -59,21 +51,5 @@ class AnthropicLLM(LLMBase[AnthropicLLMConfiguration]):
         return AnthropicMessagesLLM(client=self._client, config=self.configuration)
 
     @staticmethod
-    def from_env() -> AnthropicLLM:
-        """
-        Helper function that create a new instance by getting the configuration from environment variables.
-
-        Returns:
-            AnthropicLLM
-        """
-
-        return AnthropicLLM(AnthropicLLMConfiguration.from_env())
-
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> AnthropicLLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.Anthropic):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Anthropic}")
-
-        config = AnthropicLLMConfiguration.from_spec(config_object.spec)
-        return AnthropicLLM(config=config, name=config_object.metadata.name)
+    def _get_configuration_class() -> Type[AnthropicLLMConfiguration]:
+        return AnthropicLLMConfiguration

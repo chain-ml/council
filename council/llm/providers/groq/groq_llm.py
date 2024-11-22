@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence
+from typing import Any, List, Sequence, Type
 
 from council.contexts import Consumption, LLMContext
-from council.llm import LLMBase, LLMConfigObject, LLMMessage, LLMMessageRole, LLMProviders, LLMResult
+from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
 from council.utils.utils import DurationManager
 from groq import Groq
 from groq.types.chat import (
@@ -70,20 +70,5 @@ class GroqLLM(LLMBase[GroqLLMConfiguration]):
         return calculator.get_consumptions(duration, response.usage)
 
     @staticmethod
-    def from_env() -> GroqLLM:
-        """
-        Helper function that create a new instance by getting the configuration from environment variables.
-
-        Returns:
-            GroqLLM
-        """
-        return GroqLLM(GroqLLMConfiguration.from_env())
-
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> GroqLLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.Groq):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Groq}")
-
-        config = GroqLLMConfiguration.from_spec(config_object.spec)
-        return GroqLLM(config=config)
+    def _get_configuration_class() -> Type[GroqLLMConfiguration]:
+        return GroqLLMConfiguration

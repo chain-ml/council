@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
-from council.llm import LLMConfigSpec, LLMConfigurationBase
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import (
     Parameter,
     greater_than_validator,
@@ -83,8 +83,11 @@ class GeminiLLMConfiguration(LLMConfigurationBase):
         config = GeminiLLMConfiguration(model=model, api_key=api_key)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> GeminiLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> GeminiLLMConfiguration:
+        if not spec.provider.is_of_kind(LLMProviders.Gemini):
+            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Gemini}")
+
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")
         config = GeminiLLMConfiguration(model=str(model), api_key=str(api_key))

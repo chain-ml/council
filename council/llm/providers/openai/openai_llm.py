@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 import httpx
-from council.llm import LLMCallException, LLMCallTimeoutException, LLMConfigObject, LLMProviders
+from council.llm import LLMCallException, LLMCallTimeoutException
 from httpx import HTTPStatusError, TimeoutException
 
 from .openai_chat_completions_llm import OpenAIChatCompletionsModel
@@ -58,9 +58,5 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         return OpenAILLM(config)
 
     @staticmethod
-    def from_config(config_object: LLMConfigObject) -> OpenAILLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.OpenAI):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.OpenAI}")
-        config = OpenAIChatGPTConfiguration.from_spec(config_object.spec)
-        return OpenAILLM(config=config, name=config_object.metadata.name)
+    def _get_configuration_class() -> Type[OpenAIChatGPTConfiguration]:
+        return OpenAIChatGPTConfiguration

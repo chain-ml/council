@@ -1,10 +1,10 @@
 import abc
-from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
+from typing import Any, Dict, Final, Generic, Optional, Sequence, Type, TypeVar
 
 from council.contexts import Consumption, LLMContext, Monitorable
 from typing_extensions import Self
 
-from . import LLMConfigObject
+from . import LLMConfigObject, LLMConfigSpec
 from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
@@ -14,6 +14,16 @@ class LLMConfigurationBase(abc.ABC):
 
     @abc.abstractmethod
     def model_name(self) -> str:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> Self:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> Self:
         pass
 
     @property
@@ -120,12 +130,23 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         pass
 
-    @classmethod
+    @staticmethod
     @abc.abstractmethod
-    def from_env(cls, *args: Any, **kwargs: Any) -> Self:
+    def _get_configuration_class() -> Type[T_Configuration]:
+        """
+        Abstract method that subclasses must implement to return their configuration class
+        to enable from_env() and from_config().
+        """
         pass
 
     @classmethod
-    @abc.abstractmethod
+    def from_env(cls) -> Self:
+        config_class = cls._get_configuration_class()
+        config = config_class.from_env()
+        return cls(config)
+
+    @classmethod
     def from_config(cls, config_object: LLMConfigObject) -> Self:
-        pass
+        config_class = cls._get_configuration_class()
+        config = config_class.from_spec(config_object.spec)
+        return cls(config)

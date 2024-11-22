@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence, Union
+from typing import Any, List, Mapping, Optional, Sequence, Type, Union
 
 from council.contexts import Consumption, LLMContext
-from council.llm import LLMBase, LLMConfigObject, LLMMessage, LLMProviders, LLMResult
+from council.llm import LLMBase, LLMMessage, LLMResult
 from council.utils.utils import DurationManager
 from ollama import Client
 from ollama._types import Message, Options
@@ -81,21 +81,5 @@ class OllamaLLM(LLMBase[OllamaLLMConfiguration]):
         return calculator.get_consumptions(duration, response)
 
     @staticmethod
-    def from_env() -> OllamaLLM:
-        """
-        Helper function that create a new instance by getting the configuration from environment variables.
-
-        Returns:
-            OllamaLLM
-        """
-
-        return OllamaLLM(OllamaLLMConfiguration.from_env())
-
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> OllamaLLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.Ollama):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Ollama}")
-
-        config = OllamaLLMConfiguration.from_spec(config_object.spec)
-        return OllamaLLM(config=config)
+    def _get_configuration_class() -> Type[OllamaLLMConfiguration]:
+        return OllamaLLMConfiguration
