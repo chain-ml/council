@@ -26,7 +26,7 @@ Here's an example of LLMDataset YAML file for fine-tuning:
     :language: yaml
 ```
 
-With this code, you can load a dataset from a YAML file and save it as a JSONL file for [OpenAI fine-tuning API](https://platform.openai.com/docs/guides/fine-tuning):
+You can load this dataset from a YAML file and save it as a JSONL file to then use for [OpenAI fine-tuning API](https://platform.openai.com/docs/guides/fine-tuning):
 
 ```{eval-rst}
 .. testcode::
@@ -46,7 +46,7 @@ With this code, you can load a dataset from a YAML file and save it as a JSONL f
             print(line)
 ```
 
-This will produce the following JSONL file:
+This will produce the following lines:
 
 ```{eval-rst}
 .. testoutput::
@@ -95,7 +95,7 @@ Here's an example of LLMDataset YAML file for batch API:
     :language: yaml
 ```
 
-With this code, you can load a dataset from a YAML file and save it as a JSONL file for [OpenAI batch API](https://platform.openai.com/docs/guides/batch):
+You can load a dataset from a YAML file and save it as a JSONL file to then use for [OpenAI batch API](https://platform.openai.com/docs/guides/batch):
 
 ```{eval-rst}
 .. testcode::
@@ -115,7 +115,7 @@ With this code, you can load a dataset from a YAML file and save it as a JSONL f
             print(line)
 ```
 
-This will produce the following JSONL file:
+This will produce the following lines:
 
 ```{eval-rst}
 .. testoutput::
