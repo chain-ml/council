@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Final, List, Literal, Mapping, Optional, Tuple, Type, Union
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import Parameter, greater_than_validator, read_env_str, zero_to_one_validator
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "OLLAMA_"
 
@@ -191,8 +190,10 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
         config = OllamaLLMConfiguration(model=model, keep_alive=keep_alive)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> OllamaLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> OllamaLLMConfiguration:
+        spec.check_provider(LLMProviders.Ollama)
+
         model = spec.provider.must_get_value("model")
         config = OllamaLLMConfiguration(model=str(model))
 

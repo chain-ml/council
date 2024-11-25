@@ -1,8 +1,10 @@
 import abc
-from typing import Any, Dict, Final, Generic, Optional, Sequence, TypeVar
+from typing import Any, Dict, Final, Generic, Optional, Sequence, Type, TypeVar, get_args, get_origin
 
 from council.contexts import Consumption, LLMContext, Monitorable
+from typing_extensions import Self
 
+from . import LLMConfigObject, LLMConfigSpec
 from .llm_message import LLMMessage, LLMMessageTokenCounterBase
 
 _DEFAULT_TIMEOUT: Final[int] = 30
@@ -12,6 +14,16 @@ class LLMConfigurationBase(abc.ABC):
 
     @abc.abstractmethod
     def model_name(self) -> str:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> Self:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> Self:
         pass
 
     @property
@@ -60,7 +72,7 @@ class LLMResult:
 
 class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     """
-    Abstract base class representing a language model.
+    Abstract base class representing chat LLM.
     """
 
     def __init__(
@@ -117,3 +129,32 @@ class LLMBase(Generic[T_Configuration], Monitorable, abc.ABC):
     @abc.abstractmethod
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
         pass
+
+    @classmethod
+    def _get_configuration_class(cls) -> Type[T_Configuration]:
+        """
+        Infers and returns the configuration class type from the generic argument
+        to enable from_env() and from_config().
+        """
+        for base in getattr(cls, "__orig_bases__", []):
+            if get_origin(base) is LLMBase:
+                args = get_args(base)
+                if args and issubclass(args[0], LLMConfigurationBase):
+                    return args[0]
+
+        raise NotImplementedError(
+            "Could not automatically determine the configuration class type. "
+            "Ensure the subclass is properly annotated with a specific LLMConfiguration."
+        )
+
+    @classmethod
+    def from_env(cls) -> Self:
+        config_class = cls._get_configuration_class()
+        config = config_class.from_env()
+        return cls(config)
+
+    @classmethod
+    def from_config(cls, config_object: LLMConfigObject) -> Self:
+        config_class = cls._get_configuration_class()
+        config = config_class.from_spec(config_object.spec)
+        return cls(config)

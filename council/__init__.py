@@ -6,5 +6,5 @@ from .contexts import AgentContext, Budget, ChainContext, ChatHistory, ChatMessa
 from .controllers import BasicController, ControllerBase, ExecutionUnit, LLMController
 from .evaluators import BasicEvaluator, EvaluatorBase, LLMEvaluator
 from .filters import BasicFilter, FilterBase
-from .llm import AnthropicLLM, AzureLLM, OpenAILLM, GeminiLLM
+from .llm import AnthropicLLM, AzureLLM, OpenAILLM, GeminiLLM, GroqLLM, OllamaLLM
 from .runners import DoWhile, If, Parallel, ParallelFor, RunnerGenerator, RunnerPredicate, Sequential, While

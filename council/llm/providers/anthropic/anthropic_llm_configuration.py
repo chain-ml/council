@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
-from council.llm import LLMConfigSpec, LLMConfigurationBase
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import (
     Parameter,
     greater_than_validator,
@@ -124,8 +124,10 @@ class AnthropicLLMConfiguration(LLMConfigurationBase):
         config._read_optional_env()
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> AnthropicLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> AnthropicLLMConfiguration:
+        spec.check_provider(LLMProviders.Anthropic)
+
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")
         max_tokens = spec.provider.must_get_value("maxTokens")

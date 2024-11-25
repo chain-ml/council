@@ -6,6 +6,7 @@ from council import LLMContext
 from council.contexts import Consumption
 from council.llm import (
     LLMBase,
+    LLMConfigSpec,
     LLMConfigurationBase,
     LLMException,
     LLMMessage,
@@ -42,6 +43,14 @@ class MockLLMConfiguration(LLMConfigurationBase):
         self._model_name = model_name
         self._timeout = timeout
         self._token_limit = token_limit
+
+    @classmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> MockLLMConfiguration:
+        raise NotImplementedError("MockLLMConfiguration doesn't support from_env() initialization.")
+
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> MockLLMConfiguration:
+        raise NotImplementedError("MockLLMConfiguration doesn't support from_spec() initialization.")
 
 
 class MockLLM(LLMBase[MockLLMConfiguration]):

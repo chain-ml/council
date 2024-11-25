@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import (
     Parameter,
     greater_than_validator,
@@ -10,8 +11,6 @@ from council.utils import (
     read_env_str,
     zero_to_one_validator,
 )
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "GEMINI_"
 
@@ -84,8 +83,10 @@ class GeminiLLMConfiguration(LLMConfigurationBase):
         config = GeminiLLMConfiguration(model=model, api_key=api_key)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> GeminiLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> GeminiLLMConfiguration:
+        spec.check_provider(LLMProviders.Gemini)
+
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")
         config = GeminiLLMConfiguration(model=str(model), api_key=str(api_key))
