@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Final, Optional
 
-from council.llm import ChatGPTConfigurationBase
-from council.llm.llm_config_object import LLMConfigSpec
+from council.llm import LLMConfigSpec, LLMProviders
 from council.utils import Parameter, greater_than_validator, not_empty_validator, read_env_str
+
+from .chat_gpt_configuration import ChatGPTConfigurationBase
 
 _env_var_prefix: Final[str] = "AZURE_"
 
@@ -90,8 +91,10 @@ class AzureChatGPTConfiguration(ChatGPTConfigurationBase):
         config._read_optional_env()
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> AzureChatGPTConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> AzureChatGPTConfiguration:
+        spec.check_provider(LLMProviders.Azure)
+
         api_key: str = spec.provider.must_get_value("apiKey")
         deployment_name: str = spec.provider.must_get_value("deploymentName")
         api_base: str = spec.provider.must_get_value("apiBase")

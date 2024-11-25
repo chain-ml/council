@@ -4,9 +4,8 @@ import logging
 from typing import List, Mapping, Optional, Sequence
 
 import tiktoken
+from council.llm import LLMMessage, LLMMessageTokenCounterBase, LLMTokenLimitException
 from tiktoken import Encoding
-
-from . import LLMMessage, LLMMessageTokenCounterBase, LLMTokenLimitException
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Final, Optional
 
-from council.llm import ChatGPTConfigurationBase
-from council.llm.llm_config_object import LLMConfigSpec
+from council.llm import LLMConfigSpec, LLMProviders
 from council.utils import (
     Parameter,
     greater_than_validator,
@@ -12,6 +11,8 @@ from council.utils import (
     read_env_int,
     read_env_str,
 )
+
+from .chat_gpt_configuration import ChatGPTConfigurationBase
 
 _env_var_prefix: Final[str] = "OPENAI_"
 
@@ -105,8 +106,10 @@ class OpenAIChatGPTConfiguration(ChatGPTConfigurationBase):
         config.read_env(_env_var_prefix)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> OpenAIChatGPTConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> OpenAIChatGPTConfiguration:
+        spec.check_provider(LLMProviders.OpenAI)
+
         api_key: str = spec.provider.must_get_value("apiKey")
         api_host: str = spec.provider.get_value("apiHost") or "https://api.openai.com"
         model: str = spec.provider.must_get_value("model")

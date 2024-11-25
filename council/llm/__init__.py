@@ -1,8 +1,8 @@
 """This package provides clients to use various LLMs."""
 
-from typing import Optional
-from ..utils import read_env_str
+from typing import Optional, Type
 
+from ..utils import read_env_str
 
 from .llm_config_object import LLMProvider, LLMConfigObject, LLMConfigSpec, LLMProviders
 from .llm_answer import llm_property, LLMAnswer, LLMProperty, LLMParsingException
@@ -43,49 +43,38 @@ from .llm_function import LLMFunction, LLMFunctionResponse, LLMFunctionError, Fu
 from .llm_function_with_prompt import LLMFunctionWithPrompt
 from .monitored_llm import MonitoredLLM
 
-from .chat_gpt_configuration import ChatGPTConfigurationBase
-from .openai_chat_completions_llm import OpenAIChatCompletionsModel
-from .openai_token_counter import OpenAITokenCounter
-
-from .azure_chat_gpt_configuration import AzureChatGPTConfiguration
-from .azure_llm import AzureLLM
-
-from .openai_chat_gpt_configuration import OpenAIChatGPTConfiguration
-from .openai_llm import OpenAILLM
-
-from .anthropic_llm_configuration import AnthropicLLMConfiguration
-from .anthropic_llm import AnthropicLLM
-
-from .gemini_llm_configuration import GeminiLLMConfiguration
-from .gemini_llm import GeminiLLM
-
-from .ollama_llm_configuration import OllamaLLMConfiguration
-from .ollama_llm import OllamaLLM
-
-from .groq_llm_configuration import GroqLLMConfiguration
-from .groq_llm import GroqLLM
+from .providers import (
+    _build_llm,
+    _PROVIDER_TO_LLM,
+    AzureLLM,
+    AzureChatGPTConfiguration,
+    OpenAILLM,
+    OpenAIChatGPTConfiguration,
+    AnthropicLLM,
+    AnthropicLLMConfiguration,
+    GeminiLLM,
+    GeminiLLMConfiguration,
+    GroqLLM,
+    GroqLLMConfiguration,
+    OllamaLLM,
+    OllamaLLMConfiguration,
+)
 
 
 def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
-    provider = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
-    provider = provider.lower() + "spec"
-    llm: Optional[LLMBase] = None
+    """Get default LLM based on `COUNCIL_DEFAULT_LLM_PROVIDER` env variable."""
+    provider_str = read_env_str("COUNCIL_DEFAULT_LLM_PROVIDER", default=LLMProviders.OpenAI).unwrap()
+    provider_str = provider_str.lower() + "spec"
 
-    if provider == LLMProviders.OpenAI.lower():
-        llm = OpenAILLM.from_env()
-    elif provider == LLMProviders.Azure.lower():
-        llm = AzureLLM.from_env()
-    elif provider == LLMProviders.Anthropic.lower():
-        llm = AnthropicLLM.from_env()
-    elif provider == LLMProviders.Gemini.lower():
-        llm = GeminiLLM.from_env()
-    elif provider == LLMProviders.Ollama.lower():
-        llm = OllamaLLM.from_env()
-    elif provider == LLMProviders.Groq.lower():
-        llm = GroqLLM.from_env()
+    llm_class: Optional[Type[LLMBase]] = next(
+        (llm_class for provider_enum, llm_class in _PROVIDER_TO_LLM.items() if provider_str == provider_enum.lower()),
+        None,
+    )
 
-    if llm is None:
-        raise ValueError(f"Provider {provider} not supported by Council.")
+    if llm_class is None:
+        raise ValueError(f"Provider {provider_str} not supported by Council.")
+
+    llm = llm_class.from_env()
 
     if max_retries is not None and max_retries > 0:
         return LLMFallback(llm=llm, fallback=llm, retry_before_fallback=max_retries - 1)
@@ -94,8 +83,12 @@ def get_default_llm(max_retries: Optional[int] = None) -> LLMBase:
 
 
 def get_llm_from_config(filename: str) -> LLMBase:
+    """Get LLM from a yaml LLMConfigObject file."""
     llm_config = LLMConfigObject.from_yaml(filename)
+    return get_llm_from_config_obj(llm_config)
 
+
+def get_llm_from_config_obj(llm_config: LLMConfigObject):
     llm = _build_llm(llm_config)
     fallback_provider = llm_config.spec.fallback_provider
     if fallback_provider is not None:
@@ -103,21 +96,3 @@ def get_llm_from_config(filename: str) -> LLMBase:
         llm_with_fallback = _build_llm(llm_config)
         return LLMFallback(llm, llm_with_fallback)
     return llm
-
-
-def _build_llm(llm_config: LLMConfigObject) -> LLMBase:
-    provider = llm_config.spec.provider
-    if provider.is_of_kind(LLMProviders.Azure):
-        return AzureLLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.OpenAI):
-        return OpenAILLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.Anthropic):
-        return AnthropicLLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.Gemini):
-        return GeminiLLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.Ollama):
-        return OllamaLLM.from_config(llm_config)
-    elif provider.is_of_kind(LLMProviders.Groq):
-        return GroqLLM.from_config(llm_config)
-
-    raise ValueError(f"Provider `{provider.kind}` not supported by Council")

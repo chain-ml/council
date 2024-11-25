@@ -1,8 +1,18 @@
+from __future__ import annotations
+
 import time
 from typing import Any, Sequence
 
 from council.contexts import LLMContext
-from council.llm import LLMBase, LLMCallException, LLMConfigurationBase, LLMException, LLMMessage, LLMResult
+from council.llm import (
+    LLMBase,
+    LLMCallException,
+    LLMConfigSpec,
+    LLMConfigurationBase,
+    LLMException,
+    LLMMessage,
+    LLMResult,
+)
 from council.llm.llm_base import T_Configuration
 
 
@@ -18,6 +28,17 @@ class LLMFallbackConfiguration(LLMConfigurationBase):
 
     def model_name(self) -> str:
         return f"{self._llm_config.model_name()} with fallback_{self._llm_fallback_config.model_name()}"
+
+    @classmethod
+    def from_env(cls, *args: Any, **kwargs: Any) -> LLMFallbackConfiguration:
+        raise NotImplementedError("LLMFallbackConfiguration doesn't support from_env() initialization.")
+
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> LLMFallbackConfiguration:
+        raise NotImplementedError(
+            "LLMFallbackConfiguration doesn't support direct from_spec() initialization. "
+            "Use council.llm.get_llm_from_config() instead."
+        )
 
 
 class LLMFallback(LLMBase[LLMFallbackConfiguration]):
