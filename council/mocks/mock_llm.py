@@ -46,11 +46,11 @@ class MockLLMConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_env(cls, *args: Any, **kwargs: Any) -> MockLLMConfiguration:
-        raise ValueError("MockLLMConfiguration doesn't support from_env() initialization.")
+        raise NotImplementedError("MockLLMConfiguration doesn't support from_env() initialization.")
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> MockLLMConfiguration:
-        raise ValueError("MockLLMConfiguration doesn't support from_spec() initialization.")
+        raise NotImplementedError("MockLLMConfiguration doesn't support from_spec() initialization.")
 
 
 class MockLLM(LLMBase[MockLLMConfiguration]):

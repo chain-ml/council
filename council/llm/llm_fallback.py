@@ -31,7 +31,7 @@ class LLMFallbackConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_env(cls, *args: Any, **kwargs: Any) -> LLMFallbackConfiguration:
-        raise ValueError("LLMFallbackConfiguration doesn't support from_env() initialization.")
+        raise NotImplementedError("LLMFallbackConfiguration doesn't support from_env() initialization.")
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> LLMFallbackConfiguration:
