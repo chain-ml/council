@@ -126,8 +126,7 @@ class AnthropicLLMConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> AnthropicLLMConfiguration:
-        if not spec.provider.is_of_kind(LLMProviders.Anthropic):
-            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Anthropic}")
+        spec.check_provider(LLMProviders.Anthropic)
 
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")

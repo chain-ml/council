@@ -192,8 +192,7 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> OllamaLLMConfiguration:
-        if not spec.provider.is_of_kind(LLMProviders.Ollama):
-            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Ollama}")
+        spec.check_provider(LLMProviders.Ollama)
 
         model = spec.provider.must_get_value("model")
         config = OllamaLLMConfiguration(model=str(model))

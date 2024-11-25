@@ -123,8 +123,7 @@ class GroqLLMConfiguration(LLMConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> GroqLLMConfiguration:
-        if not spec.provider.is_of_kind(LLMProviders.Groq):
-            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Groq}")
+        spec.check_provider(LLMProviders.Groq)
 
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")

@@ -116,6 +116,10 @@ class LLMConfigSpec(DataObjectSpecBase):
     def __str__(self) -> str:
         return f"{self.description}"
 
+    def check_provider(self, provider: LLMProviders) -> None:
+        if not self.provider.is_of_kind(provider):
+            raise ValueError(f"Invalid LLM provider, actual {self.provider}, expected {provider}")
+
 
 class LLMConfigObject(DataObject[LLMConfigSpec]):
     """

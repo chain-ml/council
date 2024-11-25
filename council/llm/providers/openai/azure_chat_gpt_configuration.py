@@ -93,8 +93,7 @@ class AzureChatGPTConfiguration(ChatGPTConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> AzureChatGPTConfiguration:
-        if not spec.provider.is_of_kind(LLMProviders.Azure):
-            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.Azure}")
+        spec.check_provider(LLMProviders.Azure)
 
         api_key: str = spec.provider.must_get_value("apiKey")
         deployment_name: str = spec.provider.must_get_value("deploymentName")

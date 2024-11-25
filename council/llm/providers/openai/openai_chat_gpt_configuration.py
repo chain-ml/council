@@ -108,8 +108,7 @@ class OpenAIChatGPTConfiguration(ChatGPTConfigurationBase):
 
     @classmethod
     def from_spec(cls, spec: LLMConfigSpec) -> OpenAIChatGPTConfiguration:
-        if not spec.provider.is_of_kind(LLMProviders.OpenAI):
-            raise ValueError(f"Invalid LLM provider, actual {spec.provider}, expected {LLMProviders.OpenAI}")
+        spec.check_provider(LLMProviders.OpenAI)
 
         api_key: str = spec.provider.must_get_value("apiKey")
         api_host: str = spec.provider.get_value("apiHost") or "https://api.openai.com"
