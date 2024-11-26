@@ -1,5 +1,5 @@
 import unittest
-from council.llm.ollama_llm_configuration import OllamaLLMConfiguration
+from council.llm import OllamaLLMConfiguration
 from council.utils import OsEnviron
 
 

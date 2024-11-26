@@ -1,40 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 import google.generativeai as genai  # type: ignore
 from council.contexts import Consumption, LLMContext
-from council.llm import (
-    DefaultLLMConsumptionCalculator,
-    GeminiLLMConfiguration,
-    LLMBase,
-    LLMConfigObject,
-    LLMCostCard,
-    LLMCostManagerObject,
-    LLMMessage,
-    LLMMessageRole,
-    LLMProviders,
-    LLMResult,
-)
+from council.llm import LLMBase, LLMMessage, LLMMessageRole, LLMResult
 from council.utils.utils import DurationManager
 from google.ai.generativelanguage import FileData
 from google.ai.generativelanguage_v1 import HarmCategory  # type: ignore
 from google.generativeai.types import GenerateContentResponse, HarmBlockThreshold  # type: ignore
 
-
-class GeminiConsumptionCalculator(DefaultLLMConsumptionCalculator):
-    _cost_manager = LLMCostManagerObject.gemini()
-    COSTS_UNDER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("under_128k")
-    COSTS_OVER_128k: Mapping[str, LLMCostCard] = _cost_manager.get_cost_map("over_128k")
-
-    def __init__(self, model: str, num_tokens: int) -> None:
-        super().__init__(model)
-        self.num_tokens = num_tokens
-
-    def find_model_costs(self) -> Optional[LLMCostCard]:
-        if self.num_tokens <= 128_000:
-            return self.COSTS_UNDER_128k.get(self.model)
-        return self.COSTS_OVER_128k.get(self.model)
+from .gemini_llm_configuration import GeminiLLMConfiguration
+from .gemini_llm_cost import GeminiConsumptionCalculator
 
 
 class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
@@ -68,26 +45,6 @@ class GeminiLLM(LLMBase[GeminiLLMConfiguration]):
 
         calculator = GeminiConsumptionCalculator(model, prompt_tokens)
         return calculator.get_consumptions(duration, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
-
-    @staticmethod
-    def from_env() -> GeminiLLM:
-        """
-        Helper function that create a new instance by getting the configuration from environment variables.
-
-        Returns:
-            GeminiLLM
-        """
-
-        return GeminiLLM(GeminiLLMConfiguration.from_env())
-
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> GeminiLLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.Gemini):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.Gemini}")
-
-        config = GeminiLLMConfiguration.from_spec(config_object.spec)
-        return GeminiLLM(config=config)
 
     @staticmethod
     def _to_chat_history(messages: Sequence[LLMMessage]) -> Tuple[List[Any], Any]:

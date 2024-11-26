@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
 from council.utils import DataObject, DataObjectSpecBase
@@ -10,12 +10,18 @@ from council.utils.parameter import Undefined
 
 
 class LLMProviders(str, Enum):
+    """Supported LLM providers."""
+
     OpenAI = "openAISpec"
     Azure = "azureSpec"
     Anthropic = "anthropicSpec"
     Gemini = "googleGeminiSpec"
     Ollama = "ollamaSpec"
     Groq = "groqSpec"
+
+    @staticmethod
+    def all() -> List[LLMProviders]:
+        return list(LLMProviders.__members__.values())
 
 
 class LLMProvider:
@@ -37,40 +43,24 @@ class LLMProvider:
         name = values.get("name", "")
         description = values.get("description", "")
 
-        spec = values.get(LLMProviders.OpenAI)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.OpenAI)
-        spec = values.get(LLMProviders.Azure)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.Azure)
-        spec = values.get(LLMProviders.Anthropic)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.Anthropic)
-        spec = values.get(LLMProviders.Gemini)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.Gemini)
-        spec = values.get(LLMProviders.Ollama)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.Ollama)
-        spec = values.get(LLMProviders.Groq)
-        if spec is not None:
-            return LLMProvider(name, description, spec, LLMProviders.Groq)
+        provider_specs: Mapping[LLMProviders, Optional[Dict[str, Any]]] = {
+            provider: values.get(provider) for provider in LLMProviders.all()
+        }
+
+        for provider, spec in provider_specs.items():
+            if spec is not None:
+                return LLMProvider(name, description, spec, provider)
+
         raise ValueError("Unsupported model provider")
 
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {"name": self.name, "description": self.description}
-        if self.is_of_kind(LLMProviders.OpenAI):
-            result[LLMProviders.OpenAI] = self._specs
-        elif self.is_of_kind(LLMProviders.Azure):
-            result[LLMProviders.Azure] = self._specs
-        elif self.is_of_kind(LLMProviders.Anthropic):
-            result[LLMProviders.Anthropic] = self._specs
-        elif self.is_of_kind(LLMProviders.Gemini):
-            result[LLMProviders.Gemini] = self._specs
-        elif self.is_of_kind(LLMProviders.Ollama):
-            result[LLMProviders.Ollama] = self._specs
-        elif self.is_of_kind(LLMProviders.Groq):
-            result[LLMProviders.Groq] = self._specs
+
+        for provider in LLMProviders.all():
+            if self.is_of_kind(provider):
+                result[provider] = self._specs
+                break
+
         return result
 
     def must_get_value(self, key: str) -> Any:
@@ -125,6 +115,10 @@ class LLMConfigSpec(DataObjectSpecBase):
 
     def __str__(self) -> str:
         return f"{self.description}"
+
+    def check_provider(self, provider: LLMProviders) -> None:
+        if not self.provider.is_of_kind(provider):
+            raise ValueError(f"Invalid LLM provider, actual {self.provider}, expected {provider}")
 
 
 class LLMConfigObject(DataObject[LLMConfigSpec]):

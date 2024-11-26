@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Any, Dict, Optional
 
-from council.llm.llm_base import LLMConfigurationBase
+from council.llm import LLMConfigurationBase
 from council.utils import Parameter, penalty_validator, positive_validator, zero_to_one_validator, zero_to_two_validator
 
 

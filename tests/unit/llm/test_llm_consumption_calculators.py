@@ -1,9 +1,11 @@
 import unittest
 
 from council.llm import CodeBlocksResponseParser, LLMFunction
-from council.llm.anthropic_llm import AnthropicConsumptionCalculator, Usage as AnthropicUsage
-from council.llm.gemini_llm import GeminiConsumptionCalculator
-from council.llm.openai_chat_completions_llm import OpenAIConsumptionCalculator, Usage as OpenAIUsage
+from council.llm.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
+from council.llm.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
+from council.llm.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
+from council.llm.providers.groq.groq_llm_cost import GroqConsumptionCalculator
+from council.llm.providers.openai.openai_llm_cost import OpenAIConsumptionCalculator, Usage as OpenAIUsage
 from council.mocks import MockLLM, MockMultipleResponses
 
 
@@ -334,6 +336,80 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
 
         self.assertEqual(reasoning_cost, 12.00)
         self.assertEqual(completion_cost, 12.00)
+
+
+class TestGroqConsumptionCalculator(unittest.TestCase):
+    def test_gemma_cost_calculations(self):
+        cost_card = GroqConsumptionCalculator("gemma2-9b-it").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.20)  # $0.20 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.10)  # $0.20 per 1M tokens * 0.5M
+
+        cost_card = GroqConsumptionCalculator("gemma-7b-it").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.07)  # $0.07 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.035)  # $0.07 per 1M tokens * 0.5M
+
+    def test_llama3_cost_calculations(self):
+        cost_card = GroqConsumptionCalculator("llama3-70b-8192").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.59)  # $0.59 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.395)  # $0.79 per 1M tokens * 0.5M
+
+        cost_card = GroqConsumptionCalculator("llama3-8b-8192").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.05)  # $0.05 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.04)  # $0.08 per 1M tokens * 0.5M
+
+    def test_llama3_tool_preview_cost_calculations(self):
+        cost_card = GroqConsumptionCalculator("llama3-groq-70b-8192-tool-use-preview").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.89)  # $0.89 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.445)  # $0.89 per 1M tokens * 0.5M
+
+        cost_card = GroqConsumptionCalculator("llama3-groq-8b-8192-tool-use-preview").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.19)  # $0.19 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.095)  # $0.19 per 1M tokens * 0.5M
+
+    def test_llama_31_cost_calculations(self):
+        cost_card = GroqConsumptionCalculator("llama-3.1-70b-versatile").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.59)  # $0.59 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.395)  # $0.79 per 1M tokens * 0.5M
+
+        cost_card = GroqConsumptionCalculator("llama-3.1-8b-instant").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.05)  # $0.05 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.04)  # $0.08 per 1M tokens * 0.5M
+
+    def test_llama_32_cost_calculations(self):
+        models = {
+            "llama-3.2-1b-preview": (0.04, 0.04),
+            "llama-3.2-3b-preview": (0.06, 0.06),
+            "llama-3.2-11b-vision-preview": (0.18, 0.18),
+            "llama-3.2-90b-vision-preview": (0.90, 0.90),
+        }
+
+        for model, (input_cost, output_cost) in models.items():
+            cost_card = GroqConsumptionCalculator(model).find_model_costs()
+            prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+            self.assertEqual(prompt_cost, input_cost)  # input_cost per 1M tokens * 1M
+            self.assertEqual(completion_cost, output_cost * 0.5)  # output_cost per 1M tokens * 0.5M
+
+    def test_others(self):
+        cost_card = GroqConsumptionCalculator("llama-guard-3-8b").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.20)  # $0.20 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.10)  # $0.20 per 1M tokens * 0.5M
+
+        cost_card = GroqConsumptionCalculator("mixtral-8x7b-32768").find_model_costs()
+        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
+        self.assertEqual(prompt_cost, 0.24)  # $0.24 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.12)  # $0.24 per 1M tokens * 0.5M
+
+    def test_invalid_model(self):
+        self.assertIsNone(GroqConsumptionCalculator("invalid-model").find_model_costs())
 
 
 class Response(CodeBlocksResponseParser):

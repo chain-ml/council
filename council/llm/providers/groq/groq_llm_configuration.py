@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Final, Mapping, Tuple, Type
 
+from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
 from council.utils import (
     Parameter,
     not_empty_validator,
@@ -11,8 +12,6 @@ from council.utils import (
     zero_to_one_validator,
     zero_to_two_validator,
 )
-
-from . import LLMConfigSpec, LLMConfigurationBase
 
 _env_var_prefix: Final[str] = "GROQ_"
 
@@ -122,8 +121,10 @@ class GroqLLMConfiguration(LLMConfigurationBase):
         config = GroqLLMConfiguration(model=model, api_key=api_key)
         return config
 
-    @staticmethod
-    def from_spec(spec: LLMConfigSpec) -> GroqLLMConfiguration:
+    @classmethod
+    def from_spec(cls, spec: LLMConfigSpec) -> GroqLLMConfiguration:
+        spec.check_provider(LLMProviders.Groq)
+
         api_key = spec.provider.must_get_value("apiKey")
         model = spec.provider.must_get_value("model")
         config = GroqLLMConfiguration(model=str(model), api_key=str(api_key))

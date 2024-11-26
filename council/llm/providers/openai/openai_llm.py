@@ -3,11 +3,12 @@ from __future__ import annotations
 from typing import Any, Optional
 
 import httpx
+from council.llm import LLMCallException, LLMCallTimeoutException, LLMConfigObject
 from httpx import HTTPStatusError, TimeoutException
 
-from . import LLMCallException, LLMCallTimeoutException, OpenAIChatCompletionsModel, OpenAITokenCounter
-from .llm_config_object import LLMConfigObject, LLMProviders
+from .openai_chat_completions_llm import OpenAIChatCompletionsModel
 from .openai_chat_gpt_configuration import OpenAIChatGPTConfiguration
+from .openai_token_counter import OpenAITokenCounter
 
 
 class OpenAIChatCompletionsModelProvider:
@@ -56,10 +57,7 @@ class OpenAILLM(OpenAIChatCompletionsModel):
         config: OpenAIChatGPTConfiguration = OpenAIChatGPTConfiguration.from_env(model=model, api_host=api_host)
         return OpenAILLM(config)
 
-    @staticmethod
-    def from_config(config_object: LLMConfigObject) -> OpenAILLM:
-        provider = config_object.spec.provider
-        if not provider.is_of_kind(LLMProviders.OpenAI):
-            raise ValueError(f"Invalid LLM provider, actual {provider}, expected {LLMProviders.OpenAI}")
+    @classmethod
+    def from_config(cls, config_object: LLMConfigObject) -> OpenAILLM:
         config = OpenAIChatGPTConfiguration.from_spec(config_object.spec)
         return OpenAILLM(config=config, name=config_object.metadata.name)

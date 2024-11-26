@@ -1,19 +1,12 @@
 from __future__ import annotations
 
 import abc
-import os
 from enum import Enum
-from typing import Any, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 from council.contexts import Consumption
 from council.utils import DataObject, DataObjectSpecBase
-
-DATA_PATH: Final[str] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-ANTHROPIC_COSTS_FILENAME: Final[str] = "anthropic-costs.yaml"
-GEMINI_COSTS_FILENAME: Final[str] = "gemini-costs.yaml"
-OPENAI_COSTS_FILENAME: Final[str] = "openai-costs.yaml"
-GROQ_COSTS_FILENAME: Final[str] = "groq-costs.yaml"
 
 
 class LLMCostCard:
@@ -188,26 +181,6 @@ class LLMCostManagerObject(DataObject[LLMCostManagerSpec]):
             values = yaml.safe_load(f)
             cls._check_kind(values, "LLMCostManager")
             return LLMCostManagerObject.from_dict(values)
-
-    @staticmethod
-    def anthropic():
-        """Get LLMCostManager for Anthropic models"""
-        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, ANTHROPIC_COSTS_FILENAME))
-
-    @staticmethod
-    def gemini():
-        """Get LLMCostManager for Gemini models"""
-        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, GEMINI_COSTS_FILENAME))
-
-    @staticmethod
-    def openai():
-        """Get LLMCostManager for OpenAI models"""
-        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, OPENAI_COSTS_FILENAME))
-
-    @staticmethod
-    def groq():
-        """Get LLMCostManager for Groq models"""
-        return LLMCostManagerObject.from_yaml(os.path.join(DATA_PATH, GROQ_COSTS_FILENAME))
 
     def get_cost_map(self, category: str) -> Dict[str, LLMCostCard]:
         """Get cost mapping {model: LLMCostCard} for a given category"""
