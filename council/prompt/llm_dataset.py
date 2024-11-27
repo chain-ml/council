@@ -278,7 +278,8 @@ class LLMDatasetValidator:
         """
 
         for idx, conversation in enumerate(dataset.conversations, start=1):
-            assert conversation.messages[-1].role == "user", f"Conversation #{idx}: must end with a user message"
+            if conversation.messages[-1].role != "user":
+                raise LLMDatasetValidationException(f"Conversation #{idx}: must end with a user message")
 
         print("All conversations end with a user message.")
 
@@ -296,11 +297,13 @@ class LLMDatasetValidator:
         for idx, conversation in enumerate(dataset.conversations, start=1):
             prefix = f"Conversation #{idx}:"
 
-            assert len(conversation.messages) % 2 == 0, f"{prefix} There must be an even number of messages"
+            if len(conversation.messages) % 2 != 0:
+                raise LLMDatasetValidationException(f"{prefix} There must be an even number of messages")
+
             for i in range(0, len(conversation.messages), 2):
-                assert conversation.messages[i].role == "user", f"{prefix} Message #{i} must be a user message"
-                assert (
-                    conversation.messages[i + 1].role == "assistant"
-                ), f"{prefix} Message #{i + 1} must be an assistant message"
+                if conversation.messages[i].role != "user":
+                    raise LLMDatasetValidationException(f"{prefix} Message #{i} must be a user message")
+                if conversation.messages[i + 1].role != "assistant":
+                    raise LLMDatasetValidationException(f"{prefix} Message #{i + 1} must be an assistant message")
 
         print("All conversations have an even number of messages with alternating user/assistant roles.")
