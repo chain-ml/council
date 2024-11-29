@@ -67,8 +67,8 @@ class TestYAMLBlockResponseParserResponseTemplate(unittest.TestCase):
 reasoning: |
   Carefully
   reason about the number
-number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}
+number: # Number from 1 to 10
+abc: # Not multiline description
 ```""",
         )
 
@@ -77,8 +77,8 @@ abc: {{Not multiline description}}
         self.assertEqual(
             template,
             """```yaml
-number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}
+number: # Number from 1 to 10
+abc: # Not multiline description
 reasoning: |
   Carefully
   reason about the number
@@ -90,8 +90,8 @@ reasoning: |
         self.assertEqual(
             template,
             """```yaml
-abc: {{Not multiline description}}
-number: {{Number from 1 to 10}}
+abc: # Not multiline description
+number: # Number from 1 to 10
 reasoning: |
   Carefully
   reason about the number
@@ -104,8 +104,8 @@ reasoning: |
         self.assertEqual(
             template,
             """```yaml
-mode: {{Mode of operation, one of `mode_one` or `mode_two`}}
-pairs: {{List of number and reasoning pairs}}
+mode: # Mode of operation, one of `mode_one` or `mode_two`
+pairs: # List of number and reasoning pairs
 ```""",
         )
 
@@ -123,8 +123,8 @@ pairs: {{List of number and reasoning pairs}}
 reasoning: |
   Carefully
   reason about the number
-number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}
+number: # Number from 1 to 10
+abc: # Not multiline description
 ```""",
         )
 
@@ -137,16 +137,16 @@ class TestYAMLResponseParserResponseTemplate(unittest.TestCase):
             """reasoning: |
   Carefully
   reason about the number
-number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}""",
+number: # Number from 1 to 10
+abc: # Not multiline description""",
         )
 
     def test_number_reasoning_pair_reordered_template(self):
         template = YAMLResponseReordered.to_response_template(include_hints=False)
         self.assertEqual(
             template,
-            """number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}
+            """number: # Number from 1 to 10
+abc: # Not multiline description
 reasoning: |
   Carefully
   reason about the number""",
@@ -156,8 +156,8 @@ reasoning: |
         template = YAMLResponseReorderedAgain.to_response_template(include_hints=False)
         self.assertEqual(
             template,
-            """abc: {{Not multiline description}}
-number: {{Number from 1 to 10}}
+            """abc: # Not multiline description
+number: # Number from 1 to 10
 reasoning: |
   Carefully
   reason about the number""",
@@ -176,8 +176,8 @@ reasoning: |
 reasoning: |
   Carefully
   reason about the number
-number: {{Number from 1 to 10}}
-abc: {{Not multiline description}}
+number: # Number from 1 to 10
+abc: # Not multiline description
 
 Only respond with parsable YAML. Do not output anything else.""",
         )

@@ -126,7 +126,7 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
                 for line in description.split("\n"):
                     template_parts.append(f"  {line.strip()}")
             else:
-                template_parts.append(f"{field_name}: {{{{{description}}}}}")  # field_name: {{value}} when formatted
+                template_parts.append(f"{field_name}: # {description}")
 
         return "\n".join(template_parts)
 
