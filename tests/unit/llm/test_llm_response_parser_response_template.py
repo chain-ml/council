@@ -1,10 +1,21 @@
 import unittest
-from council.llm.llm_response_parser import YAMLBlockResponseParser, YAMLResponseParser
+from council.llm.llm_response_parser import (
+    YAMLBlockResponseParser,
+    YAMLResponseParser,
+    JSONBlockResponseParser,
+    JSONResponseParser,
+)
 from pydantic import Field
 from typing import Literal, List
 
 
 class MissingDescriptionField(YAMLBlockResponseParser):
+    _multiline_description = "\n".join(
+        [
+            "You can define multi-line description inside the response class",
+            "Like that",
+        ]
+    )
     number: float = Field(..., description="Number from 1 to 10")
     reasoning: str
 
@@ -12,40 +23,70 @@ class MissingDescriptionField(YAMLBlockResponseParser):
 multiline_description = "Carefully\nreason about the number"
 
 
-class YAMLBlockResponse(YAMLBlockResponseParser):
+class BaseResponse:
     reasoning: str = Field(..., description=multiline_description)
     number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
     abc: str = Field(..., description="Not multiline description")
 
 
-class YAMLResponse(YAMLResponseParser):
-    reasoning: str = Field(..., description=multiline_description)
-    number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
-    abc: str = Field(..., description="Not multiline description")
-
-
-class YAMLBlockResponseReordered(YAMLBlockResponseParser):
+class BaseResponseReordered:
     number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
     abc: str = Field(..., description="Not multiline description")
     reasoning: str = Field(..., description=multiline_description)
 
 
-class YAMLResponseReordered(YAMLResponseParser):
-    number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
-    abc: str = Field(..., description="Not multiline description")
-    reasoning: str = Field(..., description=multiline_description)
-
-
-class YAMLBlockResponseReorderedAgain(YAMLBlockResponseParser):
+class BaseResponseReorderedAgain:
     abc: str = Field(..., description="Not multiline description")
     number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
     reasoning: str = Field(..., description=multiline_description)
 
 
-class YAMLResponseReorderedAgain(YAMLResponseParser):
-    abc: str = Field(..., description="Not multiline description")
-    number: float = Field(..., ge=1, le=10, description="Number from 1 to 10")
-    reasoning: str = Field(..., description=multiline_description)
+class YAMLBlockResponse(YAMLBlockResponseParser, BaseResponse):
+    pass
+
+
+class YAMLResponse(YAMLResponseParser, BaseResponse):
+    pass
+
+
+class JSONBlockResponse(JSONBlockResponseParser, BaseResponse):
+    pass
+
+
+class JSONResponse(JSONResponseParser, BaseResponse):
+    pass
+
+
+class YAMLBlockResponseReordered(YAMLBlockResponseParser, BaseResponseReordered):
+    pass
+
+
+class YAMLResponseReordered(YAMLResponseParser, BaseResponseReordered):
+    pass
+
+
+class JSONBlockResponseReordered(JSONBlockResponseParser, BaseResponseReordered):
+    pass
+
+
+class JSONResponseReordered(JSONResponseParser, BaseResponseReordered):
+    pass
+
+
+class YAMLBlockResponseReorderedAgain(YAMLBlockResponseParser, BaseResponseReorderedAgain):
+    pass
+
+
+class YAMLResponseReorderedAgain(YAMLResponseParser, BaseResponseReorderedAgain):
+    pass
+
+
+class JSONBlockResponseReorderedAgain(JSONBlockResponseParser, BaseResponseReorderedAgain):
+    pass
+
+
+class JSONResponseReorderedAgain(JSONResponseParser, BaseResponseReorderedAgain):
+    pass
 
 
 class ComplexResponse(YAMLBlockResponseParser):
@@ -179,5 +220,117 @@ reasoning: |
 number: # Number from 1 to 10
 abc: # Not multiline description
 
-Only respond with parsable YAML. Do not output anything else.""",
+Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```.""",
+        )
+
+
+class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
+    def test_number_reasoning_pair_template(self):
+        template = JSONBlockResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```json
+{
+  "reasoning": "Carefully\\nreason about the number",
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description"
+}
+```""",
+        )
+
+    def test_number_reasoning_pair_reordered_template(self):
+        template = JSONBlockResponseReordered.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```json
+{
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description",
+  "reasoning": "Carefully\\nreason about the number"
+}
+```""",
+        )
+
+    def test_number_reasoning_pair_reordered_again_template(self):
+        template = JSONBlockResponseReorderedAgain.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```json
+{
+  "abc": "Not multiline description",
+  "number": "Number from 1 to 10",
+  "reasoning": "Carefully\\nreason about the number"
+}
+```""",
+        )
+
+    def test_with_hints(self):
+        template = JSONBlockResponse.to_response_template(include_hints=True)
+        self.assertEqual(
+            template,
+            """- Provide your response in a single json code block.
+- Make sure you respect JSON syntax, particularly for lists and dictionaries.
+- All keys must be present in the response, even when their values are empty.
+- For empty values, include empty quotes ("") rather than leaving them blank.
+
+```json
+{
+  "reasoning": "Carefully\\nreason about the number",
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description"
+}
+```""",
+        )
+
+
+class TestJSONResponseParserResponseTemplate(unittest.TestCase):
+    def test_number_reasoning_pair_template(self):
+        template = JSONResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """{
+  "reasoning": "Carefully\\nreason about the number",
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description"
+}""",
+        )
+
+    def test_number_reasoning_pair_reordered_template(self):
+        template = JSONResponseReordered.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """{
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description",
+  "reasoning": "Carefully\\nreason about the number"
+}""",
+        )
+
+    def test_number_reasoning_pair_reordered_again_template(self):
+        template = JSONResponseReorderedAgain.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """{
+  "abc": "Not multiline description",
+  "number": "Number from 1 to 10",
+  "reasoning": "Carefully\\nreason about the number"
+}""",
+        )
+
+    def test_with_hints(self):
+        template = JSONResponse.to_response_template(include_hints=True)
+        self.assertEqual(
+            template,
+            """- Provide your response as a parsable JSON.
+- Make sure you respect JSON syntax, particularly for lists and dictionaries.
+- All keys must be present in the response, even when their values are empty.
+- For empty values, include empty quotes ("") rather than leaving them blank.
+
+{
+  "reasoning": "Carefully\\nreason about the number",
+  "number": "Number from 1 to 10",
+  "abc": "Not multiline description"
+}
+
+Only respond with parsable JSON. Do not output anything else.""",
         )

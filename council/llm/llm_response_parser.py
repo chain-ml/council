@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import abc
 import json
+import os
 import re
 from typing import Any, Callable, Dict, Final, Type, TypeVar
 
@@ -15,6 +18,38 @@ T_Response = TypeVar("T_Response")
 LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 T = TypeVar("T", bound="BaseModelResponseParser")
+
+RESPONSE_HINTS_FILE_PATH: Final[str] = os.path.join(os.path.dirname(__file__), "data", "response_hints.yaml")
+
+
+class ResponseHintsHelper:
+    def __init__(self, hints: Dict[str, str], prefix: str):
+        self.hints_common = hints[f"{prefix}_hints_common"]
+        self.parser_hints_start = hints[f"{prefix}_parser_hints_start"]
+        self.parser_hints_end = hints[f"{prefix}_parser_hints_end"]
+        self.block_parser_hints_start = hints[f"{prefix}_block_parser_hints_start"]
+
+    @classmethod
+    def from_yaml(cls, path: str, prefix: str) -> ResponseHintsHelper:
+        with open(path, "r", encoding="utf-8") as file:
+            hints = yaml.safe_load(file)
+        return cls(hints, prefix)
+
+    @property
+    def parser(self) -> str:
+        return self.parser_hints_start + self.hints_common
+
+    @property
+    def block_parser(self) -> str:
+        return self.block_parser_hints_start + self.hints_common
+
+    @property
+    def parser_end(self) -> str:
+        return self.parser_hints_end
+
+
+yaml_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="yaml")
+json_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="json")
 
 
 class EchoResponseParser:
@@ -91,18 +126,6 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
 
         return cls.create_and_validate(**parsed_blocks)
 
-YAML_HINTS: Final[
-    str
-] = """
-- Make sure you respect YAML syntax, particularly for lists and dictionaries.
-- All keys must be present in the response, even when their values are empty.
-- For empty values, include empty quotes ("") rather than leaving them blank.
-- Always wrap string values in double quotes (") to ensure proper parsing, except when using the YAML pipe operator (|) for multi-line strings.
-"""
-
-YAML_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response as a parsable YAML." + YAML_HINTS
-
-YAML_BLOCK_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response in a single yaml code block." + YAML_HINTS
 
 T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLResponseParserBase")
 
@@ -159,7 +182,7 @@ class YAMLBlockResponseParser(YAMLResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal YAML block formatting hints.
         """
-        template_parts = [YAML_BLOCK_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts = [yaml_response_hints.block_parser] if include_hints else []
         template_parts.extend(["```yaml", cls._to_response_template(), "```"])
         return "\n".join(template_parts)
 
@@ -182,24 +205,12 @@ class YAMLResponseParser(YAMLResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal YAML formatting hints.
         """
-        template_parts = [YAML_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts = [yaml_response_hints.parser] if include_hints else []
         template_parts.append(cls._to_response_template())
         if include_hints:
-            template_parts.extend(["", "Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```."])
+            template_parts.extend(["", yaml_response_hints.parser_end])
         return "\n".join(template_parts)
 
-
-JSON_HINTS: Final[
-    str
-] = """
-- Make sure you respect JSON syntax, particularly for lists and dictionaries.
-- All keys must be present in the response, even when their values are empty.
-- For empty values, include empty quotes ("") rather than leaving them blank.
-"""
-
-JSON_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response as a parsable JSON." + JSON_HINTS
-
-JSON_BLOCK_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response in a single json code block." + JSON_HINTS
 
 T_JSONResponseParserBase = TypeVar("T_JSONResponseParserBase", bound="JSONResponseParserBase")
 
@@ -256,7 +267,7 @@ class JSONBlockResponseParser(JSONResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal JSON block formatting hints.
         """
-        template_parts = [JSON_BLOCK_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts = [json_response_hints.block_parser] if include_hints else []
         template_parts.extend(["```json", cls._to_response_template(), "```"])
         return "\n".join(template_parts)
 
@@ -279,8 +290,8 @@ class JSONResponseParser(JSONResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal JSON formatting hints.
         """
-        template_parts = [JSON_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts = [json_response_hints.parser] if include_hints else []
         template_parts.append(cls._to_response_template())
         if include_hints:
-            template_parts.extend(["", "Only respond with parsable JSON. Do not output anything else."])
+            template_parts.extend(["", json_response_hints.parser_end])
         return "\n".join(template_parts)

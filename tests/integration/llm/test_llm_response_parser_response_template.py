@@ -25,7 +25,7 @@ Generate an RPG character.
 
 class Character:
     name: str = Field(..., description="The name of the character")
-    power: float = Field(..., ge=0, le=1, description="The power of the character, float from 0 to 1") 
+    power: float = Field(..., ge=0, le=1, description="The power of the character, float from 0 to 1")
     role: str = Field(..., description="The role of the character")
 
     def __str__(self):
