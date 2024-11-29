@@ -185,7 +185,7 @@ class YAMLResponseParser(YAMLResponseParserBase):
         template_parts = [YAML_RESPONSE_PARSER_HINTS] if include_hints else []
         template_parts.append(cls._to_response_template())
         if include_hints:
-            template_parts.extend(["", "Only respond with parsable YAML. Do not output anything else."])
+            template_parts.extend(["", "Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```."])
         return "\n".join(template_parts)
 
 
