@@ -91,7 +91,6 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
 
         return cls.create_and_validate(**parsed_blocks)
 
-
 YAML_HINTS: Final[
     str
 ] = """
@@ -190,7 +189,52 @@ class YAMLResponseParser(YAMLResponseParserBase):
         return "\n".join(template_parts)
 
 
-class JSONBlockResponseParser(BaseModelResponseParser):
+JSON_HINTS: Final[
+    str
+] = """
+- Make sure you respect JSON syntax, particularly for lists and dictionaries.
+- All keys must be present in the response, even when their values are empty.
+- For empty values, include empty quotes ("") rather than leaving them blank.
+"""
+
+JSON_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response as a parsable JSON." + JSON_HINTS
+
+JSON_BLOCK_RESPONSE_PARSER_HINTS: Final[str] = "- Provide your response in a single json code block." + JSON_HINTS
+
+T_JSONResponseParserBase = TypeVar("T_JSONResponseParserBase", bound="JSONResponseParserBase")
+
+
+class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
+    @classmethod
+    def _to_response_template(cls: Type[T]) -> str:
+        """Generate a JSON response template based on the model's fields and their descriptions."""
+        template_dict = {}
+
+        for field_name, field in cls.model_fields.items():
+            description = field.description
+            if description is None:
+                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+            is_multiline = "\n" in description
+
+            if field.annotation is str and is_multiline:
+                # For multiline strings, join the lines with newlines
+                template_dict[field_name] = "\n".join(line.strip() for line in description.split("\n"))
+            else:
+                template_dict[field_name] = description
+
+        # Return formatted JSON with descriptions as values
+        return json.dumps(template_dict, indent=2)
+
+    @staticmethod
+    def parse(content: str) -> Dict[str, Any]:
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            raise LLMParsingException(f"Error while parsing json: {e}")
+
+
+class JSONBlockResponseParser(JSONResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
@@ -201,23 +245,42 @@ class JSONBlockResponseParser(BaseModelResponseParser):
         if json_block is None:
             raise LLMParsingException("json block is not found")
 
-        json_content = JSONResponseParser.parse(json_block.code)
+        json_content = JSONResponseParserBase.parse(json_block.code)
         return cls.create_and_validate(**json_content)
 
+    @classmethod
+    def to_response_template(cls: Type[T_JSONResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate JSON block response template based on the model's fields and their descriptions.
 
-class JSONResponseParser(BaseModelResponseParser):
+        Args:
+            include_hints: If True, returned template will include universal JSON block formatting hints.
+        """
+        template_parts = [JSON_BLOCK_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts.extend(["```json", cls._to_response_template(), "```"])
+        return "\n".join(template_parts)
+
+
+class JSONResponseParser(JSONResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         """LLMFunction ResponseParser for response containing raw JSON content"""
         llm_response = response.value
 
-        json_content = JSONResponseParser.parse(llm_response)
+        json_content = JSONResponseParserBase.parse(llm_response)
         return cls.create_and_validate(**json_content)
 
-    @staticmethod
-    def parse(content: str) -> Dict[str, Any]:
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError as e:
-            raise LLMParsingException(f"Error while parsing json: {e}")
+    @classmethod
+    def to_response_template(cls: Type[T_JSONResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate JSON response template based on the model's fields and their descriptions.
+
+        Args:
+            include_hints: If True, returned template will include universal JSON formatting hints.
+        """
+        template_parts = [JSON_RESPONSE_PARSER_HINTS] if include_hints else []
+        template_parts.append(cls._to_response_template())
+        if include_hints:
+            template_parts.extend(["", "Only respond with parsable JSON. Do not output anything else."])
+        return "\n".join(template_parts)
