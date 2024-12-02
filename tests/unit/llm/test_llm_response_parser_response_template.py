@@ -100,7 +100,7 @@ class TestYAMLBlockResponseParserResponseTemplate(unittest.TestCase):
             MissingDescriptionField.to_response_template()
         self.assertEqual(str(e.exception), "Description is required for field `reasoning` in MissingDescriptionField")
 
-    def test_number_reasoning_pair_template(self):
+    def test_template(self):
         template = YAMLBlockResponse.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -113,7 +113,7 @@ abc: # Not multiline description
 ```""",
         )
 
-    def test_number_reasoning_pair_reordered_template(self):
+    def test_reordered_template(self):
         template = YAMLBlockResponseReordered.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -126,7 +126,7 @@ reasoning: |
 ```""",
         )
 
-    def test_number_reasoning_pair_reordered_again_template(self):
+    def test_reordered_again_template(self):
         template = YAMLBlockResponseReorderedAgain.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -154,7 +154,7 @@ pairs: # List of number and reasoning pairs
         template = YAMLBlockResponse.to_response_template(include_hints=True)
         self.assertEqual(
             template,
-            """- Provide your response in a single yaml code block.
+            """- Provide your response in a single YAML code block.
 - Make sure you respect YAML syntax, particularly for lists and dictionaries.
 - All keys must be present in the response, even when their values are empty.
 - For empty values, include empty quotes ("") rather than leaving them blank.
@@ -171,7 +171,7 @@ abc: # Not multiline description
 
 
 class TestYAMLResponseParserResponseTemplate(unittest.TestCase):
-    def test_number_reasoning_pair_template(self):
+    def test_template(self):
         template = YAMLResponse.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -182,7 +182,7 @@ number: # Number from 1 to 10
 abc: # Not multiline description""",
         )
 
-    def test_number_reasoning_pair_reordered_template(self):
+    def test_reordered_template(self):
         template = YAMLResponseReordered.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -193,7 +193,7 @@ reasoning: |
   reason about the number""",
         )
 
-    def test_number_reasoning_pair_reordered_again_template(self):
+    def test_reordered_again_template(self):
         template = YAMLResponseReorderedAgain.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -225,7 +225,7 @@ Only respond with parsable YAML. Do not output anything else. Do not wrap your r
 
 
 class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
-    def test_number_reasoning_pair_template(self):
+    def test_template(self):
         template = JSONBlockResponse.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -238,7 +238,7 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
 ```""",
         )
 
-    def test_number_reasoning_pair_reordered_template(self):
+    def test_reordered_template(self):
         template = JSONBlockResponseReordered.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -251,7 +251,7 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
 ```""",
         )
 
-    def test_number_reasoning_pair_reordered_again_template(self):
+    def test_reordered_again_template(self):
         template = JSONBlockResponseReorderedAgain.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -268,7 +268,7 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
         template = JSONBlockResponse.to_response_template(include_hints=True)
         self.assertEqual(
             template,
-            """- Provide your response in a single json code block.
+            """- Provide your response in a single JSON code block.
 - Make sure you respect JSON syntax, particularly for lists and dictionaries.
 - All keys must be present in the response, even when their values are empty.
 - For empty values, include empty quotes ("") rather than leaving them blank.
@@ -284,7 +284,7 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
 
 
 class TestJSONResponseParserResponseTemplate(unittest.TestCase):
-    def test_number_reasoning_pair_template(self):
+    def test_template(self):
         template = JSONResponse.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -295,7 +295,7 @@ class TestJSONResponseParserResponseTemplate(unittest.TestCase):
 }""",
         )
 
-    def test_number_reasoning_pair_reordered_template(self):
+    def test_reordered_template(self):
         template = JSONResponseReordered.to_response_template(include_hints=False)
         self.assertEqual(
             template,
@@ -306,7 +306,7 @@ class TestJSONResponseParserResponseTemplate(unittest.TestCase):
 }""",
         )
 
-    def test_number_reasoning_pair_reordered_again_template(self):
+    def test_reordered_again_template(self):
         template = JSONResponseReorderedAgain.to_response_template(include_hints=False)
         self.assertEqual(
             template,

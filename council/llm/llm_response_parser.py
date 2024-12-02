@@ -229,12 +229,10 @@ class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
             is_multiline = "\n" in description
 
             if field.annotation is str and is_multiline:
-                # For multiline strings, join the lines with newlines
                 template_dict[field_name] = "\n".join(line.strip() for line in description.split("\n"))
             else:
                 template_dict[field_name] = description
 
-        # Return formatted JSON with descriptions as values
         return json.dumps(template_dict, indent=2)
 
     @staticmethod

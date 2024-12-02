@@ -49,8 +49,6 @@ class JSONCharacter(JSONResponseParser, Character):
 
 
 class TestLLMResponseParserResponseTemplate(unittest.TestCase):
-    """Requires an Azure LLM model deployed"""
-
     def setUp(self) -> None:
         dotenv.load_dotenv()
         with OsEnviron("OPENAI_LLM_MODEL", "gpt-4o-mini"):

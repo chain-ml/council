@@ -8,7 +8,7 @@ yaml_parser_hints_start: |
   - Provide your response as a parsable YAML.
 yaml_parser_hints_end: Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```.
 yaml_block_parser_hints_start: |
-  - Provide your response in a single yaml code block.
+  - Provide your response in a single YAML code block.
 
 # JSON
 json_hints_common: |
@@ -19,4 +19,4 @@ json_parser_hints_start: |
   - Provide your response as a parsable JSON.
 json_parser_hints_end: Only respond with parsable JSON. Do not output anything else.
 json_block_parser_hints_start: |
-  - Provide your response in a single json code block.
+  - Provide your response in a single JSON code block.
