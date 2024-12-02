@@ -13,3 +13,8 @@ class LLMPrompts:
     sql: str = "prompt-sql.yaml"
     sql_template: str = "prompt-template-sql.yaml"
     large: str = "prompt-large.yaml"
+
+
+class LLMDatasets:
+    batch: str = "dataset-batch.yaml"
+    finetuning: str = "dataset-fine-tuning.yaml"
