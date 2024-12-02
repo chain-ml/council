@@ -67,7 +67,6 @@ for consumption in result.consumptions:
 # gpt-4o-mini-2024-07-18:total_tokens_cost consumption: 6.7499e-06 USD
 ```
 
-
 #### Anthropic Prompt Caching Support
 
 For information about enabling Anthropic prompt caching, refer to {class}`~council.llm.llm_message.LLMCacheControlData`.
@@ -102,6 +101,11 @@ Middleware management:
 
 - {class}`~council.llm.LLMMiddlewareChain`
 - {class}`~council.llm.LLMMiddleware`
+
+### Fine-tuning and Batch API
+
+See {class}`~council.prompt.LLMDatasetObject` for details on how to convert your YAML dataset into JSONL for fine-tuning and batch API.
+Currently, the functionality is limited to generating JSONL files and does not include utilities for managing fine-tuning or batch job processes.
 
 ## Reference
 
