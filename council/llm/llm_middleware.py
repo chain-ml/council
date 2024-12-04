@@ -112,21 +112,33 @@ class LLMMiddlewareChain:
 class LLMLoggingMiddleware:
     """Middleware for logging LLM requests, responses and consumptions."""
 
-    def __init__(self, log_consumptions: bool = False) -> None:
+    def __init__(self, verbose: bool = True, log_consumptions: bool = False) -> None:
+        self.verbose = verbose
         self.log_consumptions = log_consumptions
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
-        request.context.logger.info(
+        request_log_message = (
             f"Sending request with {len(request.messages)} message(s) to {llm.configuration.model_name()}"
         )
+        if self.verbose:
+            request_log_message += ":\n" + "\n\n".join(message.format() for message in request.messages)
+
+        request.context.logger.info(request_log_message)
         response = execute(request)
-        if response.result is not None:
-            request.context.logger.info(f"Response: `{response.result.first_choice}` in {response.duration} seconds")
-            if self.log_consumptions:
-                for consumption in response.result.consumptions:
-                    request.context.logger.info(f"{consumption}")
-        else:
+        if response.result is None:
             request.context.logger.warning("No response")
+            return response
+
+        response_log_message = f"Got a response in {response.duration:.4f} seconds"
+        if self.verbose:
+            response_log_message += f":\n{response.result.first_choice}"
+
+        request.context.logger.info(response_log_message)
+
+        if self.log_consumptions:
+            for consumption in response.result.consumptions:
+                request.context.logger.info(f"{consumption}")
+
         return response
 
 
