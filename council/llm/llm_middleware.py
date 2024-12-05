@@ -194,7 +194,7 @@ class LLMLoggingMiddleware(LLMLoggingMiddlewareBase):
 
     def _log(self, content: str) -> None:
         if self.context_logger is None:
-            raise ValueError("Calling LLMLoggingMiddleware._log() outside of __call__()")
+            raise RuntimeError("Calling LLMLoggingMiddleware._log() outside of __call__()")
 
         self.context_logger.info(content)
 
