@@ -125,6 +125,21 @@ class LLMLoggingStrategy(str, Enum):
     VerboseWithConsumptions = "verbose_consumptions"
     """Full request/response content with consumption details"""
 
+    @property
+    def is_minimal(self) -> bool:
+        """Whether this strategy uses minimal logging."""
+        return self in (LLMLoggingStrategy.Minimal, LLMLoggingStrategy.MinimalWithConsumptions)
+
+    @property
+    def is_verbose(self) -> bool:
+        """Whether this strategy uses verbose logging."""
+        return self in (LLMLoggingStrategy.Verbose, LLMLoggingStrategy.VerboseWithConsumptions)
+
+    @property
+    def has_consumptions(self) -> bool:
+        """Whether this strategy includes consumption details."""
+        return self in (LLMLoggingStrategy.MinimalWithConsumptions, LLMLoggingStrategy.VerboseWithConsumptions)
+
 
 class LLMLoggingMiddlewareBase:
     """Base middleware class for logging LLM requests, responses and consumptions."""
@@ -136,41 +151,45 @@ class LLMLoggingMiddlewareBase:
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         self._log_llm_request(llm, request)
         response = execute(request)
-        self._log_llm_response(response)
+        self._log_llm_response(llm, response)
         self._log_consumptions(response)
         return response
 
-    def _format_llm_request(self, llm: LLMBase, request: LLMRequest) -> str:
-        name = self.component_name if self.component_name is not None else llm.configuration.model_name()
+    def _get_name(self, llm: LLMBase) -> str:
+        return self.component_name if self.component_name is not None else llm.configuration.model_name()
 
-        log_message_start = f"LLM input for {name}:"
-        if self.strategy in (LLMLoggingStrategy.Minimal, LLMLoggingStrategy.MinimalConsumptions):
+    def _format_llm_request(self, llm: LLMBase, request: LLMRequest) -> str:
+        log_message_start = f"LLM input for {self._get_name(llm)}:"
+        if self.strategy.is_minimal:
             return f"{log_message_start} {len(request.messages)} message(s)"
         return f"{log_message_start}\n" + "\n\n".join(message.format() for message in request.messages)
 
-    def _format_llm_response(self, response: LLMResponse) -> str:
-        for_name = f" for {self.component_name}" if self.component_name is not None else ""
+    def _format_llm_response(self, llm: LLMBase, response: LLMResponse) -> str:
+        for_name = f" for {self._get_name(llm)}"
         if response.result is None:
             return f"LLM output{for_name} is not available"
 
-        log_message = f"LLM output{for_name} received in {response.duration:.4f} seconds"
-        if self.strategy in (LLMLoggingStrategy.Minimal, LLMLoggingStrategy.MinimalConsumptions):
+        log_message = (
+            f"LLM output{for_name} received in {response.duration:.4f} seconds, "
+            f"{len(response.result.choices)} choice(s) returned"
+        )
+        if self.strategy.is_minimal:
             return log_message
         return f"{log_message}:\n{response.result.first_choice}"
 
     def _log_llm_request(self, llm: LLMBase, request: LLMRequest) -> None:
         self._log(self._format_llm_request(llm, request))
 
-    def _log_llm_response(self, response: LLMResponse) -> None:
-        self._log(self._format_llm_response(response))
+    def _log_llm_response(self, llm: LLMBase, response: LLMResponse) -> None:
+        self._log(self._format_llm_response(llm, response))
 
     def _log_consumptions(self, response: LLMResponse) -> None:
         if response.result is None:
             return
 
-        if self.strategy in (LLMLoggingStrategy.MinimalConsumptions, LLMLoggingStrategy.VerboseConsumptions):
+        if self.strategy.has_consumptions:
             for consumption in response.result.consumptions:
-                self._log(f"{consumption}")
+                self._log(f"Consumption for {self.component_name}: {consumption}")
 
     def _log(self, content: str) -> None:
         """Abstract method to be implemented by subclasses for actual logging."""
