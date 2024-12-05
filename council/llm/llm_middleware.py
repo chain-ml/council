@@ -116,7 +116,7 @@ class LLMLoggingStrategy(str, Enum):
     Minimal = "minimal"
     """Basic request/response info without details"""
 
-    MinimalConsumptions = "minimal_consumptions"
+    MinimalWithConsumptions = "minimal_consumptions"
     """Basic info with consumption details"""
 
     Verbose = "verbose"
