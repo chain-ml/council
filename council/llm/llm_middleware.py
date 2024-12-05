@@ -165,12 +165,12 @@ class LLMLoggingMiddlewareBase:
         return f"{log_message_start}\n" + "\n\n".join(message.format() for message in request.messages)
 
     def _format_llm_response(self, llm: LLMBase, response: LLMResponse) -> str:
-        for_name = f" for {self._get_name(llm)}"
+        log_message_start = f"LLM output for {self._get_name(llm)}"
         if response.result is None:
-            return f"LLM output{for_name} is not available"
+            return f"{log_message_start} is not available"
 
         log_message = (
-            f"LLM output{for_name} received in {response.duration:.4f} seconds, "
+            f"{log_message_start} received in {response.duration:.4f} seconds, "
             f"{len(response.result.choices)} choice(s) returned"
         )
         if self.strategy.is_minimal:
