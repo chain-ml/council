@@ -122,7 +122,7 @@ class LLMLoggingStrategy(str, Enum):
     Verbose = "verbose"
     """Full request/response content"""
 
-    VerboseConsumptions = "verbose_consumptions"
+    VerboseWithConsumptions = "verbose_consumptions"
     """Full request/response content with consumption details"""
 
 
