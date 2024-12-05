@@ -149,23 +149,29 @@ class LLMLoggingMiddlewareBase:
         self.component_name = component_name
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
-        self._log_llm_request(llm, request)
+        name = self.component_name if self.component_name is not None else llm.configuration.model_name()
+
+        self._log_llm_request(request, name)
         response = execute(request)
-        self._log_llm_response(llm, response)
+        self._log_llm_response(response, name)
         self._log_consumptions(response)
+
         return response
 
-    def _get_name(self, llm: LLMBase) -> str:
-        return self.component_name if self.component_name is not None else llm.configuration.model_name()
+    def _log_llm_request(self, request: LLMRequest, name: str) -> None:
+        self._log(self._format_llm_request(request, name))
 
-    def _format_llm_request(self, llm: LLMBase, request: LLMRequest) -> str:
-        log_message_start = f"LLM input for {self._get_name(llm)}:"
+    def _format_llm_request(self, request: LLMRequest, name: str) -> str:
+        log_message_start = f"LLM input for {name}:"
         if self.strategy.is_minimal:
             return f"{log_message_start} {len(request.messages)} message(s)"
         return f"{log_message_start}\n" + "\n\n".join(message.format() for message in request.messages)
 
-    def _format_llm_response(self, llm: LLMBase, response: LLMResponse) -> str:
-        log_message_start = f"LLM output for {self._get_name(llm)}"
+    def _log_llm_response(self, response: LLMResponse, name: str) -> None:
+        self._log(self._format_llm_response(response, name))
+
+    def _format_llm_response(self, response: LLMResponse, name: str) -> str:
+        log_message_start = f"LLM output for {name}"
         if response.result is None:
             return f"{log_message_start} is not available"
 
@@ -176,12 +182,6 @@ class LLMLoggingMiddlewareBase:
         if self.strategy.is_minimal:
             return log_message
         return f"{log_message}:\n{response.result.first_choice}"
-
-    def _log_llm_request(self, llm: LLMBase, request: LLMRequest) -> None:
-        self._log(self._format_llm_request(llm, request))
-
-    def _log_llm_response(self, llm: LLMBase, response: LLMResponse) -> None:
-        self._log(self._format_llm_response(llm, response))
 
     def _log_consumptions(self, response: LLMResponse) -> None:
         if response.result is None:
