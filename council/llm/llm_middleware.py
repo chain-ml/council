@@ -200,7 +200,7 @@ class LLMLoggingMiddleware(LLMLoggingMiddlewareBase):
 
 
 class LLMFileLoggingMiddleware(LLMLoggingMiddlewareBase):
-    """Middleware for logging LLM requests, responses and consumptions into a file."""
+    """Middleware for logging LLM requests, responses and consumptions into a `log_file` by appending to it."""
 
     def __init__(
         self,
@@ -208,7 +208,6 @@ class LLMFileLoggingMiddleware(LLMLoggingMiddlewareBase):
         strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose,
         component_name: Optional[str] = None,
     ) -> None:
-        """Initialize the middleware with the path to the log_file, component name and logging strategy"""
         super().__init__(strategy, component_name)
         self.log_file = log_file
         self._lock = Lock()
