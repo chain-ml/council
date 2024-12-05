@@ -4,10 +4,11 @@ import hashlib
 import json
 import time
 from collections import OrderedDict
+from enum import Enum
 from threading import Lock
 from typing import Any, Callable, List, Optional, Protocol, Sequence
 
-from council.contexts import Consumption, LLMContext
+from council.contexts import Consumption, ContextLogger, LLMContext
 
 from .llm_base import LLMBase, LLMMessage, LLMResult, T_Configuration
 from .llm_exception import LLMOutOfRetriesException
@@ -109,72 +110,108 @@ class LLMMiddlewareChain:
         return wrapped
 
 
-class LLMLoggingMiddleware:
-    """Middleware for logging LLM requests, responses and consumptions."""
+class LLMLoggingStrategy(str, Enum):
+    """Defines logging strategies for LLM middleware."""
 
-    def __init__(self, verbose: bool = True, log_consumptions: bool = False) -> None:
-        self.verbose = verbose
-        self.log_consumptions = log_consumptions
+    Minimal = "minimal"
+    """Basic request/response info without details"""
 
-    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
-        request_log_message = (
-            f"Sending request with {len(request.messages)} message(s) to {llm.configuration.model_name()}"
-        )
-        if self.verbose:
-            request_log_message += ":\n" + "\n\n".join(message.format() for message in request.messages)
+    MinimalConsumptions = "minimal_consumptions"
+    """Basic info with consumption details"""
 
-        request.context.logger.info(request_log_message)
-        response = execute(request)
-        if response.result is None:
-            request.context.logger.warning("No response")
-            return response
+    Verbose = "verbose"
+    """Full request/response content"""
 
-        response_log_message = f"Got a response in {response.duration:.4f} seconds"
-        if self.verbose:
-            response_log_message += f":\n{response.result.first_choice}"
-
-        request.context.logger.info(response_log_message)
-
-        if self.log_consumptions:
-            for consumption in response.result.consumptions:
-                request.context.logger.info(f"{consumption}")
-
-        return response
+    VerboseConsumptions = "verbose_consumptions"
+    """Full request/response content with consumption details"""
 
 
-class LLMFileLoggingMiddleware:
-    """Middleware for logging LLM requests, responses and consumptions into a file."""
+class LLMLoggingMiddlewareBase:
+    """Base middleware class for logging LLM requests, responses and consumptions."""
 
-    def __init__(self, log_file: str, component_name: str, log_consumptions: bool = False) -> None:
-        """Initialize the middleware with the path to the log_file, component name and whether to log consumptions"""
-
-        self.log_file = log_file
+    def __init__(self, strategy: LLMLoggingStrategy, component_name: Optional[str]) -> None:
+        self.strategy = strategy
         self.component_name = component_name
-        self.log_consumptions = log_consumptions
-        self._lock = Lock()
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
-        self._log_llm_request(request)
+        self._log_llm_request(llm, request)
         response = execute(request)
         self._log_llm_response(response)
+        self._log_consumptions(response)
         return response
 
-    def _log_llm_request(self, request: LLMRequest) -> None:
-        messages_str = "\n\n".join(message.format() for message in request.messages)
-        self._log(f"LLM input for {self.component_name}:\n{messages_str}")
+    def _format_llm_request(self, llm: LLMBase, request: LLMRequest) -> str:
+        name = self.component_name if self.component_name is not None else llm.configuration.model_name()
+
+        log_message_start = f"LLM input for {name}:"
+        if self.strategy in (LLMLoggingStrategy.Minimal, LLMLoggingStrategy.MinimalConsumptions):
+            return f"{log_message_start} {len(request.messages)} message(s)"
+        return f"{log_message_start}\n" + "\n\n".join(message.format() for message in request.messages)
+
+    def _format_llm_response(self, response: LLMResponse) -> str:
+        for_name = f" for {self.component_name}" if self.component_name is not None else ""
+        if response.result is None:
+            return f"LLM output{for_name} is not available"
+
+        log_message = f"LLM output{for_name} received in {response.duration:.4f} seconds"
+        if self.strategy in (LLMLoggingStrategy.Minimal, LLMLoggingStrategy.MinimalConsumptions):
+            return log_message
+        return f"{log_message}:\n{response.result.first_choice}"
+
+    def _log_llm_request(self, llm: LLMBase, request: LLMRequest) -> None:
+        self._log(self._format_llm_request(llm, request))
 
     def _log_llm_response(self, response: LLMResponse) -> None:
-        if response.result is None:
-            self._log(f"LLM output for {self.component_name} is not available")
-            return
-        self._log(
-            f"LLM output for {self.component_name} Duration: {response.duration:.2f} Output:\n"
-            f"{response.result.first_choice}"
-        )
+        self._log(self._format_llm_response(response))
 
-        if self.log_consumptions:
+    def _log_consumptions(self, response: LLMResponse) -> None:
+        if response.result is None:
+            return
+
+        if self.strategy in (LLMLoggingStrategy.MinimalConsumptions, LLMLoggingStrategy.VerboseConsumptions):
             for consumption in response.result.consumptions:
-                self._log(f"Consumption for {self.component_name}: {consumption}")
+                self._log(f"{consumption}")
+
+    def _log(self, content: str) -> None:
+        """Abstract method to be implemented by subclasses for actual logging."""
+        raise NotImplementedError()
+
+
+class LLMLoggingMiddleware(LLMLoggingMiddlewareBase):
+    """Middleware for logging LLM requests, responses and consumptions to the context logger."""
+
+    def __init__(
+        self, strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose, component_name: Optional[str] = None
+    ) -> None:
+        super().__init__(strategy, component_name)
+        self.context_logger: Optional[ContextLogger] = None
+
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+        self.context_logger = request.context.logger
+        response = super().__call__(llm, execute, request)
+        self.context_logger = None
+        return response
+
+    def _log(self, content: str) -> None:
+        if self.context_logger is None:
+            raise ValueError("Calling LLMLoggingMiddleware._log() outside of __call__()")
+
+        self.context_logger.info(content)
+
+
+class LLMFileLoggingMiddleware(LLMLoggingMiddlewareBase):
+    """Middleware for logging LLM requests, responses and consumptions into a file."""
+
+    def __init__(
+        self,
+        log_file: str,
+        strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose,
+        component_name: Optional[str] = None,
+    ) -> None:
+        """Initialize the middleware with the path to the log_file, component name and logging strategy"""
+        super().__init__(strategy, component_name)
+        self.log_file = log_file
+        self._lock = Lock()
 
     def _log(self, content: str) -> None:
         """Append `content` to a current log file"""
