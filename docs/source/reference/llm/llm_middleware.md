@@ -11,7 +11,7 @@
 ```
 # Logging
 
-# LLMLoggingStrategy
+## LLMLoggingStrategy
 
 ```{eval-rst}
 .. autoclass:: council.llm.LLMLoggingStrategy
