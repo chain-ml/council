@@ -1,0 +1,22 @@
+# YAML
+yaml_hints_common: |
+  - Make sure you respect YAML syntax, particularly for lists and dictionaries.
+  - All keys must be present in the response, even when their values are empty.
+  - For empty values, include empty quotes ("") rather than leaving them blank.
+  - Always wrap string values in double quotes (") to ensure proper parsing, except when using the YAML pipe operator (|) for multi-line strings.
+yaml_parser_hints_start: |
+  - Provide your response as a parsable YAML.
+yaml_parser_hints_end: Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```.
+yaml_block_parser_hints_start: |
+  - Provide your response in a single YAML code block.
+
+# JSON
+json_hints_common: |
+  - Make sure you respect JSON syntax, particularly for lists and dictionaries.
+  - All keys must be present in the response, even when their values are empty.
+  - For empty values, include empty quotes ("") rather than leaving them blank.
+json_parser_hints_start: |
+  - Provide your response as a parsable JSON.
+json_parser_hints_end: Only respond with parsable JSON. Do not output anything else.
+json_block_parser_hints_start: |
+  - Provide your response in a single JSON code block.

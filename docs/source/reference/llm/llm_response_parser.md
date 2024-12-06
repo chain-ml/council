@@ -83,7 +83,7 @@ print(response.sql)
 import os
 from typing import Literal
 
-# !pip install council-ai==0.0.24
+# !pip install council-ai==0.0.27
 
 from council import OpenAILLM
 from council.llm.llm_function import LLMFunction
@@ -91,22 +91,19 @@ from council.llm.llm_response_parser import YAMLBlockResponseParser
 from pydantic import Field
 
 SYSTEM_PROMPT = """
-Output RPG character info in the following YAML block:
+Generate RPG character:
 
-```yaml
-character_class: # character's class (Warrior, Mage, Rogue, Bard or Tech Support)
-name: # character's name
-description: # character's tragic backstory, 50 chars minimum
-health: # character's health, integer, from 1 to 100 points
-```
+{response_template}
 """
 
 
 class RPGCharacterFromYAMLBlock(YAMLBlockResponseParser):
-    name: str
-    character_class: Literal["Warrior", "Mage", "Rogue", "Bard", "Tech Support"]
-    description: str = Field(..., min_length=50)
-    health: int = Field(..., ge=1, le=100)
+    character_class: Literal["Warrior", "Mage", "Rogue", "Bard", "Tech Support"] = Field(
+        ..., description="Character's class (Warrior, Mage, Rogue, Bard or Tech Support)"
+    )
+    name: str = Field(..., min_length=3, description="Character's name")
+    description: str = Field(..., min_length=50, description="Character's tragic backstory, 50 chars minimum")
+    health: int = Field(..., ge=1, le=100, description="Character's health, integer, from 1 to 100 points")
 
 
 os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
@@ -114,7 +111,9 @@ os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
 llm = OpenAILLM.from_env()
 
 llm_function: LLMFunction[RPGCharacterFromYAMLBlock] = LLMFunction(
-    llm, RPGCharacterFromYAMLBlock.from_response, SYSTEM_PROMPT
+    llm,
+    RPGCharacterFromYAMLBlock.from_response,
+    SYSTEM_PROMPT.format(response_template=RPGCharacterFromYAMLBlock.to_response_template()),
 )
 
 character = llm_function.execute(user_message="Create some wise mage")
@@ -155,7 +154,7 @@ Usage example with OpenAI json mode:
 import os
 from typing import Literal
 
-# !pip install council-ai==0.0.24
+# !pip install council-ai==0.0.27
 
 from council import OpenAILLM
 from council.llm.llm_function import LLMFunction
@@ -163,22 +162,19 @@ from council.llm.llm_response_parser import JSONResponseParser
 from pydantic import Field
 
 SYSTEM_PROMPT = """
-Output RPG character info in the following JSON format:
+Generate RPG character:
 
-{
-character_class: # character's class (Warrior, Mage, Rogue, Bard or Tech Support)
-name: # character's name
-description: # character's tragic backstory, 50 chars minimum
-health: # character's health, integer, from 1 to 100 points
-}
+{response_template}
 """
 
 
 class RPGCharacterFromJSON(JSONResponseParser):
-    name: str
-    character_class: Literal["Warrior", "Mage", "Rogue", "Bard", "Tech Support"]
-    description: str = Field(..., min_length=50)
-    health: int = Field(..., ge=1, le=100)
+    character_class: Literal["Warrior", "Mage", "Rogue", "Bard", "Tech Support"] = Field(
+        ..., description="Character's class (Warrior, Mage, Rogue, Bard or Tech Support)"
+    )
+    name: str = Field(..., min_length=3, description="Character's name")
+    description: str = Field(..., min_length=50, description="Character's tragic backstory, 50 chars minimum")
+    health: int = Field(..., ge=1, le=100, description="Character's health, integer, from 1 to 100 points")
 
 
 os.environ["OPENAI_API_KEY"] = "sk-YOUR-KEY-HERE"
@@ -186,11 +182,13 @@ os.environ["OPENAI_LLM_MODEL"] = "gpt-4o-mini-2024-07-18"
 llm = OpenAILLM.from_env()
 
 llm_function: LLMFunction[RPGCharacterFromJSON] = LLMFunction(
-    llm, RPGCharacterFromJSON.from_response, SYSTEM_PROMPT
+    llm,
+    RPGCharacterFromJSON.from_response,
+    SYSTEM_PROMPT.format(response_template=RPGCharacterFromJSON.to_response_template()),
 )
 
 character = llm_function.execute(
-    user_message="Create some wise mage",
+    user_message="Create some strong warrior",
     response_format={"type": "json_object"}  # using OpenAI's json mode
 )
 print(type(character))

@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import abc
 import json
+import os
 import re
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, Callable, Dict, Final, Type, TypeVar
 
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from ..utils import CodeParser
 from .llm_answer import LLMParsingException
@@ -14,6 +18,38 @@ T_Response = TypeVar("T_Response")
 LLMResponseParser = Callable[[LLMResponse], T_Response]
 
 T = TypeVar("T", bound="BaseModelResponseParser")
+
+RESPONSE_HINTS_FILE_PATH: Final[str] = os.path.join(os.path.dirname(__file__), "data", "response_hints.yaml")
+
+
+class ResponseHintsHelper:
+    def __init__(self, hints: Dict[str, str], prefix: str):
+        self.hints_common = hints[f"{prefix}_hints_common"]
+        self.parser_hints_start = hints[f"{prefix}_parser_hints_start"]
+        self.parser_hints_end = hints[f"{prefix}_parser_hints_end"]
+        self.block_parser_hints_start = hints[f"{prefix}_block_parser_hints_start"]
+
+    @classmethod
+    def from_yaml(cls, path: str, prefix: str) -> ResponseHintsHelper:
+        with open(path, "r", encoding="utf-8") as file:
+            hints = yaml.safe_load(file)
+        return cls(hints, prefix)
+
+    @property
+    def parser(self) -> str:
+        return self.parser_hints_start + self.hints_common
+
+    @property
+    def block_parser(self) -> str:
+        return self.block_parser_hints_start + self.hints_common
+
+    @property
+    def parser_end(self) -> str:
+        return self.parser_hints_end
+
+
+yaml_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="yaml")
+json_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="json")
 
 
 class EchoResponseParser:
@@ -30,10 +66,13 @@ class StringResponseParser:
         return response.value
 
 
-class BaseModelResponseParser(BaseModel):
+class BaseModelResponseParser(BaseModel, abc.ABC):
     """Base class for parsing LLM responses into structured data models"""
 
+    model_config = ConfigDict(frozen=True)  # to preserve field order
+
     @classmethod
+    @abc.abstractmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         """
         Parse an LLM response into a structured data model.
@@ -88,7 +127,40 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
         return cls.create_and_validate(**parsed_blocks)
 
 
-class YAMLBlockResponseParser(BaseModelResponseParser):
+T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLResponseParserBase")
+
+
+class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
+    @classmethod
+    def _to_response_template(cls: Type[T]) -> str:
+        """Generate a YAML response template based on the model's fields and their descriptions."""
+        template_parts = []
+
+        for field_name, field in cls.model_fields.items():
+            description = field.description
+            if description is None:
+                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+            is_multiline = "\n" in description
+
+            if field.annotation is str and is_multiline:
+                template_parts.append(f"{field_name}: |")
+                for line in description.split("\n"):
+                    template_parts.append(f"  {line.strip()}")
+            else:
+                template_parts.append(f"{field_name}: # {description}")
+
+        return "\n".join(template_parts)
+
+    @staticmethod
+    def parse(content: str) -> Dict[str, Any]:
+        try:
+            return yaml.safe_load(content)
+        except yaml.YAMLError as e:
+            raise LLMParsingException(f"Error while parsing yaml: {e}")
+
+
+class YAMLBlockResponseParser(YAMLResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
@@ -99,29 +171,79 @@ class YAMLBlockResponseParser(BaseModelResponseParser):
         if yaml_block is None:
             raise LLMParsingException("yaml block is not found")
 
-        yaml_content = YAMLResponseParser.parse(yaml_block.code)
+        yaml_content = YAMLResponseParserBase.parse(yaml_block.code)
         return cls.create_and_validate(**yaml_content)
 
+    @classmethod
+    def to_response_template(cls: Type[T_YAMLResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate YAML block response template based on the model's fields and their descriptions.
 
-class YAMLResponseParser(BaseModelResponseParser):
+        Args:
+            include_hints: If True, returned template will include universal YAML block formatting hints.
+        """
+        template_parts = [yaml_response_hints.block_parser] if include_hints else []
+        template_parts.extend(["```yaml", cls._to_response_template(), "```"])
+        return "\n".join(template_parts)
+
+
+class YAMLResponseParser(YAMLResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         """LLMFunction ResponseParser for response containing raw YAML content"""
         llm_response = response.value
 
-        yaml_content = YAMLResponseParser.parse(llm_response)
+        yaml_content = YAMLResponseParserBase.parse(llm_response)
         return cls.create_and_validate(**yaml_content)
+
+    @classmethod
+    def to_response_template(cls: Type[T_YAMLResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate YAML response template based on the model's fields and their descriptions.
+
+        Args:
+            include_hints: If True, returned template will include universal YAML formatting hints.
+        """
+        template_parts = [yaml_response_hints.parser] if include_hints else []
+        template_parts.append(cls._to_response_template())
+        if include_hints:
+            template_parts.extend(["", yaml_response_hints.parser_end])
+        return "\n".join(template_parts)
+
+
+T_JSONResponseParserBase = TypeVar("T_JSONResponseParserBase", bound="JSONResponseParserBase")
+
+
+class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
+    @classmethod
+    def _to_response_template(cls: Type[T]) -> str:
+        """Generate a JSON response template based on the model's fields and their descriptions."""
+        template_dict = {}
+
+        for field_name, field in cls.model_fields.items():
+            description = field.description
+            if description is None:
+                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+            is_multiline = "\n" in description
+
+            if field.annotation is str and is_multiline:
+                template_dict[field_name] = "\n".join(line.strip() for line in description.split("\n"))
+            else:
+                template_dict[field_name] = description
+
+        return json.dumps(template_dict, indent=2)
 
     @staticmethod
     def parse(content: str) -> Dict[str, Any]:
         try:
-            return yaml.safe_load(content)
-        except yaml.YAMLError as e:
-            raise LLMParsingException(f"Error while parsing yaml: {e}")
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            raise LLMParsingException(f"Error while parsing json: {e}")
 
 
-class JSONBlockResponseParser(BaseModelResponseParser):
+class JSONBlockResponseParser(JSONResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
@@ -132,23 +254,42 @@ class JSONBlockResponseParser(BaseModelResponseParser):
         if json_block is None:
             raise LLMParsingException("json block is not found")
 
-        json_content = JSONResponseParser.parse(json_block.code)
+        json_content = JSONResponseParserBase.parse(json_block.code)
         return cls.create_and_validate(**json_content)
 
+    @classmethod
+    def to_response_template(cls: Type[T_JSONResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate JSON block response template based on the model's fields and their descriptions.
 
-class JSONResponseParser(BaseModelResponseParser):
+        Args:
+            include_hints: If True, returned template will include universal JSON block formatting hints.
+        """
+        template_parts = [json_response_hints.block_parser] if include_hints else []
+        template_parts.extend(["```json", cls._to_response_template(), "```"])
+        return "\n".join(template_parts)
+
+
+class JSONResponseParser(JSONResponseParserBase):
 
     @classmethod
     def from_response(cls: Type[T], response: LLMResponse) -> T:
         """LLMFunction ResponseParser for response containing raw JSON content"""
         llm_response = response.value
 
-        json_content = JSONResponseParser.parse(llm_response)
+        json_content = JSONResponseParserBase.parse(llm_response)
         return cls.create_and_validate(**json_content)
 
-    @staticmethod
-    def parse(content: str) -> Dict[str, Any]:
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError as e:
-            raise LLMParsingException(f"Error while parsing json: {e}")
+    @classmethod
+    def to_response_template(cls: Type[T_JSONResponseParserBase], include_hints: bool = True) -> str:
+        """
+        Generate JSON response template based on the model's fields and their descriptions.
+
+        Args:
+            include_hints: If True, returned template will include universal JSON formatting hints.
+        """
+        template_parts = [json_response_hints.parser] if include_hints else []
+        template_parts.append(cls._to_response_template())
+        if include_hints:
+            template_parts.extend(["", json_response_hints.parser_end])
+        return "\n".join(template_parts)
