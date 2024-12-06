@@ -9,14 +9,21 @@
 ```{eval-rst}
 .. autoclass:: council.llm.LLMMiddlewareChain
 ```
+# Logging
 
-# LLMLoggingMiddleware
+## LLMLoggingStrategy
+
+```{eval-rst}
+.. autoclass:: council.llm.LLMLoggingStrategy
+```
+
+## LLMLoggingMiddleware
 
 ```{eval-rst}
 .. autoclass:: council.llm.LLMLoggingMiddleware
 ```
 
-# LLMFileLoggingMiddleware
+## LLMFileLoggingMiddleware
 
 ```{eval-rst}
 .. autoclass:: council.llm.LLMFileLoggingMiddleware
