@@ -154,7 +154,7 @@ class LLMLoggingMiddlewareBase:
         self._log_llm_request(request, name)
         response = execute(request)
         self._log_llm_response(response, name)
-        self._log_consumptions(response)
+        self._log_consumptions(response, name)
 
         return response
 
@@ -183,13 +183,13 @@ class LLMLoggingMiddlewareBase:
             return log_message
         return f"{log_message}:\n{response.result.first_choice}"
 
-    def _log_consumptions(self, response: LLMResponse) -> None:
+    def _log_consumptions(self, response: LLMResponse, name: str) -> None:
         if response.result is None:
             return
 
         if self.strategy.has_consumptions:
             for consumption in response.result.consumptions:
-                self._log(f"Consumption for {self.component_name}: {consumption}")
+                self._log(f"Consumption for {name}: {consumption}")
 
     def _log(self, content: str) -> None:
         """Abstract method to be implemented by subclasses for actual logging."""
