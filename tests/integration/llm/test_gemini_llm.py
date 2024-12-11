@@ -17,7 +17,7 @@ class TestGeminiLLM(unittest.TestCase):
             context = LLMContext.empty()
             result = instance.post_chat_request(context, messages)
 
-            assert "Paris" in result.choices[0]
+            assert "Paris" in result.first_choice
 
     def test_message(self):
         messages = [LLMMessage.user_message("what is the capital of France?")]
@@ -27,14 +27,14 @@ class TestGeminiLLM(unittest.TestCase):
             context = LLMContext.empty()
             result = instance.post_chat_request(context, messages)
 
-            assert "Paris" in result.choices[0]
+            assert "Paris" in result.first_choice
 
         messages.append(LLMMessage.user_message("give a famous monument of that place"))
         with OsEnviron("GEMINI_LLM_MODEL", "gemini-1.5-pro"):
             instance = GeminiLLM.from_env()
             result = instance.post_chat_request(context, messages)
 
-            assert "Eiffel" in result.choices[0]
+            assert "Eiffel" in result.first_choice
 
     def test_with_jpg_image(self):
         dotenv.load_dotenv()
@@ -77,3 +77,16 @@ class TestGeminiLLM(unittest.TestCase):
             assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
             for consumption in result.consumptions:
                 assert consumption.kind.startswith("gemini-1.5-flash-8b")
+
+    def test_gemini_2_flash_exp(self):
+        messages = [LLMMessage.user_message("What is the capital of France?")]
+        dotenv.load_dotenv()
+        with OsEnviron("GEMINI_LLM_MODEL", "gemini-2.0-flash-exp"):
+            instance = GeminiLLM.from_env()
+            result = instance.post_chat_request(LLMContext.empty(), messages)
+
+            assert "Paris" in result.first_choice
+
+            # assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
+            # for consumption in result.consumptions:
+            #     assert consumption.kind.startswith("gemini-2.0-flash-exp")
