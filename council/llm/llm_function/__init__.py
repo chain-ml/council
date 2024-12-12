@@ -11,6 +11,7 @@ from .llm_middleware import (
     ExecuteLLMRequest,
 )
 from .llm_response_parser import (
+    BaseModelResponseParser,
     EchoResponseParser,
     StringResponseParser,
     CodeBlocksResponseParser,
