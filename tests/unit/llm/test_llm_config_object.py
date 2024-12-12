@@ -12,11 +12,11 @@ from council.llm.base.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
 from tests import get_data_filename
-from .. import LLModels
+from .. import LLMModels
 
 
 def test_openai_from_yaml():
-    filename = get_data_filename(LLModels.OpenAI)
+    filename = get_data_filename(LLMModels.OpenAI)
 
     with OsEnviron("OPENAI_API_KEY", "sk-key"), OsEnviron("OPENAI_API_HOST", "https://openai.com"):
         actual = LLMConfigObject.from_yaml(filename)
@@ -36,7 +36,7 @@ def test_openai_from_yaml():
 
 
 def test_azure_from_yaml():
-    filename = get_data_filename(LLModels.Azure)
+    filename = get_data_filename(LLMModels.Azure)
 
     with OsEnviron("AZURE_LLM_API_KEY", "abcd"), OsEnviron("AZURE_LLM_API_BASE", "https://chainml"):
         actual = LLMConfigObject.from_yaml(filename)
@@ -49,7 +49,7 @@ def test_azure_from_yaml():
 
 
 def test_anthropic_from_yaml():
-    filename = get_data_filename(LLModels.Anthropic)
+    filename = get_data_filename(LLMModels.Anthropic)
 
     with OsEnviron("ANTHROPIC_API_KEY", "sk-key"):
         actual = LLMConfigObject.from_yaml(filename)
@@ -62,7 +62,7 @@ def test_anthropic_from_yaml():
 
 
 def test_gemini_from_yaml():
-    filename = get_data_filename(LLModels.Gemini)
+    filename = get_data_filename(LLMModels.Gemini)
 
     with OsEnviron("GEMINI_API_KEY", "a-key"):
         actual = LLMConfigObject.from_yaml(filename)
@@ -75,7 +75,7 @@ def test_gemini_from_yaml():
 
 
 def test_azure_with_openai_fallback_from_yaml():
-    filename = get_data_filename(LLModels.AzureWithFallback)
+    filename = get_data_filename(LLMModels.AzureWithFallback)
 
     with (
         OsEnviron("OPENAI_API_KEY", "sk-key"),
@@ -90,7 +90,7 @@ def test_azure_with_openai_fallback_from_yaml():
 
 
 def test_ollama_from_yaml():
-    filename = get_data_filename(LLModels.Ollama)
+    filename = get_data_filename(LLMModels.Ollama)
 
     actual = LLMConfigObject.from_yaml(filename)
     llm = OllamaLLM.from_config(actual)
@@ -113,7 +113,7 @@ def test_ollama_from_yaml():
 
 
 def test_groq_from_yaml():
-    filename = get_data_filename(LLModels.Groq)
+    filename = get_data_filename(LLMModels.Groq)
 
     with OsEnviron("GROQ_API_KEY", "a-key"):
         actual = LLMConfigObject.from_yaml(filename)

@@ -1,4 +1,4 @@
-class LLModels:
+class LLMModels:
     Azure: str = "azure-llmodel.yaml"
     OpenAI: str = "openai-llmodel.yaml"
     Anthropic: str = "anthropic-llmodel.yaml"
