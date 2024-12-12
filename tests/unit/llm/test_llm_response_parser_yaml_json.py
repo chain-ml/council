@@ -5,8 +5,8 @@ from typing import Dict, List, Any, Literal, Optional
 import yaml
 from pydantic import BaseModel
 
-from council.llm_function.llm_function import FunctionOutOfRetryError
-from council.llm_function.llm_response_parser import YAMLBlockResponseParser, JSONBlockResponseParser
+from council.llm.llm_function import FunctionOutOfRetryError
+from council.llm.llm_function import YAMLBlockResponseParser, JSONBlockResponseParser
 from council.mocks import MockLLM
 from tests.unit.llm.test_llm_response_parser_blocks import execute_mock_llm_func
 

@@ -6,8 +6,8 @@ from typing import Type
 from pydantic import Field
 
 from council import OpenAILLM
-from council.llm_function.llm_function import LLMFunction, LLMFunctionResponse
-from council.llm_function.llm_response_parser import (
+from council.llm.llm_function import LLMFunction, LLMFunctionResponse
+from council.llm.llm_function import (
     YAMLBlockResponseParser,
     YAMLResponseParser,
     JSONBlockResponseParser,

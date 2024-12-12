@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional
 
 from council.contexts import ChatMessage, ContextBase, ScorerContext
 from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
+from council.llm.base.llm_answer import LLMParsingException, llm_class_validator
 
-from ..llm.llm_answer import LLMParsingException, llm_class_validator
 from ..utils import Option
 from . import ScorerException
 from .scorer_base import ScorerBase

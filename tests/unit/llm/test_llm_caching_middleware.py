@@ -7,8 +7,8 @@ from council.llm import (
     GeminiLLMConfiguration,
     OpenAIChatGPTConfiguration,
 )
-from council.llm_function import LLMCachingMiddleware, LLMRequest
-from council.llm.llm_message import LLMMessage, LLMMessageData
+from council.llm.llm_function import LLMCachingMiddleware, LLMRequest
+from council.llm.base.llm_message import LLMMessage, LLMMessageData
 from council.utils import OsEnviron
 
 

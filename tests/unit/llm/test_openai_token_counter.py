@@ -1,7 +1,7 @@
 import unittest
 
 from council.llm import LLMMessage, LLMTokenLimitException
-from council.llm.providers.openai.openai_token_counter import OpenAITokenCounter
+from council.llm.base.providers.openai.openai_token_counter import OpenAITokenCounter
 
 
 class TestLlmOpenAI(unittest.TestCase):

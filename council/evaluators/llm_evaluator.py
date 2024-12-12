@@ -9,7 +9,7 @@ from typing import List, Optional
 from council.contexts import AgentContext, ChatMessage, ContextBase, ScoredChatMessage
 from council.evaluators import EvaluatorBase, EvaluatorException
 from council.llm import LLMAnswer, LLMBase, LLMMessage, MonitoredLLM, llm_property
-from council.llm.llm_answer import LLMParsingException, llm_class_validator
+from council.llm.base.llm_answer import LLMParsingException, llm_class_validator
 from council.utils import Option
 
 

@@ -8,7 +8,7 @@ from council.llm import (
     GroqLLM,
     GroqLLMConfiguration,
 )
-from council.llm.llm_config_object import LLMConfigObject
+from council.llm.base.llm_config_object import LLMConfigObject
 from council.utils import OsEnviron
 
 from tests import get_data_filename

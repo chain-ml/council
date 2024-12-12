@@ -3,7 +3,7 @@ import unittest
 from pydantic import field_validator, Field
 
 from council.llm import LLMParsingException
-from council.llm_function import (
+from council.llm.llm_function import (
     LLMFunction,
     FunctionOutOfRetryError,
     LLMResponse,
