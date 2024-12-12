@@ -94,12 +94,12 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         system_prompt_caching: bool = False,
     ) -> LLMFunctionWithPrompt:
         """
-        Initializes the LLMFunctionWithPrompt from config files.
+        Initializes the LLMFunctionWithPrompt from llm and prompt config files
+        with the ability to override the base path and filenames.
         """
-        base_path = path_prefix
 
-        llm = get_llm_from_config(os.path.join(base_path, llm_path))
-        prompt_config = LLMPromptConfigObject.from_yaml(os.path.join(base_path, prompt_config_path))
+        llm = get_llm_from_config(os.path.join(path_prefix, llm_path))
+        prompt_config = LLMPromptConfigObject.from_yaml(os.path.join(path_prefix, prompt_config_path))
         return LLMFunctionWithPrompt(
             llm, response_parser, prompt_config, max_retries, system_prompt_params, system_prompt_caching
         )
