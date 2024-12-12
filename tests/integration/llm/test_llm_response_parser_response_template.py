@@ -5,9 +5,10 @@ from typing import Type
 
 from pydantic import Field
 
-from council import OpenAILLM
-from council.llm.llm_function import LLMFunction, LLMFunctionResponse
-from council.llm.llm_function import (
+from council.llm import (
+    OpenAILLM,
+    LLMFunction,
+    LLMFunctionResponse,
     YAMLBlockResponseParser,
     YAMLResponseParser,
     JSONBlockResponseParser,

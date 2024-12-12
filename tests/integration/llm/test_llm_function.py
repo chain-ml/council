@@ -2,10 +2,7 @@ import unittest
 
 import dotenv
 
-from council import AzureLLM
-from council.llm import LLMParsingException, LLMMessage
-from council.llm.llm_function import LLMFunction
-from council.llm.llm_function import CodeBlocksResponseParser
+from council.llm import AzureLLM, LLMParsingException, LLMMessage, LLMFunction, CodeBlocksResponseParser
 from council.prompt import LLMPromptConfigObject
 from tests import get_data_filename
 from tests.unit import LLMPrompts

@@ -3,8 +3,7 @@ import unittest
 
 import dotenv
 
-from council import AnthropicLLM
-from council.llm.llm_function import EchoResponseParser, LLMFunction, LLMCachingMiddleware, LLMResponse
+from council.llm import AnthropicLLM, EchoResponseParser, LLMFunction, LLMCachingMiddleware, LLMResponse
 from council.utils import OsEnviron
 
 
