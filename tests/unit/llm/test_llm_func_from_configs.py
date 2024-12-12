@@ -2,9 +2,7 @@ import os
 import shutil
 import unittest
 
-from council.llm import LLMCacheControlData
-from council.llm.llm_function import LLMFunctionWithPrompt
-from council.llm.llm_function import StringResponseParser
+from council.llm import LLMCacheControlData, LLMFunctionWithPrompt, StringResponseParser
 from council.utils import OsEnviron
 from tests import get_data_filename
 from tests.unit import LLMPrompts, LLMModels

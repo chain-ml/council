@@ -27,6 +27,7 @@ from .base import (
     LLMMessageData,
     LLMMessageRole,
     LLMMessageTokenCounterBase,
+    LLMOutOfRetriesException,
     LLMParsingException,
     LLMProperty,
     LLMProvider,
