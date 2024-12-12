@@ -8,6 +8,7 @@ from council.prompt import LLMPromptConfigObject
 
 from .llm_function import LLMFunction, LLMFunctionResponse, LLMResponseParser, T_Response
 from .llm_middleware import LLMMiddlewareChain
+from .llm_response_parser import StringResponseParser
 
 
 class LLMFunctionWithPrompt(LLMFunction[T_Response]):
@@ -102,4 +103,28 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         prompt_config = LLMPromptConfigObject.from_yaml(os.path.join(path_prefix, prompt_config_path))
         return LLMFunctionWithPrompt(
             llm, response_parser, prompt_config, max_retries, system_prompt_params, system_prompt_caching
+        )
+
+    @classmethod
+    def string_from_configs(
+        cls,
+        path_prefix: str = "data",
+        llm_path: str = "llm-config.yaml",
+        prompt_config_path: str = "llm-prompt.yaml",
+        max_retries: int = 3,
+        system_prompt_params: Optional[Mapping[str, str]] = None,
+        system_prompt_caching: bool = False,
+    ) -> LLMFunctionWithPrompt:
+        """
+        Initializes the LLMFunctionWithPrompt with StringResponseParser from llm and prompt config files.
+        """
+
+        return LLMFunctionWithPrompt.from_configs(
+            response_parser=StringResponseParser.from_response,
+            path_prefix=path_prefix,
+            llm_path=llm_path,
+            prompt_config_path=prompt_config_path,
+            max_retries=max_retries,
+            system_prompt_params=system_prompt_params,
+            system_prompt_caching=system_prompt_caching,
         )

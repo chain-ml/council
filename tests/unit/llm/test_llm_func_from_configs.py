@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from council.llm import LLMCacheControlData, LLMFunctionWithPrompt, StringResponseParser
+from council.llm import LLMCacheControlData, LLMFunctionWithPrompt, OpenAIChatGPTConfiguration
 from council.utils import OsEnviron
 from tests import get_data_filename
 from tests.unit import LLMPrompts, LLMModels
@@ -41,61 +41,37 @@ class TestLLMFunctionWithPromptFromConfigs(unittest.TestCase):
         shutil.rmtree(self.data_dir_internal)
         shutil.rmtree(self.data_dir_external)
 
-    def test_default(self):
+    @classmethod
+    def create_func(cls, *args, **kwargs):
         with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-            )
+            return LLMFunctionWithPrompt.string_from_configs(*args, **kwargs)
 
-        assert isinstance(llm_function, LLMFunctionWithPrompt)
-
-    def test_override_llm(self):
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response, llm_path="llm-config-v2.yaml"
-            )
-        assert isinstance(llm_function, LLMFunctionWithPrompt)
-
-    def test_override_base_path_internal(self):
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-                path_prefix=self.data_dir_internal,
-            )
-        assert isinstance(llm_function, LLMFunctionWithPrompt)
-
-    def test_override_base_path_and_prompt(self):
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-                path_prefix=self.data_dir_internal,
-                prompt_config_path="llm-prompt-v2.yaml",
-            )
-        assert isinstance(llm_function, LLMFunctionWithPrompt)
-
-    def test_override_base_path_external(self):
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-                path_prefix=self.data_dir_external,
-            )
-        assert isinstance(llm_function, LLMFunctionWithPrompt)
-
-    def test_with_params(self):
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-            )
+    @classmethod
+    def create_func_and_assert(cls, *args, **kwargs):
+        llm_function = cls.create_func(*args, **kwargs)
 
         assert isinstance(llm_function, LLMFunctionWithPrompt)
         assert llm_function._max_retries == 3
+        assert isinstance(llm_function._llm_config, OpenAIChatGPTConfiguration)
+        assert len(llm_function._messages) == 1
 
-        with OsEnviron("OPENAI_API_KEY", "sk-key"):
-            llm_function = LLMFunctionWithPrompt.from_configs(
-                response_parser=StringResponseParser.from_response,
-                max_retries=42,
-                system_prompt_caching=True,
-            )
+    def test_default(self):
+        self.create_func_and_assert(path_prefix=self.data_dir)
+
+    def test_override_llm(self):
+        self.create_func_and_assert(path_prefix=self.data_dir, llm_path="llm-config-v2.yaml")
+
+    def test_override_base_path_internal(self):
+        self.create_func_and_assert(path_prefix=self.data_dir_internal)
+
+    def test_override_base_path_and_prompt(self):
+        self.create_func_and_assert(path_prefix=self.data_dir_internal, prompt_config_path="llm-prompt-v2.yaml")
+
+    def test_override_base_path_external(self):
+        self.create_func_and_assert(path_prefix=self.data_dir_external)
+
+    def test_with_params(self):
+        llm_function = self.create_func(path_prefix=self.data_dir, max_retries=42, system_prompt_caching=True)
 
         assert isinstance(llm_function, LLMFunctionWithPrompt)
         assert llm_function._max_retries == 42
