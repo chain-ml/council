@@ -20,9 +20,6 @@ spec:
       llama-3.3-70b-versatile:
         input: 0.59
         output: 0.79
-      llama-3.1-70b-versatile: # will be deprecated December 20, 2024
-        input: 0.59
-        output: 0.79
       llama-guard-3-8b:
         input: 0.20
         output: 0.20
