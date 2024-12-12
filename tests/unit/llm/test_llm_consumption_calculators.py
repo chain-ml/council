@@ -1,6 +1,6 @@
 import unittest
 
-from council.llm import CodeBlocksResponseParser, LLMFunction
+from council.llm_function import CodeBlocksResponseParser, LLMFunction
 from council.llm.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
 from council.llm.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
 from council.llm.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator

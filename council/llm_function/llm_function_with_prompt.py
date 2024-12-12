@@ -1,9 +1,15 @@
+from __future__ import annotations
+
+import os
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from council.llm import LLMBase, LLMFunction, LLMFunctionResponse, LLMMessage, LLMMiddlewareChain
-from council.llm.llm_function import LLMResponseParser, T_Response
+from council.llm import LLMBase, LLMMessage, get_llm_from_config
 from council.llm.llm_message import LLMCacheControlData
+from council.llm_function.llm_function import LLMResponseParser, T_Response
 from council.prompt import LLMPromptConfigObject
+
+from .llm_function import LLMFunction, LLMFunctionResponse
+from .llm_middleware import LLMMiddlewareChain
 
 
 class LLMFunctionWithPrompt(LLMFunction[T_Response]):
@@ -77,3 +83,25 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         """
 
         return self.execute_with_llm_response(user_message, messages, user_prompt_params, **kwargs).response
+
+    @classmethod
+    def from_configs(
+        cls,
+        response_parser: LLMResponseParser,
+        path_prefix: str = "data",
+        llm_path: str = "llm-config.yaml",
+        prompt_config_path: str = "llm-prompt.yaml",
+        max_retries: int = 3,
+        system_prompt_params: Optional[Mapping[str, str]] = None,
+        system_prompt_caching: bool = False,
+    ) -> LLMFunctionWithPrompt:
+        """
+        Initializes the LLMFunctionWithPrompt from config files.
+        """
+        base_path = path_prefix
+
+        llm = get_llm_from_config(os.path.join(base_path, llm_path))
+        prompt_config = LLMPromptConfigObject.from_yaml(os.path.join(base_path, prompt_config_path))
+        return LLMFunctionWithPrompt(
+            llm, response_parser, prompt_config, max_retries, system_prompt_params, system_prompt_caching
+        )

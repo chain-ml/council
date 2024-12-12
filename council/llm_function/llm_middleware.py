@@ -9,9 +9,8 @@ from threading import Lock
 from typing import Any, Callable, List, Optional, Protocol, Sequence
 
 from council.contexts import Consumption, ContextLogger, LLMContext
-
-from .llm_base import LLMBase, LLMMessage, LLMResult, T_Configuration
-from .llm_exception import LLMOutOfRetriesException
+from council.llm.llm_base import LLMBase, LLMMessage, LLMResult, T_Configuration
+from council.llm.llm_exception import LLMOutOfRetriesException
 
 
 class LLMRequest:

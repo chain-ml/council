@@ -3,9 +3,8 @@ import unittest
 
 import dotenv
 
-from council import AzureLLM, AnthropicLLM
-from council.llm import LLMFunctionWithPrompt
-from council.llm.llm_response_parser import EchoResponseParser
+from council.llm import AzureLLM, AnthropicLLM
+from council.llm_function import EchoResponseParser, LLMFunctionWithPrompt
 from council.prompt import LLMPromptConfigObject
 from council.utils import OsEnviron
 from tests import get_data_filename

@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Any, Generic, Iterable, List, Optional, Sequence, Union
 
 from council.contexts import Consumption, LLMContext
+from council.llm.llm_answer import LLMParsingException
+from council.llm.llm_base import LLMBase
+from council.llm.llm_message import LLMMessage, LLMMessageRole
 
-from .llm_answer import LLMParsingException
-from .llm_base import LLMBase
-from .llm_message import LLMMessage, LLMMessageRole
 from .llm_middleware import LLMMiddleware, LLMMiddlewareChain, LLMRequest, LLMResponse
 from .llm_response_parser import LLMResponseParser, T_Response
 
