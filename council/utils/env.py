@@ -44,14 +44,22 @@ class EnvVariableValueException(Exception):
 
 
 def read_env_str(name: str, required: bool = True, default: Optional[str] = None) -> Option[str]:
+    """Read an environment variable as string."""
     return _read_env(name, required, default, lambda x: x)
 
 
 def must_read_env_str(name: str) -> str:
+    """Read an environment variable as string, raise MissingEnvVariableException if not found."""
     return read_env_str(name, required=True).unwrap()
 
 
+# TODO: must_read_x for others?
+#  refactor read_env_str
+
+
 def read_env_int(name: str, required: bool = True, default: Optional[int] = None) -> Option[int]:
+    """Read an environment variable as integer."""
+
     def converter(x: str) -> int:
         try:
             return int(x)
@@ -62,6 +70,8 @@ def read_env_int(name: str, required: bool = True, default: Optional[int] = None
 
 
 def read_env_float(name: str, required: bool = True, default: Optional[float] = None) -> Option[float]:
+    """Read an environment variable as float."""
+
     def converter(x: str) -> float:
         try:
             return float(x)
@@ -72,6 +82,8 @@ def read_env_float(name: str, required: bool = True, default: Optional[float] = 
 
 
 def read_env_bool(name: str, required: bool = True, default: Optional[bool] = None) -> Option[bool]:
+    """Read an environment variable as boolean."""
+
     def converter(x: str) -> bool:
         result = x.strip().lower()
         if result in ["true", "1", "t"]:
