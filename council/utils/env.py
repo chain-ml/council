@@ -47,6 +47,10 @@ def read_env_str(name: str, required: bool = True, default: Optional[str] = None
     return _read_env(name, required, default, lambda x: x)
 
 
+def must_read_env_str(name: str) -> str:
+    return read_env_str(name, required=True).unwrap()
+
+
 def read_env_int(name: str, required: bool = True, default: Optional[int] = None) -> Option[int]:
     def converter(x: str) -> int:
         try:
