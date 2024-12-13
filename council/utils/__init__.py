@@ -23,6 +23,6 @@ from .parameter import (
     not_empty_validator,
 )
 from .data_object import DataObject, DataObjectSpecBase
-from .code_parser import CodeParser
+from .code_parser import CodeBlock, CodeParser
 from .env import OsEnviron
 from .utils import truncate_dict_values_to_str
