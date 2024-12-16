@@ -250,7 +250,7 @@ class LLMMessage:
 
     @classmethod
     def from_dict(cls, values: Dict[str, str]) -> LLMMessage:
-        """Create an instance from OpenAI-compatible dict with role and content."""
+        """Create an instance from OpenAI-compatible dict with role and content (name and data not supported)."""
 
         role = values.get("role")
         content = values.get("content")
@@ -259,7 +259,7 @@ class LLMMessage:
         return LLMMessage(LLMMessageRole(role), content.strip())
 
     def to_dict(self) -> Dict[str, str]:
-        """Convert an instance to OpenAI-compatible dict with role and content."""
+        """Convert an instance to OpenAI-compatible dict with role and content (name and data not supported)."""
         return {"role": self.role, "content": self.content}
 
 
