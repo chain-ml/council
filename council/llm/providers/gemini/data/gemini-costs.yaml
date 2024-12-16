@@ -10,6 +10,9 @@ spec:
     description: |
       Costs for prompt tokens up to 128k
     models:
+      gemini-2.0-flash-exp:
+        input: 0.0
+        output: 0.0
       gemini-1.5-flash:
         input: 0.075
         output: 0.30
@@ -26,6 +29,9 @@ spec:
     description: |
       Costs for prompt tokens over 128k
     models:
+      gemini-2.0-flash-exp:
+        input: 0.0
+        output: 0.0
       gemini-1.5-flash:
         input: 0.15
         output: 0.60

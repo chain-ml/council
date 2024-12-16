@@ -87,6 +87,6 @@ class TestGeminiLLM(unittest.TestCase):
 
             assert "Paris" in result.first_choice
 
-            # assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
-            # for consumption in result.consumptions:
-            #     assert consumption.kind.startswith("gemini-2.0-flash-exp")
+            assert len(result.consumptions) == 8  # call, duration, 3 token kinds and 3 cost kinds
+            for consumption in result.consumptions:
+                assert consumption.kind.startswith("gemini-2.0-flash-exp")
