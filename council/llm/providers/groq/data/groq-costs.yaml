@@ -14,9 +14,6 @@ spec:
       gemma2-9b-it:
         input: 0.20
         output: 0.20
-      gemma-7b-it: # will be deprecated December 18, 2024
-        input: 0.07
-        output: 0.07
       llama-3.3-70b-versatile:
         input: 0.59
         output: 0.79
