@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Final, List, Literal, Mapping, Optional, Tuple, Type, Union
 
 from council.llm import LLMConfigSpec, LLMConfigurationBase, LLMProviders
-from council.utils import Parameter, greater_than_validator, read_env_str, zero_to_one_validator
+from council.utils import Parameter, greater_than_validator, must_read_env_str, read_env_str, zero_to_one_validator
 
 _env_var_prefix: Final[str] = "OLLAMA_"
 
@@ -183,9 +183,8 @@ class OllamaLLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env() -> OllamaLLMConfiguration:
-        model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
-        keep_alive_env_str = read_env_str(_env_var_prefix + "KEEP_ALIVE", required=False)
-        keep_alive = keep_alive_env_str.unwrap() if keep_alive_env_str.is_some() else None
+        model = must_read_env_str(_env_var_prefix + "LLM_MODEL")
+        keep_alive = read_env_str(_env_var_prefix + "KEEP_ALIVE", required=False).as_optional()
 
         config = OllamaLLMConfiguration(model=model, keep_alive=keep_alive)
         return config
