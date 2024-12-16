@@ -53,10 +53,6 @@ def must_read_env_str(name: str) -> str:
     return read_env_str(name, required=True).unwrap()
 
 
-# TODO: must_read_x for others?
-#  refactor read_env_str
-
-
 def read_env_int(name: str, required: bool = True, default: Optional[int] = None) -> Option[int]:
     """Read an environment variable as integer."""
 
@@ -67,6 +63,11 @@ def read_env_int(name: str, required: bool = True, default: Optional[int] = None
             raise EnvVariableValueException(name, x, int) from e
 
     return _read_env(name, required, default, converter)
+
+
+def must_read_env_int(name: str) -> int:
+    """Read an environment variable as integer, raise MissingEnvVariableException if not found."""
+    return read_env_int(name, required=True).unwrap()
 
 
 def read_env_float(name: str, required: bool = True, default: Optional[float] = None) -> Option[float]:
@@ -81,6 +82,11 @@ def read_env_float(name: str, required: bool = True, default: Optional[float] = 
     return _read_env(name, required, default, converter)
 
 
+def must_read_env_float(name: str) -> float:
+    """Read an environment variable as float, raise MissingEnvVariableException if not found."""
+    return read_env_float(name, required=True).unwrap()
+
+
 def read_env_bool(name: str, required: bool = True, default: Optional[bool] = None) -> Option[bool]:
     """Read an environment variable as boolean."""
 
@@ -93,6 +99,11 @@ def read_env_bool(name: str, required: bool = True, default: Optional[bool] = No
         raise EnvVariableValueException(name, x, bool)
 
     return _read_env(name, required, default, converter)
+
+
+def must_read_env_bool(name: str) -> bool:
+    """Read an environment variable as boolean, raise MissingEnvVariableException if not found."""
+    return read_env_bool(name, required=True).unwrap()
 
 
 T = TypeVar("T", covariant=True)
