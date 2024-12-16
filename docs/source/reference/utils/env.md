@@ -1,5 +1,19 @@
 # Environment
 
+## Exceptions
+
+```{eval-rst}
+.. autoclass:: council.utils.MissingEnvVariableException
+   :no-inherited-members:
+```
+
+```{eval-rst}
+.. autoclass:: council.utils.EnvVariableValueException
+   :no-inherited-members:
+```
+
+## Read environment variables
+
 ```{eval-rst}
 .. autofunction:: council.utils.read_env_str
 ```

@@ -44,17 +44,17 @@ class EnvVariableValueException(Exception):
 
 
 def read_env_str(name: str, required: bool = True, default: Optional[str] = None) -> Option[str]:
-    """Read an environment variable as string."""
+    """Read an environment variable as string, return as Option."""
     return _read_env(name, required, default, lambda x: x)
 
 
 def must_read_env_str(name: str) -> str:
-    """Read an environment variable as string, raise MissingEnvVariableException if not found."""
+    """Read an environment variable as string."""
     return read_env_str(name, required=True).unwrap()
 
 
 def read_env_int(name: str, required: bool = True, default: Optional[int] = None) -> Option[int]:
-    """Read an environment variable as integer."""
+    """Read an environment variable as integer, return as Option."""
 
     def converter(x: str) -> int:
         try:
@@ -66,12 +66,12 @@ def read_env_int(name: str, required: bool = True, default: Optional[int] = None
 
 
 def must_read_env_int(name: str) -> int:
-    """Read an environment variable as integer, raise MissingEnvVariableException if not found."""
+    """Read an environment variable as integer."""
     return read_env_int(name, required=True).unwrap()
 
 
 def read_env_float(name: str, required: bool = True, default: Optional[float] = None) -> Option[float]:
-    """Read an environment variable as float."""
+    """Read an environment variable as float, return as Option."""
 
     def converter(x: str) -> float:
         try:
@@ -83,12 +83,12 @@ def read_env_float(name: str, required: bool = True, default: Optional[float] = 
 
 
 def must_read_env_float(name: str) -> float:
-    """Read an environment variable as float, raise MissingEnvVariableException if not found."""
+    """Read an environment variable as float."""
     return read_env_float(name, required=True).unwrap()
 
 
 def read_env_bool(name: str, required: bool = True, default: Optional[bool] = None) -> Option[bool]:
-    """Read an environment variable as boolean."""
+    """Read an environment variable as boolean, return as Option."""
 
     def converter(x: str) -> bool:
         result = x.strip().lower()
@@ -102,7 +102,7 @@ def read_env_bool(name: str, required: bool = True, default: Optional[bool] = No
 
 
 def must_read_env_bool(name: str) -> bool:
-    """Read an environment variable as boolean, raise MissingEnvVariableException if not found."""
+    """Read an environment variable as boolean."""
     return read_env_bool(name, required=True).unwrap()
 
 
