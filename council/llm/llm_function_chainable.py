@@ -16,8 +16,6 @@ from council.mocks import MockLLM
 
 
 
-# Protocol is better here?
-# FunctionInput and FunctionOutput as more general types
 class LLMFunctionInput(abc.ABC):
     @abc.abstractmethod
     def to_prompt(self) -> str:
@@ -42,7 +40,7 @@ class LLMFunctionOutput(abc.ABC):
 T_Input = TypeVar('T_Input', bound=LLMFunctionInput)
 T_Output = TypeVar('T_Output', bound=LLMFunctionOutput)
 
-T_InputOutput = TypeVar('T_InputOutput') # TODO:
+T_InputOutput = TypeVar('T_InputOutput')  # TODO:
 
 class ChainableFunction(Generic[T_Input, T_Output]):
     def execute(self, obj: T_Input, exception: Optional[Exception] = None) -> T_Output:
@@ -54,7 +52,7 @@ class FunctionChain(Generic[T_Input, T_Output]):
         self.functions = functions
 
     def execute(self, obj: T_Input) -> T_Output:
-        # TODO: maybe return a list of outputs; but intermidiate results should be logged
+        # TODO: maybe return a list of outputs; but intermediate results should be logged
         pass
 
 class LinearFunctionChain(FunctionChain[T_Input, T_Output]):
@@ -163,67 +161,3 @@ class ChainableLLMFunction(ChainableFunction):
             retry += 1
 
         raise LLMParsingException("Failed to parse LLM response")
-
-
-# -------------------------------------------------------------------------------------------------
-
-# How to we do wrapping? Generated SQL -> try execute it and then go back if any problems to regenerate it
-#  this will require Exceptions of different types, e.g. levels
-#  If I can handle exception of certain level I'll do it but if not it'll buble up to wrapper LLMFunction to handle it.
-
-class DatabaseQuestion(LLMFunctionInput, BaseModel):
-    question: str
-    table_name: str
-    columns_with_types: List[Tuple[str, str]]
-
-    def to_prompt(self) -> str:
-        return "\n".join([
-            "Database Schema:",
-            f"Table: {self.table_name}",
-            *[f"{column}: {type}" for column, type in self.columns_with_types],
-            "Please generate a SQL query to answer the following question:",
-            self.question,
-        ])
-
-
-class SQLQuery(YAMLBlockResponseParser, LLMFunctionOutput, LLMFunctionInput):
-    feasible: bool = Field(..., description="Boolean, whether the query is feasible")
-    query: str = Field(..., description="SQL query to answer the question OR explanation if the query is not feasible")
-
-    def to_prompt(self) -> str:
-        return "\n".join([
-            "Analyse the following SQL query and optimize if possible:",
-            f"{self.query}"
-        ])
-
-
-class SQLQueryOptimized(YAMLBlockResponseParser, LLMFunctionOutput):
-    analysis: str = Field(..., description="Analysis of the query quality and performance")
-    optimized_query: str = Field(..., description="Optimized query or original query")
-
-
-def run_workflow(question: str):
-    llm = OpenAILLM.from_env()
-    # llm = MockLLM.from_response("\n".join(["```yaml", "feasible: true", "query: SELECT * FROM users", "```"]))
-    question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
-
-    db_question = DatabaseQuestion(
-        question=question,
-        table_name="users",
-        columns_with_types=[("id", "INTEGER"), ("name", "TEXT"), ("age", "INTEGER")]
-    )
-    query = question_to_query_func.execute(db_question)
-    print(f"question_to_query_func execution result: {type(query)} - {query}")
-    if not query.feasible:
-        return
-
-    query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(llm,
-                                                                                                            SQLQueryOptimized)
-    optimized_query = query_to_optimized_query_func.execute(query)
-    print(f"query_to_optimized_query_func execution result: {type(optimized_query)} - {optimized_query}")
-
-
-if __name__ == "__main__":
-    dotenv.load_dotenv()
-    # run_workflow("What is average salary?")
-    run_workflow("How many users older than 30 are there?")
