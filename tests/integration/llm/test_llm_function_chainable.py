@@ -5,10 +5,12 @@ from pydantic import BaseModel, Field
 
 from council import OpenAILLM
 from council.llm import YAMLBlockResponseParser
-from council.llm.llm_function_chainable import LLMFunctionInput, LLMFunctionOutput, ChainableLLMFunction
+from council.llm.llm_function_chainable import ChainableLLMFunctionInput, ChainableLLMFunctionOutput, \
+    ChainableLLMFunction, LinearFunctionChain
+from council.mocks import MockLLM
 
 
-class DatabaseQuestion(LLMFunctionInput, BaseModel):
+class DatabaseQuestion(ChainableLLMFunctionInput):
     question: str
     table_name: str
     columns_with_types: List[Tuple[str, str]]
@@ -23,7 +25,7 @@ class DatabaseQuestion(LLMFunctionInput, BaseModel):
         ])
 
 
-class SQLQuery(YAMLBlockResponseParser, LLMFunctionOutput, LLMFunctionInput):
+class SQLQuery(YAMLBlockResponseParser, ChainableLLMFunctionInput, ChainableLLMFunctionOutput):
     feasible: bool = Field(..., description="Boolean, whether the query is feasible")
     query: str = Field(..., description="SQL query to answer the question OR explanation if the query is not feasible")
 
@@ -34,14 +36,14 @@ class SQLQuery(YAMLBlockResponseParser, LLMFunctionOutput, LLMFunctionInput):
         ])
 
 
-class SQLQueryOptimized(YAMLBlockResponseParser, LLMFunctionOutput):
+class SQLQueryOptimized(YAMLBlockResponseParser, ChainableLLMFunctionOutput):
     analysis: str = Field(..., description="Analysis of the query quality and performance")
     optimized_query: str = Field(..., description="Optimized query or original query")
 
 
 def run_workflow(question: str):
     llm = OpenAILLM.from_env()
-    # llm = MockLLM.from_response("\n".join(["```yaml", "feasible: true", "query: SELECT * FROM users", "```"]))
+    # llm = MockLLM.from_response("\n".join(["```yaml", "feasible: false", "query: SELECT * FROM users", "```"]))
     question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
 
     db_question = DatabaseQuestion(
@@ -59,8 +61,11 @@ def run_workflow(question: str):
     optimized_query = query_to_optimized_query_func.execute(query)
     print(f"query_to_optimized_query_func execution result: {type(optimized_query)} - {optimized_query}")
 
+    # chain: LinearFunctionChain[DatabaseQuestion, SQLQueryOptimized] = LinearFunctionChain([question_to_query_func, query_to_optimized_query_func])
+    # chain.execute(db_question)
+
 
 def test():
     dotenv.load_dotenv()
-    run_workflow("What is average salary?")
-    # run_workflow("How many users older than 30 are there?")
+    # run_workflow("What is average salary?")
+    run_workflow("How many users older than 30 are there?")

@@ -2,28 +2,38 @@ from __future__ import annotations
 
 import abc
 import os.path
-from typing import Protocol, TypeVar, Generic, Union, List, Tuple, Type, Sequence, Optional
+from typing import TypeVar, Generic, Union, List, Type, Sequence, Optional, Protocol
 
-import dotenv
-from pydantic import Field, BaseModel
+from pydantic import BaseModel
 from typing_extensions import Self
 
 from council import LLMContext, OpenAILLM
 from council.llm import LLMResponse, LLMBase, LLMMessage, LLMMiddlewareChain, LLMRequest, LLMParsingException, \
     get_llm_from_config
-from council.llm.llm_response_parser import LLMResponseParser, YAMLBlockResponseParser
-from council.mocks import MockLLM
 
 
+class ChainableFunctionInput(BaseModel):
+    """Input for a chainable function."""
+    pass
 
-class LLMFunctionInput(abc.ABC):
+
+class ChainableFunctionOutput(BaseModel):
+    """Output of a chainable function."""
+    pass
+
+
+class ChainableLLMFunctionInput(ChainableFunctionInput, abc.ABC):
+    """Input for a chainable LLM function."""
+
     @abc.abstractmethod
     def to_prompt(self) -> str:
         """Convert the object to a prompt string."""
         ...
 
 
-class LLMFunctionOutput(abc.ABC):
+class ChainableLLMFunctionOutput(ChainableFunctionOutput, abc.ABC):
+    """Output of a chainable LLM function."""
+
     @classmethod
     @abc.abstractmethod
     def from_response(cls, response: LLMResponse) -> Self:
@@ -37,14 +47,61 @@ class LLMFunctionOutput(abc.ABC):
         ...
 
 
-T_Input = TypeVar('T_Input', bound=LLMFunctionInput)
-T_Output = TypeVar('T_Output', bound=LLMFunctionOutput)
+T_Input = TypeVar('T_Input', bound=ChainableFunctionInput)
+T_Output = TypeVar('T_Output', bound=ChainableFunctionOutput)
 
-T_InputOutput = TypeVar('T_InputOutput')  # TODO:
+T_LLMInput = TypeVar('T_LLMInput', bound=ChainableLLMFunctionInput)
+T_LLMOutput = TypeVar('T_LLMOutput', bound=ChainableLLMFunctionOutput)
+
 
 class ChainableFunction(Generic[T_Input, T_Output]):
     def execute(self, obj: T_Input, exception: Optional[Exception] = None) -> T_Output:
         pass
+
+
+class ChainableLLMFunction(Generic[T_LLMInput, T_LLMOutput]):
+    PROMPT_TEMPLATE = """
+    {input_obj}
+
+    {response_template}
+    """
+
+    # TODO: could extend prompt with {additional_instructions}
+
+    def __init__(self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_LLMOutput], max_retries: int = 3):
+        self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
+        self._output_obj_type = output_obj_type
+        self._context = LLMContext.empty()
+
+        self._max_retries = max_retries
+
+    @classmethod
+    def from_config(cls, output_obj_type: Type[T_LLMOutput],
+                    path_prefix: str = "data", llm_config_path: str = 'llm-config.yaml',
+                    max_retries: int = 3) -> ChainableLLMFunction:
+        llm = get_llm_from_config(os.path.join(path_prefix, llm_config_path))
+        return ChainableLLMFunction(llm, output_obj_type, max_retries)
+
+    def execute(self, obj: T_LLMInput, exception: Optional[Exception] = None) -> T_LLMOutput:
+        input_prompt = self.PROMPT_TEMPLATE.format(input_obj=obj.to_prompt(),
+                                                   response_template=self._output_obj_type.to_response_template())
+        messages = [LLMMessage.user_message(input_prompt)]
+
+        retry = 0
+        while retry <= self._max_retries:
+            request = LLMRequest(context=self._context, messages=messages)
+            try:
+                llm_response = self._llm_middleware.execute(request)
+                return self._output_obj_type.from_response(llm_response)
+            except LLMParsingException as e:
+                messages.extend([
+                    LLMMessage.assistant_message(llm_response.result.first_choice),
+                    LLMMessage.user_message(f"Error parsing response: {e}")
+                ])
+
+            retry += 1
+
+        raise LLMParsingException("Failed to parse LLM response")
 
 
 class FunctionChain(Generic[T_Input, T_Output]):
@@ -54,6 +111,7 @@ class FunctionChain(Generic[T_Input, T_Output]):
     def execute(self, obj: T_Input) -> T_Output:
         # TODO: maybe return a list of outputs; but intermediate results should be logged
         pass
+
 
 class LinearFunctionChain(FunctionChain[T_Input, T_Output]):
     """
@@ -67,10 +125,12 @@ class LinearFunctionChain(FunctionChain[T_Input, T_Output]):
             A --> A
             B --> B
     """
+
     def execute(self, obj: T_Input) -> T_Output:
         for function in self.functions:
             obj = function.execute(obj)
         return obj
+
 
 # do an example for sql generation and execution where limit must be applied
 class BacktrackFunctionChain(FunctionChain[T_Input, T_Output]):
@@ -86,6 +146,7 @@ class BacktrackFunctionChain(FunctionChain[T_Input, T_Output]):
             B --> B
             B --> A
     """
+
     def __init__(self, functions: Sequence[ChainableFunction], max_backtracks: int = 3):
         super().__init__(functions)
         self.max_backtracks = max_backtracks
@@ -115,49 +176,3 @@ class BacktrackFunctionChain(FunctionChain[T_Input, T_Output]):
                 # TODO: needs not only the e but current input as well; could be part of e itself
 
         return results[-1]
-
-
-class ChainableLLMFunction(ChainableFunction):
-    PROMPT_TEMPLATE = """
-    {input_obj}
-
-    {response_template}
-    """
-
-    # TODO: could extend prompt? But input object should contain enough details
-    #  something like {additional_instructions}
-
-    def __init__(self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_Output], max_retries: int = 3):
-        self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
-        self._output_obj_type = output_obj_type
-        self._context = LLMContext.empty()
-
-        self._max_retries = max_retries
-
-    @classmethod
-    def from_config(cls, output_obj_type: Type[T_Output],
-                    path_prefix: str = "data", llm_config_path: str = 'llm-config.yaml',
-                    max_retries: int = 3) -> ChainableLLMFunction:
-        llm = get_llm_from_config(os.path.join(path_prefix, llm_config_path))
-        return ChainableLLMFunction(llm, output_obj_type, max_retries)
-
-    def execute(self, obj: T_Input, exception: Optional[Exception] = None) -> T_Output:
-        input_prompt = self.PROMPT_TEMPLATE.format(input_obj=obj.to_prompt(),
-                                                   response_template=self._output_obj_type.to_response_template())
-        messages = [LLMMessage.user_message(input_prompt)]
-
-        retry = 0
-        while retry <= self._max_retries:
-            request = LLMRequest(context=self._context, messages=messages)
-            try:
-                llm_response = self._llm_middleware.execute(request)
-                return self._output_obj_type.from_response(llm_response)
-            except LLMParsingException as e:
-                messages.extend([
-                    LLMMessage.assistant_message(llm_response.result.first_choice),
-                    LLMMessage.user_message(f"Error parsing response: {e}")
-                ])
-
-            retry += 1
-
-        raise LLMParsingException("Failed to parse LLM response")
