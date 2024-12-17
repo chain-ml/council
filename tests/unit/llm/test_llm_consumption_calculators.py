@@ -1,6 +1,6 @@
 import unittest
 
-from council.llm import CodeBlocksResponseParser, LLMFunction
+from council.llm import CodeBlocksResponseParser, LLMFunction, LLMCostCard
 from council.llm.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
 from council.llm.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
 from council.llm.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
@@ -9,7 +9,18 @@ from council.llm.providers.openai.openai_llm_cost import OpenAIConsumptionCalcul
 from council.mocks import MockLLM, MockMultipleResponses
 
 
+def ensure_cost_are_floats(cost_card: LLMCostCard) -> None:
+    assert isinstance(cost_card.input, float)
+    assert isinstance(cost_card.output, float)
+
+
 class TestAnthropicConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = AnthropicConsumptionCalculator("model")
+        for cost_card_mapping in [calculator.COSTS, calculator.COSTS_CACHING]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_all_cache_models_have_base_costs(self):
         calculator = AnthropicConsumptionCalculator("model")
         for model in calculator.COSTS_CACHING.keys():
@@ -173,6 +184,12 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
 
 
 class TestGeminiConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = GeminiConsumptionCalculator("model", 42)
+        for cost_card_mapping in [calculator.COSTS_UNDER_128k, calculator.COSTS_OVER_128k]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_keys_match(self):
         calculator = GeminiConsumptionCalculator("model", 42)
 
@@ -232,6 +249,17 @@ class TestGeminiConsumptionCalculator(unittest.TestCase):
 
 
 class TestOpenAIConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = OpenAIConsumptionCalculator("model")
+        for cost_card_mapping in [
+            calculator.COSTS_gpt_35_turbo_FAMILY,
+            calculator.COSTS_gpt_4_FAMILY,
+            calculator.COSTS_gpt_4o_FAMILY,
+            calculator.COSTS_o1_FAMILY,
+        ]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_gpt35_turbo_cost_calculations(self):
         cost_card = OpenAIConsumptionCalculator("gpt-3.5-turbo-0125").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
@@ -339,6 +367,11 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
 
 
 class TestGroqConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = GroqConsumptionCalculator("model")
+        for cost_card in calculator.COSTS.values():
+            ensure_cost_are_floats(cost_card)
+
     def test_gemma_cost_calculations(self):
         cost_card = GroqConsumptionCalculator("gemma2-9b-it").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
