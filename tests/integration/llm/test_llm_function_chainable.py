@@ -1,18 +1,17 @@
 from __future__ import annotations
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any, Optional
 
 import dotenv
 from pydantic import BaseModel, Field
 
-
 from council import OpenAILLM
-from council.llm import YAMLBlockResponseParser
+from council.llm import YAMLBlockResponseParser, LLMFunctionError
 from council.llm.llm_function_chainable import (
     ChainableLLMFunction,
     LinearFunctionChain,
+    ChainableFunction,
+    BacktrackingFunctionChain,
 )
-
-dotenv.load_dotenv()
 
 
 class DatabaseQuestion(BaseModel):
@@ -53,9 +52,29 @@ class SQLQueryOptimized(YAMLBlockResponseParser):
     optimized_query: str = Field(..., description="Optimized query or original query")
 
 
+FakeTable = Dict[str, List[Any]]
+
+
+class SQLQueryExecutor(ChainableFunction[SQLQuery, FakeTable]):
+    def execute(self, obj: SQLQuery, exception: Optional[Exception] = None) -> FakeTable:
+        if not obj.feasible:
+            raise LLMFunctionError("Query is not feasible to execute", retryable=True)
+        if "limit" not in obj.query.lower():
+            raise LLMFunctionError("Database is huge so query must contain a limit clause", retryable=True)
+
+        return {"id": [1, 2, 3], "name": ["John", "Jane", "Doe"], "age": [28, 34, 29]}
+
+
+dotenv.load_dotenv()
+llm = OpenAILLM.from_env()
+question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
+query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(
+    llm, SQLQueryOptimized
+)
+execute_query_func: ChainableFunction[SQLQuery, FakeTable] = SQLQueryExecutor()
+
+
 def test_question_to_query_func() -> None:
-    llm = OpenAILLM.from_env()
-    question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
     db_question = DatabaseQuestion.get_for_test("What is average salary?")
     query = question_to_query_func.execute(db_question)
     assert isinstance(query, SQLQuery)
@@ -63,29 +82,30 @@ def test_question_to_query_func() -> None:
 
 
 def test_question_to_optimized_query_func() -> None:
-    llm = OpenAILLM.from_env()
-    question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
     query = question_to_query_func.execute(db_question)
     assert isinstance(query, SQLQuery)
     assert query.feasible
 
-    query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(
-        llm, SQLQueryOptimized
-    )
     optimized_query = query_to_optimized_query_func.execute(query)
     assert isinstance(optimized_query, SQLQueryOptimized)
 
 
 def test_linear_chain() -> None:
-    llm = OpenAILLM.from_env()
     chain: LinearFunctionChain[DatabaseQuestion, SQLQueryOptimized] = LinearFunctionChain(
-        [
-            ChainableLLMFunction(llm, SQLQuery),
-            ChainableLLMFunction(llm, SQLQueryOptimized),
-        ]
+        [question_to_query_func, query_to_optimized_query_func]
     )
 
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
     optimized_query = chain.execute(db_question)
     assert isinstance(optimized_query, SQLQueryOptimized)
+
+
+def test_backtracking_chain() -> None:
+    chain: BacktrackingFunctionChain[DatabaseQuestion, FakeTable] = BacktrackingFunctionChain(
+        [question_to_query_func, execute_query_func]
+    )
+
+    db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    result = chain.execute(db_question)
+    print(result)

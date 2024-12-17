@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Generic, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
+from typing import Any, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
 
-from council import LLMContext
 from council.llm import (
+    FunctionOutOfRetryError,
     LLMBase,
     LLMFunction,
+    LLMFunctionError,
     LLMMessage,
     LLMMiddlewareChain,
-    LLMParsingException,
     LLMResponse,
     get_llm_from_config,
 )
@@ -47,21 +47,19 @@ T_LLMOutput = TypeVar("T_LLMOutput", bound=ChainableLLMFunctionOutput)
 
 class ChainableFunction(Generic[T_Input, T_Output]):
     def execute(self, obj: T_Input, exception: Optional[Exception] = None) -> T_Output:
-        # Here you'd implement generic logic that transforms obj into T_Output
+        # implement logic that transforms obj into T_Output
         raise NotImplementedError()
 
 
 class ChainableLLMFunction(ChainableFunction[T_LLMInput, T_LLMOutput]):
-    PROMPT_TEMPLATE = "\n".join(
-        ["{input_obj_prompt}", "", "{response_template}"]
-    )  # TODO: could extend with {additional_instructions}
+    PROMPT_TEMPLATE = "\n".join(["{input_obj_prompt}", "", "{response_template}"])
+    # could extend with {additional_instructions} later
 
     def __init__(
         self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_LLMOutput], max_retries: int = 3
     ):
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._output_obj_type = output_obj_type
-        self._context = LLMContext.empty()
 
         self._max_retries = max_retries
 
@@ -80,7 +78,9 @@ class ChainableLLMFunction(ChainableFunction[T_LLMInput, T_LLMOutput]):
         input_prompt = self.PROMPT_TEMPLATE.format(
             input_obj_prompt=obj.to_prompt(), response_template=self._output_obj_type.to_response_template()
         )
-        messages = [LLMMessage.user_message(input_prompt)]
+        messages = [LLMMessage.user_message(input_prompt)]  # could separate into multiple messages
+        if exception is not None:
+            messages.append(LLMMessage.user_message(f"Consider the following previous error: {exception}"))
 
         llm_func: LLMFunction[T_LLMOutput] = LLMFunction(
             llm=self._llm_middleware,
@@ -119,7 +119,7 @@ class LinearFunctionChain(FunctionChainBase[T_Input, T_Output]):
         return cast(T_Output, current_obj)
 
 
-class BacktrackFunctionChain(FunctionChainBase[T_Input, T_Output]):
+class BacktrackingFunctionChain(FunctionChainBase[T_Input, T_Output]):
     """
     FunctionChain that executes functions in a linear order backtracking errors.
     If a function fails, the chain will backtrack to the previous function and try again.
@@ -139,29 +139,30 @@ class BacktrackFunctionChain(FunctionChainBase[T_Input, T_Output]):
 
     def execute(self, obj: T_Input) -> T_Output:
         index = 0
-        results = []
-        current_obj: Any = obj
+        inputs: List[T_Input] = [obj] * len(self.functions)
+        results = [None] * len(self.functions)
         previous_exception: Optional[Exception] = None
         backtrack_count = 0
 
         while index < len(self.functions):
             try:
-                current_obj = self.functions[index].execute(current_obj, previous_exception)
-                results.append(current_obj)
+                current_obj = self.functions[index].execute(inputs[index], previous_exception)
+                results[index] = current_obj
                 index += 1
-            except LLMParsingException as e:
-                if index == 0:
+                if index < len(self.functions):
+                    inputs[index] = current_obj
+            except LLMFunctionError as e:
+                if not e.retryable:
                     raise e
 
                 if backtrack_count >= self.max_backtracks:
-                    raise LLMParsingException(f"Exceeded maximum backtracks ({self.max_backtracks})")
+                    raise FunctionOutOfRetryError(
+                        self.max_backtracks, [LLMFunctionError(f"Exceeded maximum backtracks ({self.max_backtracks})")]
+                    )
 
                 backtrack_count += 1
                 index -= 1
-                previous_exception = e  # propagate error information back;
+                previous_exception = e  # propagate error information back
                 # TODO: needs not only the e but current input as well; could be part of e itself
 
         return cast(T_Output, results[-1])
-
-
-# TODO: # an example for sql generation and execution where limit must be applied
