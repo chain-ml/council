@@ -1,71 +1,91 @@
+from __future__ import annotations
 from typing import List, Tuple
 
 import dotenv
 from pydantic import BaseModel, Field
 
+
 from council import OpenAILLM
 from council.llm import YAMLBlockResponseParser
-from council.llm.llm_function_chainable import ChainableLLMFunctionInput, ChainableLLMFunctionOutput, \
-    ChainableLLMFunction, LinearFunctionChain
-from council.mocks import MockLLM
+from council.llm.llm_function_chainable import (
+    ChainableLLMFunction,
+    LinearFunctionChain,
+)
+
+dotenv.load_dotenv()
 
 
-class DatabaseQuestion(ChainableLLMFunctionInput):
+class DatabaseQuestion(BaseModel):
     question: str
     table_name: str
     columns_with_types: List[Tuple[str, str]]
 
     def to_prompt(self) -> str:
-        return "\n".join([
-            "Database Schema:",
-            f"Table: {self.table_name}",
-            *[f"{column}: {type}" for column, type in self.columns_with_types],
-            "Please generate a SQL query to answer the following question:",
-            self.question,
-        ])
+        return "\n".join(
+            [
+                "Database Schema:",
+                f"Table: {self.table_name}",
+                *[f"{column}: {type}" for column, type in self.columns_with_types],
+                "Please generate a SQL query to answer the following question:",
+                self.question,
+            ]
+        )
+
+    @classmethod
+    def get_for_test(cls, question: str) -> DatabaseQuestion:
+        return DatabaseQuestion(
+            question=question,
+            table_name="users",
+            columns_with_types=[("id", "INTEGER"), ("name", "TEXT"), ("age", "INTEGER")],
+        )
 
 
-class SQLQuery(YAMLBlockResponseParser, ChainableLLMFunctionInput, ChainableLLMFunctionOutput):
+class SQLQuery(YAMLBlockResponseParser):
     feasible: bool = Field(..., description="Boolean, whether the query is feasible")
     query: str = Field(..., description="SQL query to answer the question OR explanation if the query is not feasible")
 
     def to_prompt(self) -> str:
-        return "\n".join([
-            "Analyse the following SQL query and optimize if possible:",
-            f"{self.query}"
-        ])
+        return "\n".join(["Analyse the following SQL query and optimize if possible:", f"{self.query}"])
 
 
-class SQLQueryOptimized(YAMLBlockResponseParser, ChainableLLMFunctionOutput):
+class SQLQueryOptimized(YAMLBlockResponseParser):
     analysis: str = Field(..., description="Analysis of the query quality and performance")
     optimized_query: str = Field(..., description="Optimized query or original query")
 
 
-def run_workflow(question: str):
+def test_question_to_query_func() -> None:
     llm = OpenAILLM.from_env()
-    # llm = MockLLM.from_response("\n".join(["```yaml", "feasible: false", "query: SELECT * FROM users", "```"]))
     question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
-
-    db_question = DatabaseQuestion(
-        question=question,
-        table_name="users",
-        columns_with_types=[("id", "INTEGER"), ("name", "TEXT"), ("age", "INTEGER")]
-    )
+    db_question = DatabaseQuestion.get_for_test("What is average salary?")
     query = question_to_query_func.execute(db_question)
-    print(f"question_to_query_func execution result: {type(query)} - {query}")
-    if not query.feasible:
-        return
+    assert isinstance(query, SQLQuery)
+    assert not query.feasible
 
-    query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(llm,
-                                                                                                            SQLQueryOptimized)
+
+def test_question_to_optimized_query_func() -> None:
+    llm = OpenAILLM.from_env()
+    question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
+    db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    query = question_to_query_func.execute(db_question)
+    assert isinstance(query, SQLQuery)
+    assert query.feasible
+
+    query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(
+        llm, SQLQueryOptimized
+    )
     optimized_query = query_to_optimized_query_func.execute(query)
-    print(f"query_to_optimized_query_func execution result: {type(optimized_query)} - {optimized_query}")
-
-    # chain: LinearFunctionChain[DatabaseQuestion, SQLQueryOptimized] = LinearFunctionChain([question_to_query_func, query_to_optimized_query_func])
-    # chain.execute(db_question)
+    assert isinstance(optimized_query, SQLQueryOptimized)
 
 
-def test():
-    dotenv.load_dotenv()
-    # run_workflow("What is average salary?")
-    run_workflow("How many users older than 30 are there?")
+def test_linear_chain() -> None:
+    llm = OpenAILLM.from_env()
+    chain: LinearFunctionChain[DatabaseQuestion, SQLQueryOptimized] = LinearFunctionChain(
+        [
+            ChainableLLMFunction(llm, SQLQuery),
+            ChainableLLMFunction(llm, SQLQueryOptimized),
+        ]
+    )
+
+    db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    optimized_query = chain.execute(db_question)
+    assert isinstance(optimized_query, SQLQueryOptimized)
