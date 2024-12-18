@@ -6,6 +6,8 @@ from more_itertools import first, last
 
 
 class CodeBlock:
+    """Represents a code block with a language and code."""
+
     def __init__(self, language: Optional[str], code: str) -> None:
         self._language = language
         self._code = code
@@ -25,6 +27,22 @@ class CodeBlock:
 
 
 class CodeParser:
+    """
+    Helper class for parsing and extracting code blocks from text.
+
+    Provides methods to parse text containing code blocks delimited by triple backticks.
+    Code blocks can optionally specify a language identifier after the opening delimiter.
+
+    Example of a code block:
+
+    .. code-block:: text
+
+        ```python
+        def hello():
+            print("Hello world")
+        ```
+    """
+
     DELIMITER = "```"
 
     @staticmethod

@@ -2,6 +2,7 @@ import os
 import unittest
 
 from council.utils import (
+    must_read_env_str,
     read_env_str,
     read_env_int,
     read_env_float,
@@ -15,7 +16,7 @@ from council.utils import (
 class TestPrompt(unittest.TestCase):
     def test_env(self):
         os.environ["STR"] = "VALUE"
-        ev = read_env_str("STR").unwrap()
+        ev = must_read_env_str("STR")
         self.assertEqual(ev, "VALUE")
 
         os.environ["INT"] = "2"
