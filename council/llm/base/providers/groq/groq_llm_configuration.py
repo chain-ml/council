@@ -4,10 +4,10 @@ from typing import Any, Dict, Final, Mapping, Tuple, Type
 
 from council.utils import (
     Parameter,
+    must_read_env_str,
     not_empty_validator,
     penalty_validator,
     positive_validator,
-    read_env_str,
     zero_to_one_validator,
     zero_to_two_validator,
 )
@@ -118,8 +118,8 @@ class GroqLLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env() -> GroqLLMConfiguration:
-        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
-        model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
+        api_key = must_read_env_str(_env_var_prefix + "API_KEY")
+        model = must_read_env_str(_env_var_prefix + "LLM_MODEL")
         config = GroqLLMConfiguration(model=model, api_key=api_key)
         return config
 

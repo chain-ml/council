@@ -5,9 +5,9 @@ from typing import Any, Final, Optional
 from council.utils import (
     Parameter,
     greater_than_validator,
+    must_read_env_str,
     not_empty_validator,
     prefix_validator,
-    read_env_str,
     zero_to_one_validator,
 )
 
@@ -80,8 +80,8 @@ class GeminiLLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env() -> GeminiLLMConfiguration:
-        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
-        model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
+        api_key = must_read_env_str(_env_var_prefix + "API_KEY")
+        model = must_read_env_str(_env_var_prefix + "LLM_MODEL")
         config = GeminiLLMConfiguration(model=model, api_key=api_key)
         return config
 

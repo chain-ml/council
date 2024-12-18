@@ -5,9 +5,9 @@ from typing import Any, Final, Optional
 from council.utils import (
     Parameter,
     greater_than_validator,
+    must_read_env_str,
     prefix_validator,
     read_env_int,
-    read_env_str,
     zero_to_one_validator,
 )
 
@@ -119,8 +119,8 @@ class AnthropicLLMConfiguration(LLMConfigurationBase):
 
     @staticmethod
     def from_env() -> AnthropicLLMConfiguration:
-        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
-        model = read_env_str(_env_var_prefix + "LLM_MODEL").unwrap()
+        api_key = must_read_env_str(_env_var_prefix + "API_KEY")
+        model = must_read_env_str(_env_var_prefix + "LLM_MODEL")
         max_tokens = read_env_int(_env_var_prefix + "LLM_MAX_TOKENS", required=False, default=300).unwrap()
         config = AnthropicLLMConfiguration(model=model, api_key=api_key, max_tokens=max_tokens)
         config._read_optional_env()

@@ -5,6 +5,7 @@ from typing import Any, Final, Optional
 from council.utils import (
     Parameter,
     greater_than_validator,
+    must_read_env_str,
     prefix_any_validator,
     prefix_validator,
     read_env_int,
@@ -92,7 +93,7 @@ class OpenAIChatGPTConfiguration(ChatGPTConfigurationBase):
 
     @staticmethod
     def from_env(model: Optional[str] = None, api_host: Optional[str] = None) -> OpenAIChatGPTConfiguration:
-        api_key = read_env_str(_env_var_prefix + "API_KEY").unwrap()
+        api_key = must_read_env_str(_env_var_prefix + "API_KEY")
         if api_host is None:
             api_host = read_env_str(
                 _env_var_prefix + "API_HOST", required=False, default="https://api.openai.com"

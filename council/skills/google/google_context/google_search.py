@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import Any, Optional
 
-from council.utils import MissingEnvVariableException, OptionException, read_env_str
+from council.utils import MissingEnvVariableException, OptionException, must_read_env_str
 from googleapiclient.discovery import build
 
 from .context_provider import ContextProvider
@@ -54,8 +54,8 @@ class GoogleSearchEngine(ContextProvider, ABC):
     @classmethod
     def from_env(cls) -> Optional[GoogleSearchEngine]:
         try:
-            api_key: str = read_env_str("GOOGLE_API_KEY").unwrap()
-            engine_id: str = read_env_str("GOOGLE_SEARCH_ENGINE_ID").unwrap()
+            api_key: str = must_read_env_str("GOOGLE_API_KEY")
+            engine_id: str = must_read_env_str("GOOGLE_SEARCH_ENGINE_ID")
         except (MissingEnvVariableException, OptionException):
             return None
         return GoogleSearchEngine(api_key=api_key, engine_id=engine_id)

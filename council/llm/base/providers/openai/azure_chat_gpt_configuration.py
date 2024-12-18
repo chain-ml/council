@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Final, Optional
 
-from council.utils import Parameter, greater_than_validator, not_empty_validator, read_env_str
+from council.utils import Parameter, greater_than_validator, must_read_env_str, not_empty_validator, read_env_str
 
 from ...llm_config_object import LLMConfigSpec, LLMProviders
 from .chat_gpt_configuration import ChatGPTConfigurationBase
@@ -81,8 +81,8 @@ class AzureChatGPTConfiguration(ChatGPTConfigurationBase):
 
     @staticmethod
     def from_env(deployment_name: Optional[str] = None) -> AzureChatGPTConfiguration:
-        api_key = read_env_str(_env_var_prefix + "LLM_API_KEY").unwrap()
-        api_base = read_env_str(_env_var_prefix + "LLM_API_BASE").unwrap()
+        api_key = must_read_env_str(_env_var_prefix + "LLM_API_KEY")
+        api_base = must_read_env_str(_env_var_prefix + "LLM_API_BASE")
         if deployment_name is None:
             deployment_name = read_env_str(_env_var_prefix + "LLM_DEPLOYMENT_NAME", required=False).unwrap()
 
