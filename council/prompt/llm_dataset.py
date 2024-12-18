@@ -6,33 +6,8 @@ from collections import defaultdict
 from typing import Any, Counter, DefaultDict, Dict, List, Mapping, Optional, Sequence
 
 import yaml
-from council.llm import LLMMessage, LLMMessageRole
+from council.llm import LLMMessage
 from council.utils import DataObject, DataObjectSpecBase
-
-
-class LLMDatasetMessage:
-    """
-    Represents a single chat message in a conversation.
-    """
-
-    def __init__(self, role: LLMMessageRole, content: str):
-        self.role = role
-        self.content = content.strip()
-
-    @classmethod
-    def from_dict(cls, values: Dict[str, str]) -> LLMDatasetMessage:
-        role = values.get("role")
-        content = values.get("content")
-        if role is None or content is None:
-            raise ValueError("Both 'role' and 'content' must be defined for a message")
-        return LLMDatasetMessage(LLMMessageRole(role), content)
-
-    @classmethod
-    def from_llm_message(cls, message: LLMMessage) -> LLMDatasetMessage:
-        return LLMDatasetMessage(role=message.role, content=message.content)
-
-    def to_dict(self) -> Dict[str, str]:
-        return {"role": self.role, "content": self.content}
 
 
 class LLMDatasetConversation:
@@ -40,7 +15,7 @@ class LLMDatasetConversation:
     Represents a conversation between user and assistant with optional labels.
     """
 
-    def __init__(self, messages: Sequence[LLMDatasetMessage], labels: Optional[Mapping[str, str]]):
+    def __init__(self, messages: Sequence[LLMMessage], labels: Optional[Mapping[str, str]]):
         self.messages = list(messages)
         self.labels: Dict[str, str] = dict(labels) if labels is not None else {}
 
@@ -49,7 +24,7 @@ class LLMDatasetConversation:
         messages = values.get("messages", [])
         if not messages:
             raise ValueError("Conversation must contain at least one message")
-        llm_dataset_messages = [LLMDatasetMessage.from_dict(message) for message in messages]
+        llm_dataset_messages = [LLMMessage.from_dict(message) for message in messages]
         labels = values.get("labels")
         return LLMDatasetConversation(llm_dataset_messages, labels)
 
