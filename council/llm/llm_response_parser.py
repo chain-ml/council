@@ -126,6 +126,31 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
 
         return cls.create_and_validate(**parsed_blocks)
 
+    @classmethod
+    def to_response_template(cls: Type[T]) -> str:
+        """Generate code blocks response template based on the model's fields and their descriptions."""
+        return "\n".join([
+            "- Provide your response in a the following code blocks.",
+            "- All keys must be present in the response, even when their values are empty.",
+            "- For empty values, include empty quotes ("") rather than leaving them blank.",
+            "- Your output outside of code blocks will not be parsed.",
+            "",
+            cls._to_response_template(),
+        ])
+
+    @classmethod
+    def _to_response_template(cls: Type[T]) -> str:
+        template_parts = []
+
+        for field_name, field in cls.model_fields.items():
+            description = field.description
+            if description is None:
+                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+            template_parts.extend([f"```{field_name}", description, "```"])
+
+        return "\n".join(template_parts)
+
 
 T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLResponseParserBase")
 
