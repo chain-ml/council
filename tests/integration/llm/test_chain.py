@@ -5,12 +5,13 @@ import dotenv
 from pydantic import BaseModel, Field
 
 from council import OpenAILLM
-from council.llm import YAMLBlockResponseParser, LLMFunctionError
-from council.llm.llm_function_chainable import (
-    ChainableLLMFunction,
-    LinearFunctionChain,
-    ChainableFunction,
-    BacktrackingFunctionChain,
+from council.llm import YAMLBlockResponseParser
+from council.llm.chain import (
+    LinkLLMProcessor,
+    LinkProcessor,
+    LinearChainProcessor,
+    BacktrackingChainProcessor,
+    LinkProcessorException,
 )
 
 
@@ -55,45 +56,43 @@ class SQLQueryOptimized(YAMLBlockResponseParser):
 FakeTable = Dict[str, List[Any]]
 
 
-class SQLQueryExecutor(ChainableFunction[SQLQuery, FakeTable]):
+class SQLQueryExecutor(LinkProcessor[SQLQuery, FakeTable]):
     def execute(self, obj: SQLQuery, exception: Optional[Exception] = None) -> FakeTable:
-        if not obj.feasible:
-            raise LLMFunctionError("Query is not feasible to execute", retryable=True)
         if "limit" not in obj.query.lower():
-            raise LLMFunctionError("Database is huge so query must contain a limit clause", retryable=True)
+            raise LinkProcessorException(
+                input=obj.to_prompt(), message="Database is huge so query must contain a limit clause"
+            )
 
         return {"id": [1, 2, 3], "name": ["John", "Jane", "Doe"], "age": [28, 34, 29]}
 
 
 dotenv.load_dotenv()
 llm = OpenAILLM.from_env()
-question_to_query_func: ChainableLLMFunction[DatabaseQuestion, SQLQuery] = ChainableLLMFunction(llm, SQLQuery)
-query_to_optimized_query_func: ChainableLLMFunction[SQLQuery, SQLQueryOptimized] = ChainableLLMFunction(
-    llm, SQLQueryOptimized
-)
-execute_query_func: ChainableFunction[SQLQuery, FakeTable] = SQLQueryExecutor()
+question_to_query_proc: LinkLLMProcessor[DatabaseQuestion, SQLQuery] = LinkLLMProcessor(llm, SQLQuery)
+query_to_optimized_query_proc: LinkLLMProcessor[SQLQuery, SQLQueryOptimized] = LinkLLMProcessor(llm, SQLQueryOptimized)
+execute_query_proc: LinkProcessor[SQLQuery, FakeTable] = SQLQueryExecutor()
 
 
-def test_question_to_query_func() -> None:
+def test_question_to_query_proc() -> None:
     db_question = DatabaseQuestion.get_for_test("What is average salary?")
-    query = question_to_query_func.execute(db_question)
+    query = question_to_query_proc.execute(db_question)
     assert isinstance(query, SQLQuery)
     assert not query.feasible
 
 
-def test_question_to_optimized_query_func() -> None:
+def test_question_to_optimized_query_proc() -> None:
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
-    query = question_to_query_func.execute(db_question)
+    query = question_to_query_proc.execute(db_question)
     assert isinstance(query, SQLQuery)
     assert query.feasible
 
-    optimized_query = query_to_optimized_query_func.execute(query)
+    optimized_query = query_to_optimized_query_proc.execute(query)
     assert isinstance(optimized_query, SQLQueryOptimized)
 
 
 def test_linear_chain() -> None:
-    chain: LinearFunctionChain[DatabaseQuestion, SQLQueryOptimized] = LinearFunctionChain(
-        [question_to_query_func, query_to_optimized_query_func]
+    chain: LinearChainProcessor[DatabaseQuestion, SQLQueryOptimized] = LinearChainProcessor(
+        [question_to_query_proc, query_to_optimized_query_proc]
     )
 
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
@@ -102,8 +101,8 @@ def test_linear_chain() -> None:
 
 
 def test_backtracking_chain() -> None:
-    chain: BacktrackingFunctionChain[DatabaseQuestion, FakeTable] = BacktrackingFunctionChain(
-        [question_to_query_func, execute_query_func]
+    chain: BacktrackingChainProcessor[DatabaseQuestion, FakeTable] = BacktrackingChainProcessor(
+        [question_to_query_proc, execute_query_proc]
     )
 
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")

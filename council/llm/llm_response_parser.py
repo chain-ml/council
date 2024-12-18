@@ -80,6 +80,12 @@ class BaseModelResponseParser(BaseModel, abc.ABC):
         """
         raise NotImplementedError()
 
+    @classmethod
+    @abc.abstractmethod
+    def to_response_template(cls: Type[T]) -> str:
+        """Convert an instance to the response template for the LLM."""
+        raise NotImplementedError()
+
     def validator(self) -> None:
         """
         Implement custom validation logic for the parsed data.
@@ -129,14 +135,16 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
     @classmethod
     def to_response_template(cls: Type[T]) -> str:
         """Generate code blocks response template based on the model's fields and their descriptions."""
-        return "\n".join([
-            "- Provide your response in a the following code blocks.",
-            "- All keys must be present in the response, even when their values are empty.",
-            "- For empty values, include empty quotes ("") rather than leaving them blank.",
-            "- Your output outside of code blocks will not be parsed.",
-            "",
-            cls._to_response_template(),
-        ])
+        return "\n".join(
+            [
+                "- Provide your response in a the following code blocks.",
+                "- All keys must be present in the response, even when their values are empty.",
+                "- For empty values, include empty quotes (" ") rather than leaving them blank.",
+                "- Your output outside of code blocks will not be parsed.",
+                "",
+                CodeBlocksResponseParser._to_response_template(),
+            ]
+        )
 
     @classmethod
     def _to_response_template(cls: Type[T]) -> str:
