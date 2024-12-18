@@ -1,11 +1,11 @@
 import unittest
 
 from council.llm import CodeBlocksResponseParser, LLMFunction, LLMCostCard
-from council.llm.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
-from council.llm.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
-from council.llm.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
-from council.llm.providers.groq.groq_llm_cost import GroqConsumptionCalculator
-from council.llm.providers.openai.openai_llm_cost import OpenAIConsumptionCalculator, Usage as OpenAIUsage
+from council.llm.base.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
+from council.llm.base.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
+from council.llm.base.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
+from council.llm.base.providers.groq.groq_llm_cost import GroqConsumptionCalculator
+from council.llm.base.providers.openai.openai_llm_cost import OpenAIConsumptionCalculator, Usage as OpenAIUsage
 from council.mocks import MockLLM, MockMultipleResponses
 
 

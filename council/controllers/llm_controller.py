@@ -4,7 +4,7 @@ from council.chains import ChainBase
 from council.contexts import AgentContext, ChatMessage, ContextBase
 from council.controllers import ControllerBase, ControllerException
 from council.llm import LLMBase, LLMMessage, MonitoredLLM
-from council.llm.llm_answer import LLMAnswer, LLMParsingException, llm_class_validator, llm_property
+from council.llm.base.llm_answer import LLMAnswer, LLMParsingException, llm_class_validator, llm_property
 from council.utils import Option
 from typing_extensions import TypeGuard
 

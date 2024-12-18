@@ -1,5 +1,5 @@
 import unittest
-from council.llm.llm_response_parser import (
+from council.llm import (
     YAMLBlockResponseParser,
     YAMLResponseParser,
     JSONBlockResponseParser,

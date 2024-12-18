@@ -1,19 +1,19 @@
 # EchoResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.EchoResponseParser
+.. autoclass:: council.llm.EchoResponseParser
 ```
 
 # StringResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.StringResponseParser
+.. autoclass:: council.llm.StringResponseParser
 ```
 
 # BaseModelResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.BaseModelResponseParser
+.. autoclass:: council.llm.BaseModelResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```
@@ -21,7 +21,7 @@
 # CodeBlocksResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.CodeBlocksResponseParser
+.. autoclass:: council.llm.CodeBlocksResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```
@@ -72,7 +72,7 @@ print(response.sql)
 # YAMLBlockResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.YAMLBlockResponseParser
+.. autoclass:: council.llm.YAMLBlockResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```
@@ -125,7 +125,7 @@ print(character.description)
 # YAMLResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.YAMLResponseParser
+.. autoclass:: council.llm.YAMLResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```
@@ -133,7 +133,7 @@ print(character.description)
 # JSONBlockResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.JSONBlockResponseParser
+.. autoclass:: council.llm.JSONBlockResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```
@@ -141,7 +141,7 @@ print(character.description)
 # JSONResponseParser
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_response_parser.JSONResponseParser
+.. autoclass:: council.llm.JSONResponseParser
     :no-inherited-members:
     :exclude-members: model_computed_fields, model_config, model_fields
 ```

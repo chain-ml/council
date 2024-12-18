@@ -1,8 +1,16 @@
 import unittest
 
-from council.llm import LLMMessage, LLMException, LLMFallback
-from council.llm.llm_exception import LLMOutOfRetriesException, LLMCallTimeoutException
-from council.llm.llm_middleware import LLMRequest, LLMMiddlewareChain, LLMLoggingMiddleware, LLMRetryMiddleware
+from council.llm import (
+    LLMMessage,
+    LLMException,
+    LLMFallback,
+    LLMOutOfRetriesException,
+    LLMCallTimeoutException,
+    LLMRequest,
+    LLMMiddlewareChain,
+    LLMLoggingMiddleware,
+    LLMRetryMiddleware,
+)
 from council.mocks import MockLLM, MockErrorLLM
 
 

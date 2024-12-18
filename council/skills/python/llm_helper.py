@@ -1,4 +1,4 @@
-from council.llm.llm_answer import LLMParsingException
+from council.llm.base.llm_answer import LLMParsingException
 from council.utils import CodeParser
 
 
