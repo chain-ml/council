@@ -1,6 +1,6 @@
 import unittest
 
-from council.llm import CodeBlocksResponseParser, LLMFunction
+from council.llm import CodeBlocksResponseParser, LLMFunction, LLMCostCard
 from council.llm.base.providers.anthropic.anthropic_llm import Usage as AnthropicUsage
 from council.llm.base.providers.anthropic.anthropic_llm_cost import AnthropicConsumptionCalculator
 from council.llm.base.providers.gemini.gemini_llm_cost import GeminiConsumptionCalculator
@@ -9,7 +9,18 @@ from council.llm.base.providers.openai.openai_llm_cost import OpenAIConsumptionC
 from council.mocks import MockLLM, MockMultipleResponses
 
 
+def ensure_cost_are_floats(cost_card: LLMCostCard) -> None:
+    assert isinstance(cost_card.input, float)
+    assert isinstance(cost_card.output, float)
+
+
 class TestAnthropicConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = AnthropicConsumptionCalculator("model")
+        for cost_card_mapping in [calculator.COSTS, calculator.COSTS_CACHING]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_all_cache_models_have_base_costs(self):
         calculator = AnthropicConsumptionCalculator("model")
         for model in calculator.COSTS_CACHING.keys():
@@ -173,6 +184,12 @@ class TestAnthropicConsumptionCalculator(unittest.TestCase):
 
 
 class TestGeminiConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = GeminiConsumptionCalculator("model", 42)
+        for cost_card_mapping in [calculator.COSTS_UNDER_128k, calculator.COSTS_OVER_128k]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_keys_match(self):
         calculator = GeminiConsumptionCalculator("model", 42)
 
@@ -232,6 +249,17 @@ class TestGeminiConsumptionCalculator(unittest.TestCase):
 
 
 class TestOpenAIConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = OpenAIConsumptionCalculator("model")
+        for cost_card_mapping in [
+            calculator.COSTS_gpt_35_turbo_FAMILY,
+            calculator.COSTS_gpt_4_FAMILY,
+            calculator.COSTS_gpt_4o_FAMILY,
+            calculator.COSTS_o1_FAMILY,
+        ]:
+            for cost_card in cost_card_mapping.values():
+                ensure_cost_are_floats(cost_card)
+
     def test_gpt35_turbo_cost_calculations(self):
         cost_card = OpenAIConsumptionCalculator("gpt-3.5-turbo-0125").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
@@ -339,16 +367,16 @@ class TestOpenAIConsumptionCalculator(unittest.TestCase):
 
 
 class TestGroqConsumptionCalculator(unittest.TestCase):
+    def test_all_costs_are_floats(self):
+        calculator = GroqConsumptionCalculator("model")
+        for cost_card in calculator.COSTS.values():
+            ensure_cost_are_floats(cost_card)
+
     def test_gemma_cost_calculations(self):
         cost_card = GroqConsumptionCalculator("gemma2-9b-it").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
         self.assertEqual(prompt_cost, 0.20)  # $0.20 per 1M tokens * 1M
         self.assertEqual(completion_cost, 0.10)  # $0.20 per 1M tokens * 0.5M
-
-        cost_card = GroqConsumptionCalculator("gemma-7b-it").find_model_costs()
-        prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
-        self.assertEqual(prompt_cost, 0.07)  # $0.07 per 1M tokens * 1M
-        self.assertEqual(completion_cost, 0.035)  # $0.07 per 1M tokens * 0.5M
 
     def test_llama3_cost_calculations(self):
         cost_card = GroqConsumptionCalculator("llama3-70b-8192").find_model_costs()
@@ -356,7 +384,7 @@ class TestGroqConsumptionCalculator(unittest.TestCase):
         self.assertEqual(prompt_cost, 0.59)  # $0.59 per 1M tokens * 1M
         self.assertEqual(completion_cost, 0.395)  # $0.79 per 1M tokens * 0.5M
 
-        cost_card = GroqConsumptionCalculator("llama3-8b-8192").find_model_costs()
+        cost_card = GroqConsumptionCalculator("llama-3.1-8b-instant").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
         self.assertEqual(prompt_cost, 0.05)  # $0.05 per 1M tokens * 1M
         self.assertEqual(completion_cost, 0.04)  # $0.08 per 1M tokens * 0.5M
@@ -372,16 +400,16 @@ class TestGroqConsumptionCalculator(unittest.TestCase):
         self.assertEqual(prompt_cost, 0.19)  # $0.19 per 1M tokens * 1M
         self.assertEqual(completion_cost, 0.095)  # $0.19 per 1M tokens * 0.5M
 
-    def test_llama_31_cost_calculations(self):
-        cost_card = GroqConsumptionCalculator("llama-3.1-70b-versatile").find_model_costs()
+    def test_llama_33_cost_calculations(self):
+        cost_card = GroqConsumptionCalculator("llama-3.3-70b-versatile").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
         self.assertEqual(prompt_cost, 0.59)  # $0.59 per 1M tokens * 1M
         self.assertEqual(completion_cost, 0.395)  # $0.79 per 1M tokens * 0.5M
 
-        cost_card = GroqConsumptionCalculator("llama-3.1-8b-instant").find_model_costs()
+        cost_card = GroqConsumptionCalculator("llama-3.3-70b-specdec").find_model_costs()
         prompt_cost, completion_cost = cost_card.get_costs(1_000_000, 500_000)
-        self.assertEqual(prompt_cost, 0.05)  # $0.05 per 1M tokens * 1M
-        self.assertEqual(completion_cost, 0.04)  # $0.08 per 1M tokens * 0.5M
+        self.assertEqual(prompt_cost, 0.59)  # $0.59 per 1M tokens * 1M
+        self.assertEqual(completion_cost, 0.495)  # $0.99 per 1M tokens * 0.5M
 
     def test_llama_32_cost_calculations(self):
         models = {

@@ -4,7 +4,7 @@ import abc
 import base64
 import mimetypes
 from enum import Enum
-from typing import Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Optional, Sequence
 
 from council.contexts import ChatMessage, ChatMessageKind
 
@@ -247,6 +247,20 @@ class LLMMessage:
             return normalized_content + "".join(data_contents)
 
         return normalized_content
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, str]) -> LLMMessage:
+        """Create an instance from OpenAI-compatible dict with role and content (name and data not supported)."""
+
+        role = values.get("role")
+        content = values.get("content")
+        if role is None or content is None:
+            raise ValueError("Both 'role' and 'content' must be defined for LLMMessage")
+        return LLMMessage(LLMMessageRole(role), content.strip())
+
+    def to_dict(self) -> Dict[str, str]:
+        """Convert an instance to OpenAI-compatible dict with role and content (name and data not supported)."""
+        return {"role": self.role, "content": self.content}
 
 
 class LLMMessageTokenCounterBase(abc.ABC):
