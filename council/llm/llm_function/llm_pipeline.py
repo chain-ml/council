@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
+from typing import Any, Dict, Final, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
 
 from council.llm.base import LLMBase, LLMMessage
 
@@ -12,14 +12,14 @@ from .llm_response_parser import BaseModelResponseParser
 class ProcessorException(Exception):
     """
     Exception raised during the execution of a Processor.
-    Contains information about the input_prompt that caused the exception, the exception itself,
+    Contains information about the input that caused the exception, the exception itself,
     and optionally a previous processor that should handle the exception.
     """
 
     def __init__(self, *, input: str, message: str, transfer_to: Optional[str] = None):
         self.input = input
         self.message = message
-        # self.transfer_to = transfer_to
+        self.transfer_to = transfer_to
 
 
 class LLMProcessorInput(Protocol):
@@ -60,7 +60,7 @@ class LLMProcessorRecord:
 
 class Processor(Generic[T_Input, T_Output]):
     """
-    Base class for a Processor, transforming an input_prompt object into an output object.
+    Base class for a Processor, transforming an input object into an output object.
     List of processors can be then used to create a PipelineProcessor.
     """
 
@@ -75,13 +75,15 @@ class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
     Keeps track of records processed by this instance.
     """
 
-    PROMPT_TEMPLATE = "\n".join(["{input_obj_prompt}", "", "{response_template}"])
-
-    def __init__(self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_LLMOutput]):
+    def __init__(
+        self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_LLMOutput], name: Optional[str] = None
+    ):
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._output_obj_type = output_obj_type
+        self.name = name or output_obj_type.__name__
 
         self._records: List[LLMProcessorRecord] = []
+        self.PROMPT_TEMPLATE: Final[str] = "\n".join(["{input_obj_prompt}", "", "{response_template}"])
 
     @property
     def records(self) -> List[LLMProcessorRecord]:
@@ -174,6 +176,18 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
         super().__init__(processors)
         self.max_backtracks = max_backtracks
 
+    @staticmethod
+    def should_handle(processor: Processor, exception: Optional[ProcessorException] = None) -> bool:
+        if exception is None:
+            return True
+
+        if not isinstance(processor, LLMProcessor):
+            return False
+
+        if exception.transfer_to is None:
+            return True
+        return exception.transfer_to == processor.name
+
     def execute(self, obj: T_Input) -> T_Output:
         index = 0
         inputs: List[T_Input] = [obj] * len(self.processors)
@@ -183,8 +197,12 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
 
         while index < len(self.processors):
             try:
+                if not self.should_handle(self.processors[index], previous_exception):
+                    index -= 1
+                    continue
                 current_obj = self.processors[index].execute(inputs[index], previous_exception)
                 index += 1
+                previous_exception = None  # reset exception after successful execution
                 if index < len(self.processors):
                     inputs[index] = current_obj
             except ProcessorException as e:

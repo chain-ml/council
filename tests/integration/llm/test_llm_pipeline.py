@@ -45,15 +45,16 @@ class SQLQuery(YAMLBlockResponseParser):
     query: str = Field(..., description="SQL query to answer the question OR explanation if the query is not feasible")
 
     def to_prompt(self) -> str:
-        return "\n".join(["Analyse the following SQL query and optimize if possible:", f"{self.query}"])
+        return "\n".join(["Explain the following query:", f"{self.query}"])
 
 
-class SQLQueryOptimized(YAMLBlockResponseParser):
+class SQLQueryExplained(YAMLBlockResponseParser):
+    query: str = Field(..., description="The query itself without any modifications")
     analysis: str = Field(..., description="Analysis of the query quality and performance")
-    optimized_query: str = Field(..., description="Optimized query or original query")
 
 
 FakeTable = Dict[str, List[Any]]
+FakeTableData: FakeTable = {"id": [1, 2, 3], "name": ["John", "Jane", "Doe"], "age": [28, 34, 29]}
 
 
 class SQLQueryExecutor(Processor[SQLQuery, FakeTable]):
@@ -63,52 +64,132 @@ class SQLQueryExecutor(Processor[SQLQuery, FakeTable]):
                 input=obj.to_prompt(), message="Database is huge so query must contain a limit clause"
             )
 
-        return {"id": [1, 2, 3], "name": ["John", "Jane", "Doe"], "age": [28, 34, 29]}
+        return FakeTableData
+
+
+class SQLQueryExecutorWithTransfer(Processor[SQLQueryExplained, FakeTable]):
+    def execute(self, obj: SQLQueryExplained, exception: Optional[Exception] = None) -> FakeTable:
+        if "limit" not in obj.query.lower():
+            raise ProcessorException(
+                input=str(obj),  # TODO: need obj.to_response?
+                message="Database is huge so query must contain a limit clause",
+                transfer_to="SQLQuery",
+            )
+
+        return FakeTableData
 
 
 dotenv.load_dotenv()
 llm = OpenAILLM.from_env()
-question_to_query_proc: LLMProcessor[DatabaseQuestion, SQLQuery] = LLMProcessor(llm, SQLQuery)
-query_to_optimized_query_proc: LLMProcessor[SQLQuery, SQLQueryOptimized] = LLMProcessor(llm, SQLQueryOptimized)
-execute_query_proc: Processor[SQLQuery, FakeTable] = SQLQueryExecutor()
 
 
-def test_question_to_query_proc() -> None:
+def get_question_to_query_proc() -> LLMProcessor[DatabaseQuestion, SQLQuery]:
+    return LLMProcessor(llm, SQLQuery)
+
+
+def get_query_to_explained_query_proc() -> LLMProcessor[SQLQuery, SQLQueryExplained]:
+    return LLMProcessor(llm, SQLQueryExplained)
+
+
+def get_execute_query_proc() -> Processor[SQLQuery, FakeTable]:
+    return SQLQueryExecutor()
+
+
+def get_execute_explained_query_proc() -> Processor[SQLQueryExplained, FakeTable]:
+    return SQLQueryExecutorWithTransfer()
+
+
+def get_naive_pipeline() -> NaivePipelineProcessor[DatabaseQuestion, SQLQueryExplained]:
+    return NaivePipelineProcessor(
+        [
+            get_question_to_query_proc(),
+            get_query_to_explained_query_proc(),
+        ]
+    )
+
+
+def get_double_backtrack_pipeline() -> BacktrackingPipelineProcessor[DatabaseQuestion, FakeTable]:
+    return BacktrackingPipelineProcessor(
+        [
+            get_question_to_query_proc(),
+            get_execute_query_proc(),
+        ]
+    )
+
+
+def get_triple_backtrack_pipeline() -> BacktrackingPipelineProcessor[DatabaseQuestion, FakeTable]:
+    return BacktrackingPipelineProcessor(
+        [
+            get_question_to_query_proc(),
+            get_query_to_explained_query_proc(),
+            get_execute_explained_query_proc(),
+        ]
+    )
+
+
+def test_question_to_query_proc():
     db_question = DatabaseQuestion.get_for_test("What is average salary?")
-    query = question_to_query_proc.execute(db_question)
+    proc = get_question_to_query_proc()
+    query = proc.execute(db_question)
     assert isinstance(query, SQLQuery)
     assert not query.feasible
+    assert len(proc.records) == 1
+    assert proc.records[0].exception is None
 
 
-def test_question_to_optimized_query_proc() -> None:
+def test_question_to_optimized_query_proc():
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    question_to_query_proc = get_question_to_query_proc()
     query = question_to_query_proc.execute(db_question)
     assert isinstance(query, SQLQuery)
     assert query.feasible
+    assert len(question_to_query_proc.records) == 1
+    assert question_to_query_proc.records[0].exception is None
 
-    optimized_query = query_to_optimized_query_proc.execute(query)
-    assert isinstance(optimized_query, SQLQueryOptimized)
+    query_to_explained_query_proc = get_query_to_explained_query_proc()
+    optimized_query = query_to_explained_query_proc.execute(query)
+    assert isinstance(optimized_query, SQLQueryExplained)
+    assert len(query_to_explained_query_proc.records) == 1
+    assert query_to_explained_query_proc.records[0].exception is None
 
 
-def test_naive_pipeline() -> None:
-    pipeline: NaivePipelineProcessor[DatabaseQuestion, SQLQueryOptimized] = NaivePipelineProcessor(
-        [question_to_query_proc, query_to_optimized_query_proc]
-    )
-
+def test_naive_pipeline():
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
-    optimized_query = pipeline.execute(db_question)
-    assert isinstance(optimized_query, SQLQueryOptimized)
-    # assert on records length
+    pipeline = get_naive_pipeline()
+    explained_query = pipeline.execute(db_question)
+    assert isinstance(explained_query, SQLQueryExplained)
+
+    for proc in pipeline.processors:
+        assert len(proc.records) == 1
+        assert proc.records[0].exception is None
 
 
-def test_backtracking_pipeline() -> None:
-    pipeline: BacktrackingPipelineProcessor[DatabaseQuestion, FakeTable] = BacktrackingPipelineProcessor(
-        [question_to_query_proc, execute_query_proc]
-    )
-
+def test_double_backtracking_pipeline():
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    pipeline = get_double_backtrack_pipeline()
     result = pipeline.execute(db_question)
     print(result)
 
+    llm_proc = pipeline.processors[0]
+    assert len(llm_proc.records) == 2
+    assert llm_proc.records[0].exception.message == "Database is huge so query must contain a limit clause"
+    assert llm_proc.records[1].exception is None
 
-# add test case for query -> optimized_query -> execution with transfer_to
+
+def test_triple_backtracking_pipeline():
+    db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
+    pipeline = get_triple_backtrack_pipeline()
+    result = pipeline.execute(db_question)
+    print(result)
+
+    question_to_query_proc = pipeline.processors[0]
+    assert len(question_to_query_proc.records) == 2
+    assert (
+        question_to_query_proc.records[0].exception.message == "Database is huge so query must contain a limit clause"
+    )
+    assert question_to_query_proc.records[1].exception is None
+
+    query_to_optimized_query_proc = pipeline.processors[1]
+    assert len(query_to_optimized_query_proc.records) == 2
+    assert query_to_optimized_query_proc.records[0].exception is None
+    assert query_to_optimized_query_proc.records[1].exception is None
