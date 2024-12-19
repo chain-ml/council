@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from council import OpenAILLM
 from council.llm import YAMLBlockResponseParser
-from council.llm.chain import (
+from council.llm.llm_function.chain import (
     LinkLLMProcessor,
     LinkProcessor,
     LinearChainProcessor,
