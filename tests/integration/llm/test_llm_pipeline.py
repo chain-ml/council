@@ -6,12 +6,12 @@ from pydantic import BaseModel, Field
 
 from council import OpenAILLM
 from council.llm import YAMLBlockResponseParser
-from council.llm.llm_function.chain import (
-    LinkLLMProcessor,
-    LinkProcessor,
-    LinearChainProcessor,
-    BacktrackingChainProcessor,
-    LinkProcessorException,
+from council.llm.llm_function.llm_pipeline import (
+    LLMProcessor,
+    Processor,
+    NaivePipelineProcessor,
+    BacktrackingPipelineProcessor,
+    ProcessorException,
 )
 
 
@@ -56,10 +56,10 @@ class SQLQueryOptimized(YAMLBlockResponseParser):
 FakeTable = Dict[str, List[Any]]
 
 
-class SQLQueryExecutor(LinkProcessor[SQLQuery, FakeTable]):
+class SQLQueryExecutor(Processor[SQLQuery, FakeTable]):
     def execute(self, obj: SQLQuery, exception: Optional[Exception] = None) -> FakeTable:
         if "limit" not in obj.query.lower():
-            raise LinkProcessorException(
+            raise ProcessorException(
                 input=obj.to_prompt(), message="Database is huge so query must contain a limit clause"
             )
 
@@ -68,9 +68,9 @@ class SQLQueryExecutor(LinkProcessor[SQLQuery, FakeTable]):
 
 dotenv.load_dotenv()
 llm = OpenAILLM.from_env()
-question_to_query_proc: LinkLLMProcessor[DatabaseQuestion, SQLQuery] = LinkLLMProcessor(llm, SQLQuery)
-query_to_optimized_query_proc: LinkLLMProcessor[SQLQuery, SQLQueryOptimized] = LinkLLMProcessor(llm, SQLQueryOptimized)
-execute_query_proc: LinkProcessor[SQLQuery, FakeTable] = SQLQueryExecutor()
+question_to_query_proc: LLMProcessor[DatabaseQuestion, SQLQuery] = LLMProcessor(llm, SQLQuery)
+query_to_optimized_query_proc: LLMProcessor[SQLQuery, SQLQueryOptimized] = LLMProcessor(llm, SQLQueryOptimized)
+execute_query_proc: Processor[SQLQuery, FakeTable] = SQLQueryExecutor()
 
 
 def test_question_to_query_proc() -> None:
@@ -90,21 +90,25 @@ def test_question_to_optimized_query_proc() -> None:
     assert isinstance(optimized_query, SQLQueryOptimized)
 
 
-def test_linear_chain() -> None:
-    chain: LinearChainProcessor[DatabaseQuestion, SQLQueryOptimized] = LinearChainProcessor(
+def test_naive_pipeline() -> None:
+    pipeline: NaivePipelineProcessor[DatabaseQuestion, SQLQueryOptimized] = NaivePipelineProcessor(
         [question_to_query_proc, query_to_optimized_query_proc]
     )
 
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
-    optimized_query = chain.execute(db_question)
+    optimized_query = pipeline.execute(db_question)
     assert isinstance(optimized_query, SQLQueryOptimized)
+    # assert on records length
 
 
-def test_backtracking_chain() -> None:
-    chain: BacktrackingChainProcessor[DatabaseQuestion, FakeTable] = BacktrackingChainProcessor(
+def test_backtracking_pipeline() -> None:
+    pipeline: BacktrackingPipelineProcessor[DatabaseQuestion, FakeTable] = BacktrackingPipelineProcessor(
         [question_to_query_proc, execute_query_proc]
     )
 
     db_question = DatabaseQuestion.get_for_test("How many users older than 30 are there?")
-    result = chain.execute(db_question)
+    result = pipeline.execute(db_question)
     print(result)
+
+
+# add test case for query -> optimized_query -> execution with transfer_to
