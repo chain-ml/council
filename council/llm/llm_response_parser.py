@@ -22,18 +22,18 @@ T = TypeVar("T", bound="BaseModelResponseParser")
 RESPONSE_HINTS_FILE_PATH: Final[str] = os.path.join(os.path.dirname(__file__), "data", "response_hints.yaml")
 
 
-class ResponseHintsHelper:
-    def __init__(self, hints: Dict[str, str], prefix: str):
-        self.hints_common = hints[f"{prefix}_hints_common"]
-        self.parser_hints_start = hints[f"{prefix}_parser_hints_start"]
-        self.parser_hints_end = hints[f"{prefix}_parser_hints_end"]
-        self.block_parser_hints_start = hints[f"{prefix}_block_parser_hints_start"]
+class ResponseHints:
+    def __init__(self, hints: Dict[str, str]):
+        self.hints_common = hints["hints_common"]
+        self.parser_hints_start = hints["parser_hints_start"] if "parser_hints_start" in hints else ""
+        self.parser_hints_end = hints["parser_hints_end"] if "parser_hints_end" in hints else ""
+        self.block_parser_hints_start = hints["block_parser_hints_start"] if "block_parser_hints_start" in hints else ""
 
     @classmethod
-    def from_yaml(cls, path: str, prefix: str) -> ResponseHintsHelper:
+    def from_yaml(cls, path: str, prefix: str) -> ResponseHints:
         with open(path, "r", encoding="utf-8") as file:
             hints = yaml.safe_load(file)
-        return cls(hints, prefix)
+        return cls(hints[prefix])
 
     @property
     def parser(self) -> str:
@@ -48,8 +48,10 @@ class ResponseHintsHelper:
         return self.parser_hints_end
 
 
-yaml_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="yaml")
-json_response_hints = ResponseHintsHelper.from_yaml(RESPONSE_HINTS_FILE_PATH, prefix="json")
+class ResponseHintsHelper:
+    yaml = ResponseHints.from_yaml(RESPONSE_HINTS_FILE_PATH, "yaml")
+    json = ResponseHints.from_yaml(RESPONSE_HINTS_FILE_PATH, "json")
+    code_blocks = ResponseHints.from_yaml(RESPONSE_HINTS_FILE_PATH, "code_blocks")
 
 
 class EchoResponseParser:
@@ -141,23 +143,16 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
             include_hints: If True, returned template will include universal code blocks formatting hints.
         """
 
-        template_parts = (
-            [
-                "- Provide your response in a the following code blocks.",
-                "- All keys must be present in the response, even when their values are empty.",
-                "- For empty values, include empty quotes (" ") rather than leaving them blank.",
-                "- Your output outside of code blocks will not be parsed.",
-            ]
-            if include_hints
-            else []
-        )
+        template_parts = [ResponseHintsHelper.code_blocks.block_parser] if include_hints else []
 
         for field_name, field in cls.model_fields.items():
             description = field.description
             if description is None:
                 raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
 
-            template_parts.extend([f"```{field_name}", description, "```"])
+            template_parts.extend([f"```{field_name}", description, "```", ""])
+
+        template_parts.pop()  # delete last \n
 
         return "\n".join(template_parts)
 
@@ -217,7 +212,7 @@ class YAMLBlockResponseParser(YAMLResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal YAML block formatting hints.
         """
-        template_parts = [yaml_response_hints.block_parser] if include_hints else []
+        template_parts = [ResponseHintsHelper.yaml.block_parser] if include_hints else []
         template_parts.extend(["```yaml", cls._to_response_template(), "```"])
         return "\n".join(template_parts)
 
@@ -240,10 +235,10 @@ class YAMLResponseParser(YAMLResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal YAML formatting hints.
         """
-        template_parts = [yaml_response_hints.parser] if include_hints else []
+        template_parts = [ResponseHintsHelper.yaml.parser] if include_hints else []
         template_parts.append(cls._to_response_template())
         if include_hints:
-            template_parts.extend(["", yaml_response_hints.parser_end])
+            template_parts.extend(["", ResponseHintsHelper.yaml.parser_end])
         return "\n".join(template_parts)
 
 
@@ -300,7 +295,7 @@ class JSONBlockResponseParser(JSONResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal JSON block formatting hints.
         """
-        template_parts = [json_response_hints.block_parser] if include_hints else []
+        template_parts = [ResponseHintsHelper.json.block_parser] if include_hints else []
         template_parts.extend(["```json", cls._to_response_template(), "```"])
         return "\n".join(template_parts)
 
@@ -323,8 +318,8 @@ class JSONResponseParser(JSONResponseParserBase):
         Args:
             include_hints: If True, returned template will include universal JSON formatting hints.
         """
-        template_parts = [json_response_hints.parser] if include_hints else []
+        template_parts = [ResponseHintsHelper.json.parser] if include_hints else []
         template_parts.append(cls._to_response_template())
         if include_hints:
-            template_parts.extend(["", json_response_hints.parser_end])
+            template_parts.extend(["", ResponseHintsHelper.json.parser_end])
         return "\n".join(template_parts)
