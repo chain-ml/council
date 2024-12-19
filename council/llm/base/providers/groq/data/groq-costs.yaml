@@ -1,0 +1,54 @@
+kind: LLMCostManager
+version: 0.1
+metadata:
+  name: groq-costs
+  labels:
+    provider: Groq
+    reference: https://groq.com/pricing/
+spec:
+  default:
+    description: |
+      Costs for Groq LLMs
+    models:
+      # Production Models
+      gemma2-9b-it:
+        input: 0.20
+        output: 0.20
+      llama-3.3-70b-versatile:
+        input: 0.59
+        output: 0.79
+      llama-guard-3-8b:
+        input: 0.20
+        output: 0.20
+      llama3-70b-8192:
+        input: 0.59
+        output: 0.79
+      llama-3.1-8b-instant:
+        input: 0.05
+        output: 0.08
+      mixtral-8x7b-32768:
+        input: 0.24
+        output: 0.24
+
+      # Preview Models
+      llama3-groq-70b-8192-tool-use-preview:
+        input: 0.89
+        output: 0.89
+      llama3-groq-8b-8192-tool-use-preview:
+        input: 0.19
+        output: 0.19
+      llama-3.3-70b-specdec:
+        input: 0.59
+        output: 0.99
+      llama-3.2-1b-preview:
+        input: 0.04
+        output: 0.04
+      llama-3.2-3b-preview:
+        input: 0.06
+        output: 0.06
+      llama-3.2-11b-vision-preview:
+        input: 0.18
+        output: 0.18
+      llama-3.2-90b-vision-preview:
+        input: 0.90
+        output: 0.90

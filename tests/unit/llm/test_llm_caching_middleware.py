@@ -8,8 +8,9 @@ from council.llm import (
     OpenAIChatGPTConfiguration,
     LLMCachingMiddleware,
     LLMRequest,
+    LLMMessage,
+    LLMMessageData,
 )
-from council.llm.llm_message import LLMMessage, LLMMessageData
 from council.utils import OsEnviron
 
 

@@ -44,10 +44,18 @@ class EnvVariableValueException(Exception):
 
 
 def read_env_str(name: str, required: bool = True, default: Optional[str] = None) -> Option[str]:
+    """Read an environment variable as string, return as Option."""
     return _read_env(name, required, default, lambda x: x)
 
 
+def must_read_env_str(name: str) -> str:
+    """Read an environment variable as string."""
+    return read_env_str(name, required=True).unwrap()
+
+
 def read_env_int(name: str, required: bool = True, default: Optional[int] = None) -> Option[int]:
+    """Read an environment variable as integer, return as Option."""
+
     def converter(x: str) -> int:
         try:
             return int(x)
@@ -57,7 +65,14 @@ def read_env_int(name: str, required: bool = True, default: Optional[int] = None
     return _read_env(name, required, default, converter)
 
 
+def must_read_env_int(name: str) -> int:
+    """Read an environment variable as integer."""
+    return read_env_int(name, required=True).unwrap()
+
+
 def read_env_float(name: str, required: bool = True, default: Optional[float] = None) -> Option[float]:
+    """Read an environment variable as float, return as Option."""
+
     def converter(x: str) -> float:
         try:
             return float(x)
@@ -67,7 +82,14 @@ def read_env_float(name: str, required: bool = True, default: Optional[float] = 
     return _read_env(name, required, default, converter)
 
 
+def must_read_env_float(name: str) -> float:
+    """Read an environment variable as float."""
+    return read_env_float(name, required=True).unwrap()
+
+
 def read_env_bool(name: str, required: bool = True, default: Optional[bool] = None) -> Option[bool]:
+    """Read an environment variable as boolean, return as Option."""
+
     def converter(x: str) -> bool:
         result = x.strip().lower()
         if result in ["true", "1", "t"]:
@@ -77,6 +99,11 @@ def read_env_bool(name: str, required: bool = True, default: Optional[bool] = No
         raise EnvVariableValueException(name, x, bool)
 
     return _read_env(name, required, default, converter)
+
+
+def must_read_env_bool(name: str) -> bool:
+    """Read an environment variable as boolean."""
+    return read_env_bool(name, required=True).unwrap()
 
 
 T = TypeVar("T", covariant=True)

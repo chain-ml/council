@@ -1,9 +1,3 @@
-# LLMDatasetMessage
-
-```{eval-rst}
-.. autoclass:: council.prompt.LLMDatasetMessage
-```
-
 # LLMDatasetConversation
 
 ```{eval-rst}

@@ -1,5 +1,4 @@
 from .llm_dataset import (
-    LLMDatasetMessage,
     LLMDatasetConversation,
     LLMDatasetObject,
     LLMDatasetSpec,

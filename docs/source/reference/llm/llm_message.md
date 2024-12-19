@@ -8,13 +8,13 @@
 # LLMMessageData
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_message.LLMMessageData
+.. autoclass:: council.llm.LLMMessageData
 ```
 
 # LLMCacheControlData
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_message.LLMCacheControlData
+.. autoclass:: council.llm.LLMCacheControlData
     :no-inherited-members:
 ```
 
