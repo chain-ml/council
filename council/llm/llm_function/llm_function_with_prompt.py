@@ -87,6 +87,7 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
     def from_configs(
         cls,
         response_parser: LLMResponseParser,
+        *,
         path_prefix: str = "data",
         llm_path: str = "llm-config.yaml",
         prompt_config_path: str = "llm-prompt.yaml",
@@ -108,6 +109,7 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
     @classmethod
     def string_from_configs(
         cls,
+        *,
         path_prefix: str = "data",
         llm_path: str = "llm-config.yaml",
         prompt_config_path: str = "llm-prompt.yaml",
