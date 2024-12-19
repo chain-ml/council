@@ -4,6 +4,7 @@ from council.llm.llm_response_parser import (
     YAMLResponseParser,
     JSONBlockResponseParser,
     JSONResponseParser,
+    CodeBlocksResponseParser,
 )
 from pydantic import Field
 from typing import Literal, List
@@ -41,6 +42,10 @@ class BaseResponseReorderedAgain:
     reasoning: str = Field(..., description=multiline_description)
 
 
+class CodeBlocksResponse(CodeBlocksResponseParser, BaseResponse):
+    pass
+
+
 class YAMLBlockResponse(YAMLBlockResponseParser, BaseResponse):
     pass
 
@@ -57,6 +62,10 @@ class JSONResponse(JSONResponseParser, BaseResponse):
     pass
 
 
+class CodeBlocksResponseReordered(CodeBlocksResponseParser, BaseResponseReordered):
+    pass
+
+
 class YAMLBlockResponseReordered(YAMLBlockResponseParser, BaseResponseReordered):
     pass
 
@@ -70,6 +79,10 @@ class JSONBlockResponseReordered(JSONBlockResponseParser, BaseResponseReordered)
 
 
 class JSONResponseReordered(JSONResponseParser, BaseResponseReordered):
+    pass
+
+
+class CodeBlocksResponseReorderedAgain(CodeBlocksResponseParser, BaseResponseReorderedAgain):
     pass
 
 
@@ -92,6 +105,90 @@ class JSONResponseReorderedAgain(JSONResponseParser, BaseResponseReorderedAgain)
 class ComplexResponse(YAMLBlockResponseParser):
     mode: Literal["mode_one", "mode_two"] = Field(..., description="Mode of operation, one of `mode_one` or `mode_two`")
     pairs: List[YAMLBlockResponse] = Field(..., description="List of number and reasoning pairs")
+
+
+class TestCodeBlocksResponseParserTemplate(unittest.TestCase):
+    def test_missing_description_field(self):
+        with self.assertRaises(ValueError) as e:
+            MissingDescriptionField.to_response_template()
+        self.assertEqual(str(e.exception), "Description is required for field `reasoning` in MissingDescriptionField")
+
+    def test_template(self):
+        template = CodeBlocksResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```reasoning
+Carefully
+reason about the number
+```
+
+```number
+Number from 1 to 10
+```
+
+```abc
+Not multiline description
+```""",
+        )
+
+    def test_reordered_template(self):
+        template = CodeBlocksResponseReordered.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```number
+Number from 1 to 10
+```
+
+```abc
+Not multiline description
+```
+
+```reasoning
+Carefully
+reason about the number
+```""",
+        )
+
+    def test_reordered_again_template(self):
+        template = CodeBlocksResponseReorderedAgain.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```abc
+Not multiline description
+```
+
+```number
+Number from 1 to 10
+```
+
+```reasoning
+Carefully
+reason about the number
+```""",
+        )
+
+    def test_with_hints(self):
+        template = CodeBlocksResponse.to_response_template(include_hints=True)
+        self.assertEqual(
+            template,
+            """- Provide your response in a the following code blocks.
+- All keys must be present in the response, even when their values are empty.
+- For empty values, include empty quotes ("") rather than leaving them blank.
+- Your output outside of code blocks will not be parsed.
+
+```reasoning
+Carefully
+reason about the number
+```
+
+```number
+Number from 1 to 10
+```
+
+```abc
+Not multiline description
+```""",
+        )
 
 
 class TestYAMLBlockResponseParserResponseTemplate(unittest.TestCase):
