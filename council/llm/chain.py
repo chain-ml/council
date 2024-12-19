@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Generic, List, Optional, Protocol, Type, TypeVar, Union, cast
+from typing import Any, Dict, Generic, List, Optional, Protocol, Type, TypeVar, Union, cast
 
 from council.llm import LLMBase, LLMFunction, LLMMessage, LLMMiddlewareChain
 from council.llm.llm_response_parser import BaseModelResponseParser
@@ -8,7 +8,7 @@ from council.llm.llm_response_parser import BaseModelResponseParser
 
 class LinkProcessorException(Exception):
     """
-    Exception raised in process of execution a LinkProcessor.
+    Exception raised during the execution of a LinkProcessor.
     Contains information about the input that caused the exception, the exception itself,
     and optionally a previous processor that should handle the exception.
     """
@@ -56,7 +56,25 @@ class LinkLLMProcessor(LinkProcessor[T_LLMInput, T_LLMOutput]):
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._output_obj_type = output_obj_type
 
+        # store all input-output pairs instead of only exception ones?
+        self._memory: List[Dict[str, str]] = []
         self._previous_exceptions: List[LinkProcessorException] = []
+
+    @property
+    def memory(self) -> List[Dict[str, str]]:
+        return self._memory
+
+    @property
+    def exceptions_memory(self) -> List[Dict[str, str]]:
+        return [memory for memory in self._memory if "exception" in memory]
+
+    def add_to_memory(self, input_obj: T_LLMInput, output: Any) -> None:
+        self._memory.append(
+            {
+                "input": input_obj.to_prompt(),
+                "output": output,
+            }
+        )
 
     @property
     def previous_exceptions(self) -> List[LinkProcessorException]:
