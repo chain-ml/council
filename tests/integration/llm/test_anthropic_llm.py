@@ -3,8 +3,7 @@ import unittest
 import dotenv
 
 from council import LLMContext
-from council.llm import LLMMessage, AnthropicLLM
-from council.llm.llm_message import LLMCacheControlData
+from council.llm import LLMMessage, AnthropicLLM, LLMCacheControlData
 from council.utils import OsEnviron
 
 from tests import get_data_filename
