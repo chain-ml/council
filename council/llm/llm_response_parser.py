@@ -80,6 +80,12 @@ class BaseModelResponseParser(BaseModel, abc.ABC):
         """
         raise NotImplementedError()
 
+    @classmethod
+    @abc.abstractmethod
+    def to_response_template(cls: Type[T]) -> str:
+        """Convert an instance to the response template for the LLM."""
+        raise NotImplementedError()
+
     def validator(self) -> None:
         """
         Implement custom validation logic for the parsed data.
@@ -125,6 +131,35 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
             parsed_blocks[field_name] = block.code.strip()
 
         return cls.create_and_validate(**parsed_blocks)
+
+    @classmethod
+    def to_response_template(cls: Type[T], include_hints: bool = True) -> str:
+        """
+        Generate code blocks response template based on the model's fields and their descriptions.
+
+        Args:
+            include_hints: If True, returned template will include universal code blocks formatting hints.
+        """
+
+        template_parts = (
+            [
+                "- Provide your response in a the following code blocks.",
+                "- All keys must be present in the response, even when their values are empty.",
+                "- For empty values, include empty quotes (" ") rather than leaving them blank.",
+                "- Your output outside of code blocks will not be parsed.",
+            ]
+            if include_hints
+            else []
+        )
+
+        for field_name, field in cls.model_fields.items():
+            description = field.description
+            if description is None:
+                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+            template_parts.extend([f"```{field_name}", description, "```"])
+
+        return "\n".join(template_parts)
 
 
 T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLResponseParserBase")
