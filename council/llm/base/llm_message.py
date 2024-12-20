@@ -230,7 +230,7 @@ class LLMMessage:
         return "\n".join(parts)
 
     def __str__(self) -> str:
-        return self.content
+        return f"{self.role}: {self.content}"
 
     def normalize(self) -> str:
         """

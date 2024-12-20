@@ -6,7 +6,8 @@ from collections import defaultdict
 from typing import Any, Counter, DefaultDict, Dict, List, Mapping, Optional, Sequence
 
 import yaml
-from council.llm import LLMMessage
+from council.llm.base import LLMMessage
+from council.llm.llm_function import LLMResponse
 from council.utils import DataObject, DataObjectSpecBase
 
 
@@ -24,9 +25,15 @@ class LLMDatasetConversation:
         messages = values.get("messages", [])
         if not messages:
             raise ValueError("Conversation must contain at least one message")
-        llm_dataset_messages = [LLMMessage.from_dict(message) for message in messages]
+        llm_messages = [LLMMessage.from_dict(message) for message in messages]
         labels = values.get("labels")
-        return LLMDatasetConversation(llm_dataset_messages, labels)
+        return LLMDatasetConversation(llm_messages, labels)
+
+    @classmethod
+    def from_llm_response(
+        cls, response: LLMResponse, labels: Optional[Mapping[str, str]] = None
+    ) -> LLMDatasetConversation:
+        return LLMDatasetConversation(response.to_messages(), labels)
 
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {"messages": [message.to_dict() for message in self.messages]}
@@ -38,7 +45,7 @@ class LLMDatasetConversation:
         """Format conversation as a few shot example."""
 
         parts = [start_prefix]
-        parts.extend([f"{message.role}: {message.content}" for message in self.messages])
+        parts.extend([f"{message}" for message in self.messages])
         parts.append(end_prefix)
 
         return "\n".join(parts)
@@ -72,7 +79,7 @@ class LLMDatasetSpec(DataObjectSpecBase):
     def __str__(self):
         result = f"{len(self.conversations)} conversation(s)"
         if self.system_prompt is not None:
-            result += " with system prompt"
+            result += " with shared system prompt"
         return result
 
 
@@ -81,7 +88,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
     Helper class to instantiate a LLMDataset from a YAML file.
 
     LLMDataset represents a dataset to be used for fine-tuning / batch API or managing few shot examples.
-    Contains a list of conversations between user and assistant and optional system prompt;
+    Contains a list of conversations between user and assistant and optional shared system prompt;
     if specified, it will be a system prompt for every conversation in the dataset.
     """
 
