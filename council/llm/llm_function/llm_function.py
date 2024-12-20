@@ -155,9 +155,12 @@ class LLMFunction(Generic[T_Response]):
         str_message: Optional[Union[str, LLMMessage]],
         messages: Optional[Iterable[LLMMessage]],
         role: LLMMessageRole,
+        allow_empty_input: bool = False,
     ) -> List[LLMMessage]:
         """Convert `str_message` and `messages` into a proper List[LLMMessage]"""
         if str_message is None and messages is None:
+            if allow_empty_input:
+                return []
             raise ValueError("At least one of str message, messages is required")
 
         llm_messages: List[LLMMessage] = []
@@ -199,7 +202,7 @@ class LLMFunction(Generic[T_Response]):
         """
 
         llm_messages: List[LLMMessage] = self._messages + self._validate_messages(
-            user_message, messages, LLMMessageRole.User
+            user_message, messages, LLMMessageRole.User, allow_empty_input=True
         )
         new_messages: List[LLMMessage] = []
         exceptions: List[Exception] = []

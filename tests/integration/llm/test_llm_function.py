@@ -76,6 +76,12 @@ class TestLlmFunction(unittest.TestCase):
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
+    def test_empty_input(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, system_message=SYSTEM_PROMPT + "\n" + USER)
+        sql_result = llm_func.execute()
+        self.assertIsInstance(sql_result, SQLResult)
+        print("", sql_result, sep="\n")
+
     def test_both_message_prompt_and_messages(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
         user_message = LLMMessage.user_message(USER)
