@@ -57,11 +57,11 @@ class LLMFunctionResponse(Generic[T_Response]):
 
         # consumptions of previous self-corrected responses if any
         for response in self._previous_responses:
-            if response.result is not None:
+            if response.has_result:
                 consumptions.extend(response.result.consumptions)
 
         # consumptions of the final response
-        if self.llm_response.result is not None:
+        if self.llm_response.has_result:
             consumptions.extend(self.llm_response.result.consumptions)
 
         return consumptions
@@ -155,9 +155,12 @@ class LLMFunction(Generic[T_Response]):
         str_message: Optional[Union[str, LLMMessage]],
         messages: Optional[Iterable[LLMMessage]],
         role: LLMMessageRole,
+        allow_empty_input: bool = False,
     ) -> List[LLMMessage]:
         """Convert `str_message` and `messages` into a proper List[LLMMessage]"""
         if str_message is None and messages is None:
+            if allow_empty_input:
+                return []
             raise ValueError("At least one of str message, messages is required")
 
         llm_messages: List[LLMMessage] = []
@@ -199,7 +202,7 @@ class LLMFunction(Generic[T_Response]):
         """
 
         llm_messages: List[LLMMessage] = self._messages + self._validate_messages(
-            user_message, messages, LLMMessageRole.User
+            user_message, messages, LLMMessageRole.User, allow_empty_input=True
         )
         new_messages: List[LLMMessage] = []
         exceptions: List[Exception] = []
@@ -256,7 +259,7 @@ class LLMFunction(Generic[T_Response]):
 
     def _handle_error(self, e: Exception, response: LLMResponse, user_message: str) -> List[LLMMessage]:
         error = f"{e.__class__.__name__}: `{e}`"
-        if response.result is None:
+        if not response.has_result:
             self._context.logger.warning(f"Exception occurred: {error} without response.")
             return [LLMMessage.assistant_message("No response"), LLMMessage.user_message("Please retry.")]
 

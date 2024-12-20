@@ -2,8 +2,8 @@ import unittest
 
 import dotenv
 
-from council.llm import AzureLLM, LLMParsingException, LLMMessage, LLMFunction, CodeBlocksResponseParser
-from council.prompt import LLMPromptConfigObject
+from council.llm import AzureLLM, LLMParsingException, LLMMessage, LLMFunction, CodeBlocksResponseParser, LLMMessageRole
+from council.prompt import LLMPromptConfigObject, LLMDatasetConversation
 from tests import get_data_filename
 from tests.unit import LLMPrompts
 
@@ -76,6 +76,12 @@ class TestLlmFunction(unittest.TestCase):
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
 
+    def test_empty_input(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, system_message=SYSTEM_PROMPT + "\n" + USER)
+        sql_result = llm_func.execute()
+        self.assertIsInstance(sql_result, SQLResult)
+        print("", sql_result, sep="\n")
+
     def test_both_message_prompt_and_messages(self):
         llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
         user_message = LLMMessage.user_message(USER)
@@ -97,3 +103,13 @@ class TestLlmFunction(unittest.TestCase):
         sql_result = llm_func.execute(messages=messages)
         self.assertIsInstance(sql_result, SQLResult)
         print("", sql_result, sep="\n")
+
+    def test_response_to_conversation(self):
+        llm_func = LLMFunction(self.llm, SQLResult.from_response, SYSTEM_PROMPT)
+        llm_function_response = llm_func.execute_with_llm_response(user_message=USER)
+        conversation = LLMDatasetConversation.from_llm_response(llm_function_response.llm_response)
+
+        assert len(conversation.messages) == 3
+        assert conversation.messages[0].is_of_role(LLMMessageRole.System)
+        assert conversation.messages[1].is_of_role(LLMMessageRole.User)
+        assert conversation.messages[2].is_of_role(LLMMessageRole.Assistant)

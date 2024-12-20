@@ -43,8 +43,22 @@ class LLMResponse:
         self._duration = duration
 
     @property
-    def result(self) -> Optional[LLMResult]:
+    def request(self) -> LLMRequest:
+        return self._request
+
+    @property
+    def result(self) -> LLMResult:
+        if self._result is None:
+            raise RuntimeError("LLMResult is None")
         return self._result
+
+    @property
+    def maybe_result(self) -> Optional[LLMResult]:
+        return self._result
+
+    @property
+    def has_result(self) -> bool:
+        return self._result is not None
 
     @property
     def value(self, default: str = "") -> str:
@@ -58,6 +72,14 @@ class LLMResponse:
     def empty(request: LLMRequest) -> LLMResponse:
         """Creates an empty LLMResponse for a given request."""
         return LLMResponse(request, None, -1.0)
+
+    def to_messages(self) -> List[LLMMessage]:
+        messages = list(self.request.messages)
+
+        if not self.has_result:
+            return messages
+
+        return messages + [LLMMessage.assistant_message(self.result.first_choice)]
 
 
 ExecuteLLMRequest = Callable[[LLMRequest], LLMResponse]
@@ -170,7 +192,7 @@ class LLMLoggingMiddlewareBase:
 
     def _format_llm_response(self, response: LLMResponse, name: str) -> str:
         log_message_start = f"LLM output for {name}"
-        if response.result is None:
+        if not response.has_result:
             return f"{log_message_start} is not available"
 
         log_message = (
@@ -182,7 +204,7 @@ class LLMLoggingMiddlewareBase:
         return f"{log_message}:\n{response.result.first_choice}"
 
     def _log_consumptions(self, response: LLMResponse, name: str) -> None:
-        if response.result is None:
+        if not response.has_result:
             return
 
         if self.strategy.has_consumptions:
@@ -278,7 +300,7 @@ class CacheEntry:
     @staticmethod
     def _rebuild_response(response: LLMResponse) -> LLMResponse:
         """Modify the response so it has zero duration and consumptions in 'cached_' units"""
-        if response.result is not None:
+        if response.has_result:
             cached_consumptions: List[Consumption] = [
                 Consumption(value=consumption.value, unit=f"cached_{consumption.unit}", kind=consumption.kind)
                 for consumption in response.result.consumptions
@@ -286,7 +308,7 @@ class CacheEntry:
             cached_result = LLMResult(response.result.choices, cached_consumptions, response.result.raw_response)
         else:
             cached_result = None
-        cached_response = LLMResponse(response._request, cached_result, 0)
+        cached_response = LLMResponse(response.request, cached_result, 0)
 
         return cached_response
 
