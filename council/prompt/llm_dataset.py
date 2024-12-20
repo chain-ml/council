@@ -6,7 +6,8 @@ from collections import defaultdict
 from typing import Any, Counter, DefaultDict, Dict, List, Mapping, Optional, Sequence
 
 import yaml
-from council.llm import LLMMessage
+from council.llm.base import LLMMessage
+from council.llm.llm_function import LLMResponse
 from council.utils import DataObject, DataObjectSpecBase
 
 
@@ -24,9 +25,15 @@ class LLMDatasetConversation:
         messages = values.get("messages", [])
         if not messages:
             raise ValueError("Conversation must contain at least one message")
-        llm_dataset_messages = [LLMMessage.from_dict(message) for message in messages]
+        llm_messages = [LLMMessage.from_dict(message) for message in messages]
         labels = values.get("labels")
-        return LLMDatasetConversation(llm_dataset_messages, labels)
+        return LLMDatasetConversation(llm_messages, labels)
+
+    @classmethod
+    def from_llm_response(
+        cls, response: LLMResponse, labels: Optional[Mapping[str, str]] = None
+    ) -> LLMDatasetConversation:
+        return LLMDatasetConversation(response.to_messages(), labels)
 
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {"messages": [message.to_dict() for message in self.messages]}

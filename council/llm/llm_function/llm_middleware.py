@@ -73,6 +73,14 @@ class LLMResponse:
         """Creates an empty LLMResponse for a given request."""
         return LLMResponse(request, None, -1.0)
 
+    def to_messages(self) -> List[LLMMessage]:
+        messages = list(self.request.messages)
+
+        if not self.has_result:
+            return messages
+
+        return messages + [LLMMessage.assistant_message(self.result.first_choice)]
+
 
 ExecuteLLMRequest = Callable[[LLMRequest], LLMResponse]
 
