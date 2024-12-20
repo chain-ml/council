@@ -184,7 +184,7 @@ class LLMLoggingMiddlewareBase:
 
     def _format_llm_response(self, response: LLMResponse, name: str) -> str:
         log_message_start = f"LLM output for {name}"
-        if response.result is None:
+        if not response.has_result:
             return f"{log_message_start} is not available"
 
         log_message = (
@@ -196,7 +196,7 @@ class LLMLoggingMiddlewareBase:
         return f"{log_message}:\n{response.result.first_choice}"
 
     def _log_consumptions(self, response: LLMResponse, name: str) -> None:
-        if response.result is None:
+        if not response.has_result:
             return
 
         if self.strategy.has_consumptions:
@@ -292,7 +292,7 @@ class CacheEntry:
     @staticmethod
     def _rebuild_response(response: LLMResponse) -> LLMResponse:
         """Modify the response so it has zero duration and consumptions in 'cached_' units"""
-        if response.result is not None:
+        if response.has_result:
             cached_consumptions: List[Consumption] = [
                 Consumption(value=consumption.value, unit=f"cached_{consumption.unit}", kind=consumption.kind)
                 for consumption in response.result.consumptions
@@ -300,7 +300,7 @@ class CacheEntry:
             cached_result = LLMResult(response.result.choices, cached_consumptions, response.result.raw_response)
         else:
             cached_result = None
-        cached_response = LLMResponse(response._request, cached_result, 0)
+        cached_response = LLMResponse(response.request, cached_result, 0)
 
         return cached_response
 
