@@ -43,8 +43,22 @@ class LLMResponse:
         self._duration = duration
 
     @property
-    def result(self) -> Optional[LLMResult]:
+    def request(self) -> LLMRequest:
+        return self._request
+
+    @property
+    def result(self) -> LLMResult:
+        if self._result is None:
+            raise RuntimeError("LLMResult is None")
         return self._result
+
+    @property
+    def maybe_result(self) -> Optional[LLMResult]:
+        return self._result
+
+    @property
+    def has_result(self) -> bool:
+        return self._result is not None
 
     @property
     def value(self, default: str = "") -> str:
