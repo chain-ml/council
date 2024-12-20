@@ -38,7 +38,7 @@ class LLMDatasetConversation:
         """Format conversation as a few shot example."""
 
         parts = [start_prefix]
-        parts.extend([f"{message.role}: {message.content}" for message in self.messages])
+        parts.extend([f"{message}" for message in self.messages])
         parts.append(end_prefix)
 
         return "\n".join(parts)
@@ -72,7 +72,7 @@ class LLMDatasetSpec(DataObjectSpecBase):
     def __str__(self):
         result = f"{len(self.conversations)} conversation(s)"
         if self.system_prompt is not None:
-            result += " with system prompt"
+            result += " with shared system prompt"
         return result
 
 
@@ -81,7 +81,7 @@ class LLMDatasetObject(DataObject[LLMDatasetSpec]):
     Helper class to instantiate a LLMDataset from a YAML file.
 
     LLMDataset represents a dataset to be used for fine-tuning / batch API or managing few shot examples.
-    Contains a list of conversations between user and assistant and optional system prompt;
+    Contains a list of conversations between user and assistant and optional shared system prompt;
     if specified, it will be a system prompt for every conversation in the dataset.
     """
 

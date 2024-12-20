@@ -36,7 +36,7 @@ T_Configuration = TypeVar("T_Configuration", bound=LLMConfigurationBase)
 
 class LLMResult:
     """
-    Represents a response from the LLM
+    Represents a result of an LLM call.
     """
 
     def __init__(
