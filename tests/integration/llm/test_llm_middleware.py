@@ -5,6 +5,9 @@ import dotenv
 
 from council.llm import AnthropicLLM, EchoResponseParser, LLMFunction, LLMCachingMiddleware, LLMResponse
 from council.utils import OsEnviron
+from council import OpenAILLM
+from council.llm import LLMBase, LLMMessage, LLMRequest, LLMMiddlewareChain
+from council.llm.llm_function.llm_middleware import ConfigurationModifierMiddleware, increase_temperature
 
 
 class TestLlmCachingMiddleware(unittest.TestCase):
@@ -106,3 +109,26 @@ class TestLlmCachingMiddleware(unittest.TestCase):
         response = self.execute_llm_func(llm_func, self.m3, to_print="message_v3 (not cached due to size limits)")
         # cache: m1, m3
         self.raise_if_cached(response)
+
+
+class TestConfigurationModifierMiddleware(unittest.TestCase):
+    @staticmethod
+    def get_llm() -> LLMBase:
+        dotenv.load_dotenv()
+        with OsEnviron("OPENAI_LLM_TEMPERATURE", "0.1"):
+            return OpenAILLM.from_env()
+
+    def test_increase_temperature(self):
+        messages = [LLMMessage.user_message("What is the capital of France?")]
+        request = LLMRequest.default(messages)
+
+        llm = self.get_llm()
+
+        self.assertAlmostEqual(llm.configuration.temperature.value, 0.1)
+        with_temperature_increase = LLMMiddlewareChain(llm)
+        with_temperature_increase.add_middleware(ConfigurationModifierMiddleware(increase_temperature(0.314)))
+        _ = with_temperature_increase.execute(request)
+        self.assertAlmostEqual(llm.configuration.temperature.value, 0.414)
+
+        _ = with_temperature_increase.execute(request)
+        self.assertAlmostEqual(llm.configuration.temperature.value, 0.728)

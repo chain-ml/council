@@ -383,3 +383,44 @@ class LLMCachingMiddleware:
     def clear_cache(self) -> None:
         """Clear all cached entries."""
         self._cache.clear()
+
+
+T_ConfigurationModifier = Callable[[T_Configuration], None]
+
+
+def increase_temperature(step: float = 0.1) -> T_ConfigurationModifier:
+    def modifier(config: T_Configuration) -> None:
+        temperature = getattr(config, "temperature", None)
+        if temperature is None:
+            raise AttributeError("The config object does not have a 'temperature' attribute")
+
+        # limit is 2 for OpenAI
+        new_temperature = min(1.0, temperature.value + step)
+        temperature.set(new_temperature)
+
+    return modifier
+
+
+class ConfigurationModifierMiddleware:
+    """Middleware that can modify LLM configuration."""
+
+    def __init__(self, config_modifier: T_ConfigurationModifier):
+        """
+        Initialize with a function that will modify the configuration.
+
+        Args:
+            config_modifier: Function that takes an LLM configuration and modifies it
+        """
+        self._config_modifier = config_modifier
+
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+        self._config_modifier(llm.configuration)
+        return execute(request)
+
+    # def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+    #     result = execute(request)
+    #
+    #     if self._should_modify_configuration():
+    #         self._config_modifier(llm.configuration)
+    #
+    #     return result
