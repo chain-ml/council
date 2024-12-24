@@ -53,15 +53,13 @@ class LLMPromptConfigSpec(DataObjectSpecBase):
     @classmethod
     def from_dict(cls, values: Mapping[str, Any]) -> LLMPromptConfigSpec:
         system_prompts = values.get("system", [])
-        user_prompts = values.get("user")
         if not system_prompts:
             raise ValueError("System prompt(s) must be defined")
 
         system = [LLMPromptTemplate.from_dict(p) for p in system_prompts]
 
-        user: Optional[List[LLMPromptTemplate]] = None
-        if user_prompts is not None:
-            user = [LLMPromptTemplate.from_dict(p) for p in user_prompts]
+        user_prompts = values.get("user", [])
+        user = [LLMPromptTemplate.from_dict(p) for p in user_prompts] if user_prompts else None
         return LLMPromptConfigSpec(system, user)
 
     def to_dict(self) -> Dict[str, Any]:

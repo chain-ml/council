@@ -6,3 +6,4 @@ from .llm_dataset import (
 )
 from .llm_prompt_config_object import LLMPromptConfigObject, LLMPromptConfigSpec
 from .prompt_builder import PromptBuilder
+from .xml_prompt_formatter import XMLSection, XMLPromptSpec, XMLPromptFormatter
