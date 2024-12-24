@@ -6,8 +6,8 @@ from council.llm import (
     JSONResponseParser,
     CodeBlocksResponseParser,
 )
-from pydantic import Field
-from typing import Literal, List
+from pydantic import Field, BaseModel
+from typing import Literal, List, Union, Optional, Dict, Any
 
 
 class MissingDescriptionField(YAMLBlockResponseParser):
@@ -189,6 +189,45 @@ Number from 1 to 10
 Not multiline description
 ```""",
         )
+
+
+class TestCodeBlocksResponseParserTypes(unittest.TestCase):
+    def test_correct(self) -> None:
+        class Response(CodeBlocksResponseParser):
+            number: Union[int, float] = Field(..., description="Number from 1 to 10")
+            reasoning: Optional[str] = Field(..., description="Reasoning")
+            abc: Literal["abc", "def"] = Field(..., description="ABC")
+            boolean: bool = Field(..., description="Boolean")
+
+        _ = Response.to_response_template()
+
+    def test_incorrect_list(self) -> None:
+        class Response(CodeBlocksResponseParser):
+            numbers: List[int] = Field(..., description="Numbers from 1 to 10")
+
+        with self.assertRaises(ValueError) as e:
+            _ = Response.to_response_template()
+        assert str(e.exception).startswith("Field `numbers` has complex type typing.List[int].")
+
+    def test_incorrect_dict(self) -> None:
+        class Response(CodeBlocksResponseParser):
+            numbers: Dict[str, Any] = Field(..., description="Numbers from 1 to 10")
+
+        with self.assertRaises(ValueError) as e:
+            _ = Response.to_response_template()
+        assert str(e.exception).startswith("Field `numbers` has complex type typing.Dict[str, typing.Any].")
+
+    def test_incorrect_basemodel(self) -> None:
+        class Number(BaseModel):
+            number: int = Field(..., description="Number from 1 to 10")
+
+        class Response(CodeBlocksResponseParser):
+            number: Number = Field(..., description="Number from 1 to 10")
+
+        with self.assertRaises(ValueError) as e:
+            _ = Response.to_response_template()
+        assert str(e.exception).startswith("Field `number` has complex type")
+        assert "Number" in str(e.exception)
 
 
 class TestYAMLBlockResponseParserResponseTemplate(unittest.TestCase):

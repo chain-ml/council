@@ -4,7 +4,7 @@ import abc
 import json
 import os
 import re
-from typing import Any, Callable, Dict, Final, Type, TypeVar
+from typing import Any, Callable, Dict, Final, Literal, Type, TypeVar, Union, get_args, get_origin
 
 import yaml
 from council.llm.base import LLMParsingException
@@ -118,6 +118,9 @@ class BaseModelResponseParser(BaseModel, abc.ABC):
             raise LLMParsingException(clean_exception_message)
 
 
+T_CodeBlocksResponseParserBase = TypeVar("T_CodeBlocksResponseParserBase", bound="CodeBlocksResponseParser")
+
+
 class CodeBlocksResponseParser(BaseModelResponseParser):
 
     @classmethod
@@ -135,7 +138,7 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
         return cls.create_and_validate(**parsed_blocks)
 
     @classmethod
-    def to_response_template(cls: Type[T], include_hints: bool = True) -> str:
+    def to_response_template(cls: Type[T_CodeBlocksResponseParserBase], include_hints: bool = True) -> str:
         """
         Generate code blocks response template based on the model's fields and their descriptions.
 
@@ -144,8 +147,21 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
         """
 
         template_parts = [ResponseHintsHelper.code_blocks.block_parser] if include_hints else []
+        template_parts.append(cls._to_response_template())
+        return "\n".join(template_parts)
+
+    @classmethod
+    def _to_response_template(cls: Type[T_CodeBlocksResponseParserBase]) -> str:
+        """Generate code blocks response template based on the model's fields and their descriptions."""
+        template_parts = []
 
         for field_name, field in cls.model_fields.items():
+            if not cls._is_primitive(field.annotation):
+                raise ValueError(
+                    f"Field `{field_name}` has complex type {field.annotation}. "
+                    "Only primitive types (str, int, float, bool) are supported for CodeBlocksResponseParser."
+                )
+
             description = field.description
             if description is None:
                 raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
@@ -155,6 +171,28 @@ class CodeBlocksResponseParser(BaseModelResponseParser):
         template_parts.pop()  # delete last \n
 
         return "\n".join(template_parts)
+
+    @staticmethod
+    def _is_primitive(field_type: Any) -> bool:
+        """
+        Check if a type is primitive (str, int, float, bool) and not a complex type
+        with support of Optional and Literal.
+        """
+
+        primitive_types = (str, int, float, bool, type(None))
+
+        if field_type in primitive_types:
+            return True
+
+        # get the origin type for annotations like Optional[str] and Literal["abc"]
+        origin = get_origin(field_type)
+        if origin == Literal:
+            return True
+        elif origin == Union:
+            args = get_args(field_type)
+            return all(arg in primitive_types for arg in args)
+
+        return False
 
 
 T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLResponseParserBase")
