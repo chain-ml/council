@@ -107,6 +107,11 @@ class ComplexResponse(YAMLBlockResponseParser):
     pairs: List[YAMLBlockResponse] = Field(..., description="List of number and reasoning pairs")
 
 
+class NestedResponse(YAMLBlockResponseParser):
+    score: float = Field(..., description="Float score")
+    response: ComplexResponse = Field(..., description="Complex response")
+
+
 class TestCodeBlocksResponseParserTemplate(unittest.TestCase):
     def test_missing_description_field(self):
         with self.assertRaises(ValueError) as e:
@@ -275,17 +280,6 @@ reasoning: |
 ```""",
         )
 
-    def test_complex_response_template(self):
-        template = ComplexResponse.to_response_template(include_hints=False)
-        # nested objects are not supported yet
-        self.assertEqual(
-            template,
-            """```yaml
-mode: # Mode of operation, one of `mode_one` or `mode_two`
-pairs: # List of number and reasoning pairs
-```""",
-        )
-
     def test_with_hints(self):
         template = YAMLBlockResponse.to_response_template(include_hints=True)
         self.assertEqual(
@@ -302,6 +296,24 @@ reasoning: |
   reason about the number
 number: # Number from 1 to 10
 abc: # Not multiline description
+```""",
+        )
+
+    def test_nested_response_template(self):
+        template = NestedResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```yaml
+score: # Float score
+response: # Complex response
+  mode: # Mode of operation, one of `mode_one` or `mode_two`
+  pairs: # List of number and reasoning pairs
+  - # Each element being:
+    reasoning: |
+      Carefully
+      reason about the number
+    number: # Number from 1 to 10
+    abc: # Not multiline description
 ```""",
         )
 

@@ -200,23 +200,40 @@ T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLRespon
 
 class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
     @classmethod
-    def _to_response_template(cls: Type[T]) -> str:
+    def _to_response_template(cls: Type[T], indent_level: int = 0) -> str:
         """Generate a YAML response template based on the model's fields and their descriptions."""
         template_parts = []
+        indent = "  " * indent_level
 
         for field_name, field in cls.model_fields.items():
             description = field.description
             if description is None:
                 raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+            if field.annotation is None:
+                raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
             is_multiline = "\n" in description
 
-            if field.annotation is str and is_multiline:
-                template_parts.append(f"{field_name}: |")
+            # Handle nested BaseModel
+            if hasattr(field.annotation, "_to_response_template"):
+                template_parts.append(f"{indent}{field_name}: # {description}")
+                nested_template = field.annotation._to_response_template(indent_level + 1)
+                template_parts.append(nested_template)
+            # Handle lists of BaseModel
+            elif getattr(field.annotation, "__origin__", None) is list and hasattr(
+                field.annotation.__args__[0], "_to_response_template"
+            ):
+                template_parts.append(f"{indent}{field_name}: # {description}")
+                template_parts.append(f"{indent}- # Each element being:")
+                nested_template = field.annotation.__args__[0]._to_response_template(indent_level + 1)
+                template_parts.append(nested_template)
+            # Handle regular fields
+            elif field.annotation is str and is_multiline:
+                template_parts.append(f"{indent}{field_name}: |")
                 for line in description.split("\n"):
-                    template_parts.append(f"  {line.strip()}")
+                    template_parts.append(f"{indent}  {line.strip()}")
             else:
-                template_parts.append(f"{field_name}: # {description}")
+                template_parts.append(f"{indent}{field_name}: # {description}")
 
         return "\n".join(template_parts)
 
