@@ -259,6 +259,29 @@ class LLMFileLoggingMiddleware(LLMLoggingMiddlewareBase):
                 file.write(f"\n{content}")
 
 
+class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
+    """Middleware for logging LLM requests, responses and consumptions into separate log files with timestamps."""
+
+    def __init__(
+        self,
+        prefix: str,
+        strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose,
+        component_name: Optional[str] = None,
+    ) -> None:
+        super().__init__(strategy, component_name)
+        self.prefix = prefix
+        self._lock = Lock()
+
+    def _log(self, content: str) -> None:
+        """Write content to a new log file with timestamp"""
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{self.prefix}_{timestamp}.log"
+
+        with self._lock:  # ensure file creation and write is atomic
+            with open(filename, "a", encoding="utf-8") as file:
+                file.write(f"\n{content}")
+
+
 class LLMRetryMiddleware:
     """
     Middleware for implementing retry logic for LLM requests.

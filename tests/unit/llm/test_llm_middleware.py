@@ -1,3 +1,6 @@
+import glob
+import os
+import time
 import unittest
 
 from council.llm import (
@@ -11,6 +14,7 @@ from council.llm import (
     LLMLoggingMiddleware,
     LLMRetryMiddleware,
 )
+from council.llm.llm_function.llm_middleware import LLMTimestampFileLoggingMiddleware
 from council.mocks import MockLLM, MockErrorLLM
 
 
@@ -58,3 +62,42 @@ class TestLlmMiddleware(unittest.TestCase):
         with_retry.add_middleware(LLMRetryMiddleware(retries=3, delay=1, exception_to_check=LLMCallTimeoutException))
         response = with_retry.execute(request)
         self.assertEqual("USD", response.result.first_choice)
+
+
+class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
+    def setUp(self) -> None:
+        self._llm = MockLLM.from_response("USD")
+        # Clean up any existing test log files
+        for f in glob.glob("test_llm_*.log"):
+            os.remove(f)
+
+    def tearDown(self) -> None:
+        # Clean up test log files
+        for f in glob.glob("test_llm_*.log"):
+            os.remove(f)
+
+    def test_creates_separate_log_files(self):
+        messages = [LLMMessage.user_message("Give me an example of a currency")]
+        request = LLMRequest.default(messages)
+
+        chain = LLMMiddlewareChain(self._llm)
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix="test_llm"))
+
+        # First execution
+        chain.execute(request)
+        time.sleep(1)  # Ensure different timestamps
+
+        # Second execution
+        chain.execute(request)
+
+        # Check that two log files were created
+        log_files = glob.glob("test_llm_*.log")
+        self.assertEqual(2, len(log_files))
+
+        # Verify each file contains the expected content
+        for log_file in log_files:
+            with open(log_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                self.assertIn("LLM input", content)
+                self.assertIn("LLM output", content)
+                self.assertIn("USD", content)
