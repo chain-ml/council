@@ -173,7 +173,9 @@ reason about the number
             template,
             """- Provide your response in a the following code blocks.
 - All keys must be present in the response, even when their values are empty.
-- For empty values, include empty quotes ("") rather than leaving them blank.
+- For empty values, leave them blank as follows:
+  ```empty_field
+  ```
 - Your output outside of code blocks will not be parsed.
 
 ```reasoning
