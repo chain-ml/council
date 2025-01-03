@@ -102,14 +102,19 @@ class JSONResponseReorderedAgain(JSONResponseParser, BaseResponseReorderedAgain)
     pass
 
 
-class ComplexResponse(YAMLBlockResponseParser):
+class YAMLComplexResponse(YAMLBlockResponseParser):
     mode: Literal["mode_one", "mode_two"] = Field(..., description="Mode of operation, one of `mode_one` or `mode_two`")
     pairs: List[YAMLBlockResponse] = Field(..., description="List of number and reasoning pairs")
 
 
-class NestedResponse(YAMLBlockResponseParser):
+class YAMLBlockNestedResponse(YAMLBlockResponseParser):
     score: float = Field(..., description="Float score")
-    response: ComplexResponse = Field(..., description="Complex response")
+    response: YAMLComplexResponse = Field(..., description="Complex response")
+
+
+class YAMLNestedResponse(YAMLResponseParser):
+    score: float = Field(..., description="Float score")
+    response: YAMLComplexResponse = Field(..., description="Complex response")
 
 
 class TestCodeBlocksResponseParserTemplate(unittest.TestCase):
@@ -300,7 +305,7 @@ abc: # Not multiline description
         )
 
     def test_nested_response_template(self):
-        template = NestedResponse.to_response_template(include_hints=False)
+        template = YAMLBlockNestedResponse.to_response_template(include_hints=False)
         self.assertEqual(
             template,
             """```yaml
@@ -369,6 +374,22 @@ number: # Number from 1 to 10
 abc: # Not multiline description
 
 Only respond with parsable YAML. Do not output anything else. Do not wrap your response in ```yaml```.""",
+        )
+
+    def test_nested_response_template(self):
+        template = YAMLNestedResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """score: # Float score
+response: # Complex response
+  mode: # Mode of operation, one of `mode_one` or `mode_two`
+  pairs: # List of number and reasoning pairs
+  - # Each element being:
+    reasoning: |
+      Carefully
+      reason about the number
+    number: # Number from 1 to 10
+    abc: # Not multiline description""",
         )
 
 

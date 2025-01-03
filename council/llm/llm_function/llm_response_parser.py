@@ -201,7 +201,10 @@ T_YAMLResponseParserBase = TypeVar("T_YAMLResponseParserBase", bound="YAMLRespon
 class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
     @classmethod
     def _to_response_template(cls: Type[T], indent_level: int = 0) -> str:
-        """Generate a YAML response template based on the model's fields and their descriptions."""
+        """
+        Generate a YAML response template based on the model's fields and their descriptions.
+        Supports nested objects/list of objects but all of them must inherit from YAMLResponseParserBase.
+        """
         template_parts = []
         indent = "  " * indent_level
 
@@ -212,14 +215,14 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
             if field.annotation is None:
                 raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
-            is_multiline = "\n" in description
+            is_multiline_description = "\n" in description
 
-            # Handle nested BaseModel
+            # nested BaseModel (YAMLResponseParser)
             if hasattr(field.annotation, "_to_response_template"):
                 template_parts.append(f"{indent}{field_name}: # {description}")
                 nested_template = field.annotation._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
-            # Handle lists of BaseModel
+            # lists of BaseModel
             elif getattr(field.annotation, "__origin__", None) is list and hasattr(
                 field.annotation.__args__[0], "_to_response_template"
             ):
@@ -227,11 +230,12 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
                 template_parts.append(f"{indent}- # Each element being:")
                 nested_template = field.annotation.__args__[0]._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
-            # Handle regular fields
-            elif field.annotation is str and is_multiline:
+            # multiline string description
+            elif field.annotation is str and is_multiline_description:
                 template_parts.append(f"{indent}{field_name}: |")
                 for line in description.split("\n"):
                     template_parts.append(f"{indent}  {line.strip()}")
+            # regular fields
             else:
                 template_parts.append(f"{indent}{field_name}: # {description}")
 
