@@ -1,16 +1,23 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Type
 
 import yaml
 from council.utils import DataObject, DataObjectSpecBase
+from typing_extensions import Self
 
 
-class LLMPromptTemplate:
-    def __init__(self, template: str, model: Optional[str], model_family: Optional[str]) -> None:
-        self._template = template
-        self._model = model
-        self._model_family = model_family
+class IncompatiblePromptTemplateError(Exception):
+    """Exception raised when a prompt template is not valid, but could be valid for another template class."""
+
+    pass
+
+
+class LLMPromptTemplateBase(ABC):
+    def __init__(self, *, model: Optional[str], model_family: Optional[str]) -> None:
+        self._model: Optional[str] = model
+        self._model_family: Optional[str] = model_family
 
         if self._model is None and self._model_family is None:
             raise ValueError("At least one of `model` or `model-family` must be defined")
@@ -22,19 +29,23 @@ class LLMPromptTemplate:
                     f"Please use separate prompt templates"
                 )
 
+    @property
+    @abstractmethod
+    def template(self) -> str:
+        pass
+
     @classmethod
-    def from_dict(cls, values: Dict[str, Any]) -> LLMPromptTemplate:
+    @abstractmethod
+    def from_dict(cls, values: Dict[str, Any]) -> Self:
+        pass
+
+    @staticmethod
+    def extract_template(values: Dict[str, Any]) -> Any:
         template = values.get("template")
         if template is None:
             raise ValueError("`template` must be defined")
 
-        model = values.get("model", None)
-        model_family = values.get("model-family", None)
-        return LLMPromptTemplate(template, model, model_family)
-
-    @property
-    def template(self) -> str:
-        return self._template
+        return template
 
     def is_compatible(self, model: str) -> bool:
         if self._model is not None and self._model == model:
@@ -45,10 +56,85 @@ class LLMPromptTemplate:
         return False
 
 
+class StringLLMPromptTemplate(LLMPromptTemplateBase):
+    def __init__(self, *, template: str, model: Optional[str], model_family: Optional[str]) -> None:
+        super().__init__(model=model, model_family=model_family)
+        self._template = template
+
+    @property
+    def template(self) -> str:
+        return self._template
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, Any]) -> StringLLMPromptTemplate:
+        template = cls.extract_template(values)
+        if not isinstance(template, str):
+            raise IncompatiblePromptTemplateError("`template` must be string for StringLLMPromptTemplate")
+
+        model = values.get("model", None)
+        model_family = values.get("model-family", None)
+        return StringLLMPromptTemplate(template=template, model=model, model_family=model_family)
+
+
+class XMLSection:
+    def __init__(self, *, name: str, content: str) -> None:
+        self.name = name
+        self.name_snake_case = name.lower().strip().replace(" ", "_")
+        self.content = content.strip()
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, Any]) -> XMLSection:
+        name = values.get("name")
+        content = values.get("content")
+        if name is None or content is None:
+            raise ValueError("Both 'name' and 'content' must be defined")
+        return XMLSection(name=name, content=content)
+
+    def to_xml(self) -> str:
+        return f"<{self.name_snake_case}>\n{self.content}\n</{self.name_snake_case}>"
+
+
+class XmlLLMPromptTemplate(LLMPromptTemplateBase):
+    def __init__(self, *, template: Sequence[XMLSection], model: Optional[str], model_family: Optional[str]) -> None:
+        super().__init__(model=model, model_family=model_family)
+        self._template = list(template)
+
+    @property
+    def template(self) -> str:
+        return "\n".join(section.to_xml() for section in self._template)
+
+    @classmethod
+    def from_dict(cls, values: Dict[str, Any]) -> XmlLLMPromptTemplate:
+        template = cls.extract_template(values)
+        if not isinstance(template, list):
+            raise IncompatiblePromptTemplateError("`template` must be a list of sections")
+
+        xml_sections = [XMLSection.from_dict(section) for section in template]
+
+        model = values.get("model", None)
+        model_family = values.get("model-family", None)
+        return XmlLLMPromptTemplate(template=xml_sections, model=model, model_family=model_family)
+
+
 class LLMPromptConfigSpec(DataObjectSpecBase):
-    def __init__(self, system: Sequence[LLMPromptTemplate], user: Optional[Sequence[LLMPromptTemplate]]) -> None:
+    def __init__(
+        self, system: Sequence[LLMPromptTemplateBase], user: Optional[Sequence[LLMPromptTemplateBase]]
+    ) -> None:
         self.system_prompts = list(system)
         self.user_prompts = list(user or [])
+
+    @staticmethod
+    def _determine_template_class(prompt_dict: Dict[str, Any]) -> Type[LLMPromptTemplateBase]:
+        template_classes: List[Type[LLMPromptTemplateBase]] = [XmlLLMPromptTemplate, StringLLMPromptTemplate]
+        for template_class in template_classes:
+            try:
+                template_class.from_dict(prompt_dict)
+                return template_class
+            except IncompatiblePromptTemplateError:
+                continue
+            except ValueError as e:
+                raise e
+        raise ValueError(f"Could not determine template class for prompt: {prompt_dict}")
 
     @classmethod
     def from_dict(cls, values: Mapping[str, Any]) -> LLMPromptConfigSpec:
@@ -56,10 +142,17 @@ class LLMPromptConfigSpec(DataObjectSpecBase):
         if not system_prompts:
             raise ValueError("System prompt(s) must be defined")
 
-        system = [LLMPromptTemplate.from_dict(p) for p in system_prompts]
+        # determine template class based on the first system prompt
+        template_class = cls._determine_template_class(system_prompts[0])
 
-        user_prompts = values.get("user", [])
-        user = [LLMPromptTemplate.from_dict(p) for p in user_prompts] if user_prompts else None
+        # parse all prompts with determined template class
+        try:
+            system = [template_class.from_dict(p) for p in system_prompts]
+            user_prompts = values.get("user", [])
+            user = [template_class.from_dict(p) for p in user_prompts] if user_prompts else None
+        except (ValueError, IncompatiblePromptTemplateError) as e:
+            raise ValueError(f"Failed to parse prompts with template class {template_class.__name__}: {str(e)}")
+
         return LLMPromptConfigSpec(system, user)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -111,12 +204,12 @@ class LLMPromptConfigObject(DataObject[LLMPromptConfigSpec]):
         return self._get_prompt_template(self.spec.user_prompts, model)
 
     @staticmethod
-    def _get_prompt_template(prompts: List[LLMPromptTemplate], model: str) -> str:
+    def _get_prompt_template(prompts: List[LLMPromptTemplateBase], model: str) -> str:
         """
         Get the first prompt compatible to the given `model` (or `default` prompt).
 
         Args:
-            prompts (List[LLMPromptTemplate]): List of prompts to search from
+            prompts (List[LLMPromptTemplateBase]): List of prompts to search from
 
         Returns:
             str: prompt template
