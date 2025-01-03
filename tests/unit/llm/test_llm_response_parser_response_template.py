@@ -107,6 +107,11 @@ class YAMLComplexResponse(YAMLBlockResponseParser):
     pairs: List[YAMLBlockResponse] = Field(..., description="List of number and reasoning pairs")
 
 
+class JSONComplexResponse(JSONBlockResponseParser):
+    mode: Literal["mode_one", "mode_two"] = Field(..., description="Mode of operation, one of `mode_one` or `mode_two`")
+    pairs: List[JSONBlockResponse] = Field(..., description="List of number and reasoning pairs")
+
+
 class YAMLBlockNestedResponse(YAMLBlockResponseParser):
     score: float = Field(..., description="Float score")
     response: YAMLComplexResponse = Field(..., description="Complex response")
@@ -115,6 +120,16 @@ class YAMLBlockNestedResponse(YAMLBlockResponseParser):
 class YAMLNestedResponse(YAMLResponseParser):
     score: float = Field(..., description="Float score")
     response: YAMLComplexResponse = Field(..., description="Complex response")
+
+
+class JSONBlockNestedResponse(JSONBlockResponseParser):
+    score: float = Field(..., description="Float score")
+    response: JSONComplexResponse = Field(..., description="Complex response")
+
+
+class JSONNestedResponse(JSONResponseParser):
+    score: float = Field(..., description="Float score")
+    response: JSONComplexResponse = Field(..., description="Complex response")
 
 
 class TestCodeBlocksResponseParserTemplate(unittest.TestCase):
@@ -451,6 +466,27 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
 ```""",
         )
 
+    def test_nested_response_template(self):
+        template = JSONBlockNestedResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """```json
+{
+  "score": "Float score",
+  "response": {
+    "mode": "Mode of operation, one of `mode_one` or `mode_two`",
+    "pairs": [
+      {
+        "reasoning": "Carefully\nreason about the number",
+        "number": "Number from 1 to 10",
+        "abc": "Not multiline description"
+      }
+    ]
+  }
+}
+```""",
+        )
+
 
 class TestJSONResponseParserResponseTemplate(unittest.TestCase):
     def test_template(self):
@@ -502,4 +538,23 @@ class TestJSONResponseParserResponseTemplate(unittest.TestCase):
 }
 
 Only respond with parsable JSON. Do not output anything else.""",
+        )
+
+    def test_nested_response_template(self):
+        template = JSONNestedResponse.to_response_template(include_hints=False)
+        self.assertEqual(
+            template,
+            """{
+  "score": "Float score",
+  "response": {
+    "mode": "Mode of operation, one of `mode_one` or `mode_two`",
+    "pairs": [
+      {
+        "reasoning": "Carefully\nreason about the number",
+        "number": "Number from 1 to 10",
+        "abc": "Not multiline description"
+      }
+    ]
+  }
+}""",
         )

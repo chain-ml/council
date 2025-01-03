@@ -217,12 +217,12 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
 
             is_multiline_description = "\n" in description
 
-            # nested BaseModel (YAMLResponseParser)
+            # nested BaseModel object
             if hasattr(field.annotation, "_to_response_template"):
                 template_parts.append(f"{indent}{field_name}: # {description}")
                 nested_template = field.annotation._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
-            # lists of BaseModel
+            # list of BaseModel objects
             elif getattr(field.annotation, "__origin__", None) is list and hasattr(
                 field.annotation.__args__[0], "_to_response_template"
             ):
@@ -307,20 +307,34 @@ T_JSONResponseParserBase = TypeVar("T_JSONResponseParserBase", bound="JSONRespon
 class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
     @classmethod
     def _to_response_template(cls: Type[T]) -> str:
-        """Generate a JSON response template based on the model's fields and their descriptions."""
+        """
+        Generate a JSON response template based on the model's fields and their descriptions.
+        Supports nested objects/list of objects but all of them must inherit from JSONResponseParserBase.
+
+        Field descriptions for lists are ignored.
+        """
         template_dict = {}
 
         for field_name, field in cls.model_fields.items():
-            description = field.description
-            if description is None:
-                raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+            if field.annotation is None:
+                raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
-            is_multiline = "\n" in description
-
-            if field.annotation is str and is_multiline:
-                template_dict[field_name] = "\n".join(line.strip() for line in description.split("\n"))
+            # nested BaseModel object
+            if hasattr(field.annotation, "_to_response_template"):
+                nested_template = json.loads(field.annotation._to_response_template())
+                template_dict[field_name] = nested_template
+            # list of BaseModel objects
+            elif getattr(field.annotation, "__origin__", None) is list and hasattr(
+                field.annotation.__args__[0], "_to_response_template"
+            ):
+                nested_template = json.loads(field.annotation.__args__[0]._to_response_template())
+                template_dict[field_name] = [nested_template]
+            # regular fields
             else:
-                template_dict[field_name] = description
+                if field.description is None:
+                    raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
+
+                template_dict[field_name] = field.description
 
         return json.dumps(template_dict, indent=2)
 
