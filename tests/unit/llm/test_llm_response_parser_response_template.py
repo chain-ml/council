@@ -479,7 +479,7 @@ class TestJSONBlockResponseParserResponseTemplate(unittest.TestCase):
     "mode": "Mode of operation, one of `mode_one` or `mode_two`",
     "pairs": [
       {
-        "reasoning": "Carefully\nreason about the number",
+        "reasoning": "Carefully\\nreason about the number",
         "number": "Number from 1 to 10",
         "abc": "Not multiline description"
       }
@@ -552,7 +552,7 @@ Only respond with parsable JSON. Do not output anything else.""",
     "mode": "Mode of operation, one of `mode_one` or `mode_two`",
     "pairs": [
       {
-        "reasoning": "Carefully\nreason about the number",
+        "reasoning": "Carefully\\nreason about the number",
         "number": "Number from 1 to 10",
         "abc": "Not multiline description"
       }
