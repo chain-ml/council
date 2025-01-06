@@ -117,6 +117,17 @@ class BaseModelResponseParser(BaseModel, abc.ABC):
             clean_exception_message = re.sub(r"For further information visit.*", "", str(e))
             raise LLMParsingException(clean_exception_message)
 
+    @classmethod
+    def _is_of_type(cls, obj: Type, type_to_check: Type) -> bool:
+        try:
+            return issubclass(obj, type_to_check)
+        except TypeError:  # for typing.Literal
+            return False
+
+    @classmethod
+    def _is_list_of_type(cls, obj: Type, type_to_check: Type) -> bool:
+        return getattr(obj, "__origin__", None) is list and cls._is_of_type(obj.__args__[0], type_to_check)
+
 
 T_CodeBlocksResponseParserBase = TypeVar("T_CodeBlocksResponseParserBase", bound="CodeBlocksResponseParser")
 
@@ -212,26 +223,25 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
             description = field.description
             if description is None:
                 raise ValueError(f"Description is required for field `{field_name}` in {cls.__name__}")
-            if field.annotation is None:
+            field_type = field.annotation
+            if field_type is None:
                 raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
             is_multiline_description = "\n" in description
 
             # nested BaseModel object
-            if hasattr(field.annotation, "_to_response_template"):
+            if cls._is_of_type(field_type, YAMLResponseParserBase):
                 template_parts.append(f"{indent}{field_name}: # {description}")
-                nested_template = field.annotation._to_response_template(indent_level + 1)
+                nested_template = field_type._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
             # list of BaseModel objects
-            elif getattr(field.annotation, "__origin__", None) is list and hasattr(
-                field.annotation.__args__[0], "_to_response_template"
-            ):
+            elif cls._is_list_of_type(field_type, YAMLResponseParserBase):
                 template_parts.append(f"{indent}{field_name}: # {description}")
                 template_parts.append(f"{indent}- # Each element being:")
-                nested_template = field.annotation.__args__[0]._to_response_template(indent_level + 1)
+                nested_template = field_type.__args__[0]._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
             # multiline string description
-            elif field.annotation is str and is_multiline_description:
+            elif field_type is str and is_multiline_description:
                 template_parts.append(f"{indent}{field_name}: |")
                 for line in description.split("\n"):
                     template_parts.append(f"{indent}  {line.strip()}")
@@ -316,18 +326,17 @@ class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
         template_dict = {}
 
         for field_name, field in cls.model_fields.items():
-            if field.annotation is None:
+            field_type = field.annotation
+            if field_type is None:
                 raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
             # nested BaseModel object
-            if hasattr(field.annotation, "_to_response_template"):
-                nested_template = json.loads(field.annotation._to_response_template())
+            if cls._is_of_type(field_type, JSONResponseParserBase):
+                nested_template = json.loads(field_type._to_response_template())
                 template_dict[field_name] = nested_template
             # list of BaseModel objects
-            elif getattr(field.annotation, "__origin__", None) is list and hasattr(
-                field.annotation.__args__[0], "_to_response_template"
-            ):
-                nested_template = json.loads(field.annotation.__args__[0]._to_response_template())
+            elif cls._is_list_of_type(field_type, JSONResponseParserBase):
+                nested_template = json.loads(field_type.__args__[0]._to_response_template())
                 template_dict[field_name] = [nested_template]
             # regular fields
             else:
