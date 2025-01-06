@@ -9,6 +9,7 @@
 ```{eval-rst}
 .. autoclass:: council.llm.LLMMiddlewareChain
 ```
+
 # Logging
 
 ## LLMLoggingStrategy
@@ -27,6 +28,12 @@
 
 ```{eval-rst}
 .. autoclass:: council.llm.LLMFileLoggingMiddleware
+```
+
+## LLMTimestampFileLoggingMiddleware
+
+```{eval-rst}
+.. autoclass:: council.llm.LLMTimestampFileLoggingMiddleware
 ```
 
 # LLMRetryMiddleware
