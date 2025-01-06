@@ -5,9 +5,9 @@ import yaml
 from council.prompt import (
     LLMPromptConfigObject,
     LLMPromptConfigSpec,
-    XMLSection,
-    XmlLLMPromptTemplate,
-    StringLLMPromptTemplate,
+    XMLPromptSection,
+    XMLPromptTemplate,
+    StringPromptTemplate,
 )
 
 from tests import get_data_filename
@@ -21,7 +21,7 @@ class TestLLMPromptConfig(unittest.TestCase):
 
         assert isinstance(actual, LLMPromptConfigObject)
         assert actual.kind == "LLMPrompt"
-        assert isinstance(actual.spec.system_prompts[0], StringLLMPromptTemplate)
+        assert isinstance(actual.spec.system_prompts[0], StringPromptTemplate)
 
     def test_llm_prompt_templates(self):
         filename = get_data_filename(LLMPrompts.sample)
@@ -107,11 +107,11 @@ class TestLLMPromptConfig(unittest.TestCase):
 
 class TestXMLPrompt(unittest.TestCase):
     def test_xml_section(self):
-        section = XMLSection(name="test", content="content")
+        section = XMLPromptSection(name="test", content="content")
         assert section.to_xml() == "<test>\ncontent\n</test>"
 
     def test_xml_section_snake_case(self):
-        section = XMLSection(name="  Complex nAmE    ", content="Complex Content 123")
+        section = XMLPromptSection(name="  Complex nAmE    ", content="Complex Content 123")
         assert section.to_xml() == "<complex_name>\nComplex Content 123\n</complex_name>"
 
     def test_xml_prompt_from_yaml(self):
@@ -120,7 +120,7 @@ class TestXMLPrompt(unittest.TestCase):
 
         assert isinstance(actual, LLMPromptConfigObject)
         assert actual.kind == "LLMPrompt"
-        assert isinstance(actual.spec.system_prompts[0], XmlLLMPromptTemplate)
+        assert isinstance(actual.spec.system_prompts[0], XMLPromptTemplate)
 
     def test_sample_xml_prompt(self):
         filename = get_data_filename(XMLPrompts.sample)
@@ -202,7 +202,7 @@ Provide the answer in simple terms.
         values = yaml.safe_load(prompt_config_spec)
         with self.assertRaises(ValueError) as e:
             _ = LLMPromptConfigSpec.from_dict(values["spec"])
-        assert str(e.exception).startswith("Failed to parse prompts with template class StringLLMPromptTemplate:")
+        assert str(e.exception).startswith("Failed to parse prompts with template class StringPromptTemplate:")
 
         prompt_config_spec = """
         spec:
@@ -218,4 +218,4 @@ Provide the answer in simple terms.
         values = yaml.safe_load(prompt_config_spec)
         with self.assertRaises(ValueError) as e:
             _ = LLMPromptConfigSpec.from_dict(values["spec"])
-        assert str(e.exception).startswith("Failed to parse prompts with template class XmlLLMPromptTemplate:")
+        assert str(e.exception).startswith("Failed to parse prompts with template class XMLPromptTemplate:")

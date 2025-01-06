@@ -5,10 +5,10 @@ from .llm_dataset import (
     LLMDatasetValidator,
 )
 from .llm_prompt_config_object import (
-    LLMPromptTemplateBase,
-    StringLLMPromptTemplate,
-    XMLSection,
-    XmlLLMPromptTemplate,
+    PromptTemplateBase,
+    StringPromptTemplate,
+    XMLPromptSection,
+    XMLPromptTemplate,
     LLMPromptConfigObject,
     LLMPromptConfigSpec,
 )

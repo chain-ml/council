@@ -17,6 +17,7 @@ class LLMPrompts:
 
 class XMLPrompts:
     sample: str = "xml-prompt-abc.yaml"
+    sql_template: str = "xml-prompt-template-sql.yaml"
 
 
 class LLMDatasets:
