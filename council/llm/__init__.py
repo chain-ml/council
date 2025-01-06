@@ -65,6 +65,7 @@ from .llm_function import (
     LLMMiddlewareChain,
     LLMRequest,
     LLMResponse,
+    LLMResponseParser,
     LLMRetryMiddleware,
     StringResponseParser,
     YAMLBlockResponseParser,
