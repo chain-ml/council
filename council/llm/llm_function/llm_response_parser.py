@@ -229,12 +229,12 @@ class YAMLResponseParserBase(BaseModelResponseParser, abc.ABC):
 
             is_multiline_description = "\n" in description
 
-            # nested BaseModel object
+            # nested BaseModel
             if cls._is_of_type(field_type, YAMLResponseParserBase):
                 template_parts.append(f"{indent}{field_name}: # {description}")
                 nested_template = field_type._to_response_template(indent_level + 1)
                 template_parts.append(nested_template)
-            # list of BaseModel objects
+            # list of BaseModels
             elif cls._is_list_of_type(field_type, YAMLResponseParserBase):
                 template_parts.append(f"{indent}{field_name}: # {description}")
                 template_parts.append(f"{indent}- # Each element being:")
@@ -330,11 +330,11 @@ class JSONResponseParserBase(BaseModelResponseParser, abc.ABC):
             if field_type is None:
                 raise ValueError(f"Type annotation is required for field `{field_name}` in {cls.__name__}")
 
-            # nested BaseModel object
+            # nested BaseModel
             if cls._is_of_type(field_type, JSONResponseParserBase):
                 nested_template = json.loads(field_type._to_response_template())
                 template_dict[field_name] = nested_template
-            # list of BaseModel objects
+            # list of BaseModels
             elif cls._is_list_of_type(field_type, JSONResponseParserBase):
                 nested_template = json.loads(field_type.__args__[0]._to_response_template())
                 template_dict[field_name] = [nested_template]
