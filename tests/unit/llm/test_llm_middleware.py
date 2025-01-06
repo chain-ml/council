@@ -1,5 +1,7 @@
 import glob
 import os
+import shutil
+import tempfile
 import time
 import unittest
 
@@ -13,8 +15,8 @@ from council.llm import (
     LLMMiddlewareChain,
     LLMLoggingMiddleware,
     LLMRetryMiddleware,
+    LLMTimestampFileLoggingMiddleware,
 )
-from council.llm.llm_function.llm_middleware import LLMTimestampFileLoggingMiddleware
 from council.mocks import MockLLM, MockErrorLLM
 
 
@@ -67,34 +69,27 @@ class TestLlmMiddleware(unittest.TestCase):
 class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
     def setUp(self) -> None:
         self._llm = MockLLM.from_response("USD")
-        # Clean up any existing test log files
-        for f in glob.glob("test_llm_*.log"):
-            os.remove(f)
+        self._temp_dir = tempfile.mkdtemp()
 
     def tearDown(self) -> None:
-        # Clean up test log files
-        for f in glob.glob("test_llm_*.log"):
-            os.remove(f)
+        shutil.rmtree(self._temp_dir)
 
     def test_creates_separate_log_files(self):
         messages = [LLMMessage.user_message("Give me an example of a currency")]
         request = LLMRequest.default(messages)
 
+        log_prefix = os.path.join(self._temp_dir, "test_llm")
         chain = LLMMiddlewareChain(self._llm)
-        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix="test_llm"))
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix=log_prefix))
 
-        # First execution
         chain.execute(request)
-        time.sleep(1)  # Ensure different timestamps
+        time.sleep(1)  # ensure different timestamps
 
-        # Second execution
         chain.execute(request)
 
-        # Check that two log files were created
-        log_files = glob.glob("test_llm_*.log")
+        log_files = glob.glob(os.path.join(self._temp_dir, "test_llm_*.log"))
         self.assertEqual(2, len(log_files))
 
-        # Verify each file contains the expected content
         for log_file in log_files:
             with open(log_file, "r", encoding="utf-8") as f:
                 content = f.read()

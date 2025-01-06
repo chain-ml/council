@@ -215,6 +215,13 @@ class LLMLoggingMiddlewareBase:
         """Abstract method to be implemented by subclasses for actual logging."""
         raise NotImplementedError()
 
+    @staticmethod
+    def append_to_file(lock: Lock, *, file_path: str, content: str) -> None:
+        """Append content to a file atomically"""
+        with lock:  # ensure each write is done atomically in case of multi-threading
+            with open(file_path, "a", encoding="utf-8") as file:
+                file.write(f"\n{content}")
+
 
 class LLMLoggingMiddleware(LLMLoggingMiddlewareBase):
     """Middleware for logging LLM requests, responses and consumptions to the context logger."""
@@ -254,13 +261,11 @@ class LLMFileLoggingMiddleware(LLMLoggingMiddlewareBase):
     def _log(self, content: str) -> None:
         """Append `content` to a current log file"""
 
-        with self._lock:  # ensure each write is done atomically in case of multi-threading
-            with open(self.log_file, "a", encoding="utf-8") as file:
-                file.write(f"\n{content}")
+        self.append_to_file(self._lock, file_path=self.log_file, content=content)
 
 
 class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
-    """Middleware for logging LLM requests, responses and consumptions into separate log files with timestamps."""
+    """Middleware for logging LLM requests, responses and consumptions into separate log file for each request."""
 
     def __init__(
         self,
@@ -274,12 +279,10 @@ class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
 
     def _log(self, content: str) -> None:
         """Write content to a new log file with timestamp"""
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"{self.prefix}_{timestamp}.log"
 
-        with self._lock:  # ensure file creation and write is atomic
-            with open(filename, "a", encoding="utf-8") as file:
-                file.write(f"\n{content}")
+        self.append_to_file(self._lock, file_path=filename, content=content)
 
 
 class LLMRetryMiddleware:
