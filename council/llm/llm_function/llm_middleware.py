@@ -285,11 +285,9 @@ class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
         self._current_filename = os.path.join(self.path, f"{self.prefix}{timestamp}.log")
-
-        try:
-            return super().__call__(llm, execute, request)
-        finally:
-            self._current_filename = None  # clear the current filename after processing is complete
+        response = super().__call__(llm, execute, request)
+        self._current_filename = None
+        return response
 
     def _log(self, content: str) -> None:
         """Write content to the current log file"""
