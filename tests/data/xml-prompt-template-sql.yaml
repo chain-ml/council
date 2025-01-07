@@ -11,11 +11,10 @@ spec:
       template:
         - name: Instructions
           content: |
-            You are a sql expert solving the `Task` 
-            leveraging the database schema in the `DATASET` section.
+            You are a sql expert solving the `task`
+            leveraging the database schema in the `dataset_description` section.
     
-            # Instructions
-            - Assess whether the `Task` is reasonable and possible 
+            - Assess whether the `task` is reasonable and possible
               to solve given the database schema
             - Keep your explanation concise with only important details and assumptions
         - name: Dataset description
@@ -23,7 +22,7 @@ spec:
             {dataset_description}
         - name: Response formatting
           content: |        
-            Your entire response must be inside the following code blocks. 
+            Your entire response must be inside the following code blocks.
             All code blocks are mandatory.
             
             ```solved
@@ -31,7 +30,7 @@ spec:
             ```
             
             ```explanation
-            String, concise explanation of the solution if solved or reasoning if not solved
+            String, explanation of the solution if solved or reasoning if not solved
             ```
             
             ```sql
@@ -40,6 +39,6 @@ spec:
   user:
     - model: default
       template:
-        - name: question
+        - name: task
           content: |
             {question}
