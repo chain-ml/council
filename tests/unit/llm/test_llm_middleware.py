@@ -69,7 +69,10 @@ class TestLlmMiddleware(unittest.TestCase):
 class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
     def setUp(self) -> None:
         self._llm = MockLLM.from_response("USD")
+        self._llm_with_delay = MockLLM.from_response("USD", delay=1.0)
         self._temp_dir = tempfile.mkdtemp()
+
+        self._log_prefix = "test_llm"
 
     def tearDown(self) -> None:
         shutil.rmtree(self._temp_dir)
@@ -78,17 +81,35 @@ class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
         messages = [LLMMessage.user_message("Give me an example of a currency")]
         request = LLMRequest.default(messages)
 
-        log_prefix = os.path.join(self._temp_dir, "test_llm")
         chain = LLMMiddlewareChain(self._llm)
-        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix=log_prefix))
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(path=self._temp_dir, filename_prefix=self._log_prefix))
 
         chain.execute(request)
         time.sleep(1)  # ensure different timestamps
 
         chain.execute(request)
 
-        log_files = glob.glob(os.path.join(self._temp_dir, "test_llm_*.log"))
+        log_files = glob.glob(os.path.join(self._temp_dir, f"{self._log_prefix}_*.log"))
         self.assertEqual(2, len(log_files))
+
+        for log_file in log_files:
+            with open(log_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                self.assertIn("LLM input", content)
+                self.assertIn("LLM output", content)
+                self.assertIn("USD", content)
+
+    def test_with_delay(self):
+        messages = [LLMMessage.user_message("Give me an example of a currency")]
+        request = LLMRequest.default(messages)
+
+        chain = LLMMiddlewareChain(self._llm_with_delay)
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(path=self._temp_dir, filename_prefix=self._log_prefix))
+
+        chain.execute(request)
+
+        log_files = glob.glob(os.path.join(self._temp_dir, f"{self._log_prefix}_*.log"))
+        self.assertEqual(1, len(log_files))
 
         for log_file in log_files:
             with open(log_file, "r", encoding="utf-8") as f:
