@@ -82,7 +82,7 @@ class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
         request = LLMRequest.default(messages)
 
         chain = LLMMiddlewareChain(self._llm)
-        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix=self._log_prefix, path=self._temp_dir))
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(path=self._temp_dir, filename_prefix=self._log_prefix))
 
         chain.execute(request)
         time.sleep(1)  # ensure different timestamps
@@ -104,7 +104,7 @@ class TestLlmTimestampFileLoggingMiddleware(unittest.TestCase):
         request = LLMRequest.default(messages)
 
         chain = LLMMiddlewareChain(self._llm_with_delay)
-        chain.add_middleware(LLMTimestampFileLoggingMiddleware(prefix=self._log_prefix, path=self._temp_dir))
+        chain.add_middleware(LLMTimestampFileLoggingMiddleware(path=self._temp_dir, filename_prefix=self._log_prefix))
 
         chain.execute(request)
 

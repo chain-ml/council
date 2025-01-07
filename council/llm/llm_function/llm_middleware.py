@@ -270,20 +270,21 @@ class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
 
     def __init__(
         self,
-        prefix: str,
-        path: str = ".",
         strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose,
+        *,
+        path: str = ".",
+        filename_prefix: Optional[str] = None,
         component_name: Optional[str] = None,
     ) -> None:
         super().__init__(strategy, component_name)
-        self.prefix = prefix
+        self.prefix = f"{filename_prefix}_" if filename_prefix is not None else ""
         self.path = path
         self._lock = Lock()
         self._current_filename: Optional[str] = None
 
     def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
         timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-        self._current_filename = os.path.join(self.path, f"{self.prefix}_{timestamp}.log")
+        self._current_filename = os.path.join(self.path, f"{self.prefix}{timestamp}.log")
 
         try:
             return super().__call__(llm, execute, request)
