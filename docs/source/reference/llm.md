@@ -95,7 +95,9 @@ Middleware components allow you to enhance LLM interactions by modifying request
 Core middlewares:
 
 - Caching: {class}`~council.llm.LLMCachingMiddleware`
-- Logging: {class}`~council.llm.LLMLoggingMiddleware` and {class}`~council.llm.LLMFileLoggingMiddleware`
+- Logging: 
+  - Context logger: {class}`~council.llm.LLMLoggingMiddleware`
+  - Files: {class}`~council.llm.LLMFileLoggingMiddleware` and {class}`~council.llm.LLMTimestampFileLoggingMiddleware`
 
 Middleware management:
 
