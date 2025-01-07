@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from collections import OrderedDict
 from enum import Enum
@@ -240,7 +241,7 @@ class LLMLoggingMiddleware(LLMLoggingMiddlewareBase):
 
     def _log(self, content: str) -> None:
         if self.context_logger is None:
-            raise RuntimeError("Calling LLMLoggingMiddleware._log() outside of __call__()")
+            raise RuntimeError("Context logger not set - calling LLMLoggingMiddleware._log() outside of __call__()")
 
         self.context_logger.info(content)
 
@@ -270,19 +271,33 @@ class LLMTimestampFileLoggingMiddleware(LLMLoggingMiddlewareBase):
     def __init__(
         self,
         prefix: str,
+        path: str = ".",
         strategy: LLMLoggingStrategy = LLMLoggingStrategy.Verbose,
         component_name: Optional[str] = None,
     ) -> None:
         super().__init__(strategy, component_name)
         self.prefix = prefix
+        self.path = path
         self._lock = Lock()
+        self._current_filename: Optional[str] = None
+
+    def __call__(self, llm: LLMBase, execute: ExecuteLLMRequest, request: LLMRequest) -> LLMResponse:
+        timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+        self._current_filename = os.path.join(self.path, f"{self.prefix}_{timestamp}.log")
+
+        try:
+            return super().__call__(llm, execute, request)
+        finally:
+            self._current_filename = None  # clear the current filename after processing is complete
 
     def _log(self, content: str) -> None:
-        """Write content to a new log file with timestamp"""
-        timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"{self.prefix}_{timestamp}.log"
+        """Write content to the current log file"""
+        if self._current_filename is None:
+            raise RuntimeError(
+                "Current log filename not set - calling LLMTimestampFileLoggingMiddleware._log() outside of __call__()"
+            )
 
-        self.append_to_file(self._lock, file_path=filename, content=content)
+        self.append_to_file(self._lock, file_path=self._current_filename, content=content)
 
 
 class LLMRetryMiddleware:
