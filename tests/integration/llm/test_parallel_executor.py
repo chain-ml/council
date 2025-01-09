@@ -5,12 +5,7 @@ from typing import Sequence
 
 from pydantic import Field
 
-from council.llm import (
-    OpenAILLM,
-    LLMFunction,
-    JSONResponseParser,
-)
-from council.llm.llm_function.parallel_runner import ParallelRunner
+from council.llm import OpenAILLM, LLMFunction, JSONResponseParser, ParallelExecutor
 from council.utils import OsEnviron
 
 SYSTEM_PROMPT = """
@@ -34,19 +29,19 @@ def response_reduce(results: Sequence[Response]) -> Response:
     running_average_random_number = 0.0
 
     for i, result in enumerate(results, start=1):
-        aggregated_reasoning += result.reasoning
+        aggregated_reasoning += " " + result.reasoning
         running_average_random_number += (result.random_number - running_average_random_number) / i
 
     return Response(reasoning=aggregated_reasoning, random_number=int(running_average_random_number))
 
 
-class TestParallelRunner(unittest.TestCase):
+class TestParallelExecutor(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
         with OsEnviron("OPENAI_LLM_MODEL", "gpt-4o-mini"), OsEnviron("OPENAI_LLM_TEMPERATURE", "1.5"):
             self.llm = OpenAILLM.from_env()
 
-    def test_parallel_runner(self):
+    def test_parallel_executor(self):
         llm_func = LLMFunction(
             self.llm,
             Response.from_response,
@@ -54,9 +49,10 @@ class TestParallelRunner(unittest.TestCase):
             # TODO: Template.format_for(SYSTEM_PROMPT)?
         )
 
-        runner = ParallelRunner(llm_func.execute, n=3, reduce=response_reduce)
-        result = runner.execute(response_format={"type": "json_object"})
-        print(result)
+        executor = ParallelExecutor(llm_func.execute, reduce=response_reduce, n=3)
+        results = executor.execute_all(response_format={"type": "json_object"})
 
-        for result in runner.last_results:
+        for result in results:
             print(result)
+
+        print(executor.reduce(results))
