@@ -1,72 +1,89 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Generic, List, Sequence
+from typing import Callable, Generic, List, Optional, Sequence, TypeVar, Union
 
-from .llm_function import T_Response
+T = TypeVar("T")
+R = TypeVar("R")
 
-Execute = Callable[..., T_Response]
-Reduce = Callable[[Sequence[T_Response]], T_Response]
+Execute = Callable[..., T]
+Reduce = Callable[[Sequence[T]], R]
 
 
-class ParallelExecutor(Generic[T_Response]):
+class ParallelExecutor(Generic[T, R]):
     """
-    Executes a function (e.g. LLMFunction.execute) multiple times in parallel
+    Executes one or more functions (e.g. LLMFunction.execute) in parallel
     and aggregates the results according to a reduce function.
 
     Args:
-        execute (Execute): Function to execute in parallel
-        reduce (Reduce): Function to aggregate sequence of responses into a single response
-        n (int): Number of parallel executions to perform
+        executes (Union[Execute, Sequence[Execute]]): Single function or sequence of functions to execute in parallel
+        reduce (Optional[Reduce]): Function to aggregate sequence of responses into a response of potentially different type.
+            Defaults to returning the first result.
+        n (int): Number of times to execute if single function provided. Ignored if sequence provided.
+
+    Raises:
+        ValueError: If _executes sequence is empty or contains non-callable items
     """
 
-    def __init__(self, execute: Execute, reduce: Reduce, n: int) -> None:
-        self.execute_func = execute
-        self.n = n
-        self.reduce = reduce
+    def __init__(
+        self, executes: Union[Execute, Sequence[Execute]], reduce: Optional[Reduce] = None, n: int = 1
+    ) -> None:
+        self._executes: List[Execute] = self._validate_executes(executes, n)
+        self._reduce: Reduce = reduce if reduce is not None else lambda results: results[0]
 
-    def execute_all(self, *args, **kwargs) -> List[T_Response]:
+    @staticmethod
+    def _validate_executes(executes: Union[Execute, Sequence[Execute]], n: int) -> List[Execute]:
+        if not isinstance(executes, Sequence):
+            if not callable(executes):
+                raise ValueError("`_executes` must be callable or sequence of callables")
+            return [executes] * n
+        else:
+            if not executes:
+                raise ValueError("`_executes` sequence cannot be empty")
+            if not all(callable(ex) for ex in executes):
+                raise ValueError("All items in `_executes` must be callable")
+            return list(executes)
+
+    def execute(self, *args, **kwargs) -> List[T]:
         """
-        Execute the function n times in parallel and return all results.
+        Execute the function(s) in parallel and return all results.
 
         Args:
-            *args: Positional arguments to pass to the execute function
-            **kwargs: Keyword arguments to pass to the execute function
+            *args: Positional arguments to pass to the execute functions
+            **kwargs: Keyword arguments to pass to the execute functions
 
         Returns:
-            List[T_Response]: List of all parallel execution results
+            List[T]: List of all parallel execution results
         """
-        results: List[T_Response] = []
+        results: List[T] = []
 
-        with ThreadPoolExecutor(max_workers=self.n) as executor:
-            # Submit all runners to the executor
-            future_to_runner = {
-                executor.submit(self.execute_func, *args, **kwargs): self.execute_func for _ in range(self.n)
-            }
+        with ThreadPoolExecutor(max_workers=len(self._executes)) as executor:
+            future_to_runner = {executor.submit(execute, *args, **kwargs): execute for execute in self._executes}
 
-            # Collect results as they complete
             for future in as_completed(future_to_runner):
                 try:
                     result = future.result()
                     results.append(result)
                 except Exception as e:
-                    # Cancel any pending futures
                     for f in future_to_runner:
                         f.cancel()
                     raise e
 
         return results
 
-    def execute(self, *args, **kwargs) -> T_Response:
+    def reduce(self, results: Sequence[T]) -> R:
+        return self._reduce(results)
+
+    def execute_and_reduce(self, *args, **kwargs) -> R:
         """
-        Execute the function n times in parallel and aggregate their results.
+        Execute the function(s) in parallel and aggregate their results.
 
         Args:
-            *args: Positional arguments to pass to the execute function
-            **kwargs: Keyword arguments to pass to the execute function
+            *args: Positional arguments to pass to the execute functions
+            **kwargs: Keyword arguments to pass to the execute functions
 
         Returns:
-            T_Response: Aggregated result from all parallel executions
+            R: Result from reducing all parallel executions, potentially of different type than inputs
         """
-        results = self.execute_all(*args, **kwargs)
+        results = self.execute(*args, **kwargs)
         return self.reduce(results)

@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import dataclass
 
 import dotenv
 from typing import Sequence
@@ -24,7 +25,12 @@ class Response(JSONResponseParser):
         return f"Reasoning: {self.reasoning}\nRandom number: {self.random_number}"
 
 
-def response_reduce(results: Sequence[Response]) -> Response:
+@dataclass
+class AggregatedResponse:
+    random_number: int
+
+
+def reduce_to_response(results: Sequence[Response]) -> Response:
     aggregated_reasoning = ""
     running_average_random_number = 0.0
 
@@ -35,24 +41,50 @@ def response_reduce(results: Sequence[Response]) -> Response:
     return Response(reasoning=aggregated_reasoning, random_number=int(running_average_random_number))
 
 
+def reduce_to_aggregated_response(results: Sequence[Response]) -> AggregatedResponse:
+    average = sum(result.random_number for result in results) / len(results)
+
+    return AggregatedResponse(int(average))
+
+
 class TestParallelExecutor(unittest.TestCase):
     def setUp(self) -> None:
         dotenv.load_dotenv()
         with OsEnviron("OPENAI_LLM_MODEL", "gpt-4o-mini"), OsEnviron("OPENAI_LLM_TEMPERATURE", "1.5"):
             self.llm = OpenAILLM.from_env()
 
-    def test_parallel_executor(self):
-        llm_func = LLMFunction(
+    def get_llm_func(self) -> LLMFunction[Response]:
+        return LLMFunction(
             self.llm,
             Response.from_response,
             system_message=SYSTEM_PROMPT.format(response_template=Response.to_response_template()),
             # TODO: Template.format_for(SYSTEM_PROMPT)?
         )
 
-        executor = ParallelExecutor(llm_func.execute, reduce=response_reduce, n=3)
-        results = executor.execute_all(response_format={"type": "json_object"})
+    def test_with_n(self):
+        llm_func = self.get_llm_func()
+
+        executor = ParallelExecutor(llm_func.execute, reduce=reduce_to_response, n=3)
+        results = executor.execute(response_format={"type": "json_object"})
+
+        self.assertEquals(len(results), 3)
 
         for result in results:
-            print(result)
+            self.assertIsInstance(result, Response)
 
-        print(executor.reduce(results))
+        result = executor.reduce(results)
+        self.assertIsInstance(result, Response)
+
+    def test_with_executes(self):
+        llm_func_v1, llm_func_v2 = self.get_llm_func(), self.get_llm_func()
+
+        executor = ParallelExecutor([llm_func_v1.execute, llm_func_v2.execute], reduce=reduce_to_aggregated_response)
+        results = executor.execute(response_format={"type": "json_object"})
+
+        self.assertEquals(len(results), 2)
+
+        for result in results:
+            self.assertIsInstance(result, Response)
+
+        result = executor.reduce(results)
+        self.assertIsInstance(result, AggregatedResponse)
