@@ -54,12 +54,7 @@ class TestParallelExecutor(unittest.TestCase):
             self.llm = OpenAILLM.from_env()
 
     def get_llm_func(self) -> LLMFunction[Response]:
-        return LLMFunction(
-            self.llm,
-            Response.from_response,
-            system_message=SYSTEM_PROMPT.format(response_template=Response.to_response_template()),
-            # TODO: Template.format_for(SYSTEM_PROMPT)?
-        )
+        return LLMFunction(self.llm, Response.from_response, system_message=Response.format(SYSTEM_PROMPT))
 
     def test_with_n(self):
         llm_func = self.get_llm_func()
