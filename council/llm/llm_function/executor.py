@@ -35,18 +35,18 @@ class ParallelExecutor(Generic[T, R]):
     def _validate_executes(executes: Union[Execute, Sequence[Execute]], n: int) -> List[Execute]:
         if not isinstance(executes, Sequence):
             if not callable(executes):
-                raise ValueError("`_executes` must be callable or sequence of callables")
+                raise ValueError("`executes` must be callable or sequence of callables")
             return [executes] * n
         else:
             if not executes:
-                raise ValueError("`_executes` sequence cannot be empty")
+                raise ValueError("`executes` sequence cannot be empty")
             if not all(callable(ex) for ex in executes):
-                raise ValueError("All items in `_executes` must be callable")
+                raise ValueError("All items in `executes` must be callable")
             return list(executes)
 
     def execute(self, *args, **kwargs) -> List[T]:
         """
-        Execute the function(s) in parallel and return all results.
+        Execute functions in parallel and return all results.
 
         Args:
             *args: Positional arguments to pass to the execute functions
