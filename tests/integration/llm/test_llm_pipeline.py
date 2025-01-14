@@ -25,7 +25,7 @@ class DatabaseQuestion(BaseModel):
             [
                 "Database Schema:",
                 f"Table: {self.table_name}",
-                *[f"{column}: {type}" for column, type in self.columns_with_types],
+                *[f"{column}: {t}" for column, t in self.columns_with_types],
                 "Please generate a SQL query to answer the following question:",
                 self.question,
             ]

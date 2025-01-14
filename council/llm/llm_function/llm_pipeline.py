@@ -13,7 +13,7 @@ class ProcessorException(Exception):
     """
     Exception raised during the execution of a Processor.
     Contains information about the input that caused the exception, the exception itself,
-    and optionally a previous processor that should handle the exception.
+    and optionally name of a previous processor that should handle the exception.
     """
 
     def __init__(self, *, input: str, message: str, transfer_to: Optional[str] = None):
@@ -33,7 +33,9 @@ class LLMProcessorInput(Protocol):
 T_Input = TypeVar("T_Input")
 T_Output = TypeVar("T_Output")
 
+# input must implement to_prompt()
 T_LLMInput = TypeVar("T_LLMInput", bound=LLMProcessorInput)
+# output must implement from_response() and to_response_template()
 T_LLMOutput = TypeVar("T_LLMOutput", bound=BaseModelResponseParser)
 
 
@@ -71,7 +73,7 @@ class Processor(Generic[T_Input, T_Output]):
 
 class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
     """
-    Processor that uses an LLM to convert an input_prompt object into an output object.
+    Processor that uses an LLM to convert an input object into an output object.
     Keeps track of records processed by this instance.
     """
 
@@ -120,7 +122,7 @@ class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
             response_parser=self._output_obj_type.from_response,
             messages=messages,
         )
-        llm_func_response = llm_func.execute_with_llm_response("")  # TODO: what is input_prompt?
+        llm_func_response = llm_func.execute_with_llm_response()
         self.add_record(input_prompt=system_prompt, produced_output=llm_func_response.llm_response.value)
 
         return llm_func_response.response
@@ -161,7 +163,8 @@ class NaivePipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
 class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
     """
     PipelineProcessor that executes processors in a linear order backtracking errors.
-    If a processor fails, the pipeline will backtrack to the previous processor and try again.
+    If a processor fails, the pipeline will backtrack to the previous processor (or specified in the exception)
+    and try again.
 
     .. mermaid::
 
