@@ -23,6 +23,13 @@ class ParallelExecutor(Generic[T, R]):
 
     Raises:
         ValueError: If _executes sequence is empty or contains non-callable items
+
+    .. mermaid::
+
+        flowchart LR
+            E1(Execute 1) --> R(Reduce)
+            E3(Execute ...) --> R
+            E4(Execute N) --> R
     """
 
     def __init__(
