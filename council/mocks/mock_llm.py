@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Iterable, List, Optional, Protocol, Sequence
 
 from council import LLMContext
@@ -54,26 +55,29 @@ class MockLLMConfiguration(LLMConfigurationBase):
 
 
 class MockLLM(LLMBase[MockLLMConfiguration]):
-    def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1) -> None:
+    def __init__(self, action: Optional[LLMMessagesToStr] = None, token_limit: int = -1, delay: float = 0.0) -> None:
         super().__init__(configuration=MockLLMConfiguration("mock"), token_counter=MockTokenCounter(token_limit))
         self._action = action
+        self._delay = delay
 
     def _post_chat_request(self, context: LLMContext, messages: Sequence[LLMMessage], **kwargs: Any) -> LLMResult:
+        if self._delay > 0:
+            time.sleep(self._delay)
         choices = self._action(messages) if self._action is not None else [f"{self.__class__.__name__}"]
         return LLMResult(choices=choices, consumptions=[Consumption.call(1, "mock_llm")])
 
     @staticmethod
-    def from_responses(responses: List[str]) -> MockLLM:
-        return MockLLM(action=(lambda x: responses))
+    def from_responses(responses: List[str], delay: float = 0.0) -> MockLLM:
+        return MockLLM(action=(lambda x: responses), delay=delay)
 
     @staticmethod
-    def from_response(response: str) -> MockLLM:
-        return MockLLM(action=(lambda x: [response]))
+    def from_response(response: str, delay: float = 0.0) -> MockLLM:
+        return MockLLM(action=(lambda x: [response]), delay=delay)
 
     @staticmethod
-    def from_multi_line_response(responses: Iterable[str]) -> MockLLM:
+    def from_multi_line_response(responses: Iterable[str], delay: float = 0.0) -> MockLLM:
         response = "\n".join(responses)
-        return MockLLM(action=(lambda x: [response]))
+        return MockLLM(action=(lambda x: [response]), delay=delay)
 
 
 class MockErrorLLM(LLMBase):
