@@ -6,9 +6,11 @@
 
 ## Example
 
-Here's an example of how to use `ParallelExecutor` to run multiple LLM requests in parallel for evaluation.
+Here's an example of how to use `ParallelExecutor` to run multiple LLM requests in parallel for evaluation use case.
 
 ```python
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List, Sequence
 
@@ -30,12 +32,12 @@ class AggregatedEvaluationResponse:
     evaluations: List[EvaluationResponse] = Field(..., description="The evaluations of the responses")
     average_score: float = Field(..., description="The average score of the evaluations")
 
-
-def aggregate_evaluations(evals: Sequence[EvaluationResponse]) -> AggregatedEvaluationResponse:
-    return AggregatedEvaluationResponse(
-        evaluations=list(evals),
-        average_score=sum(e.score for e in evals) / len(evals),
-    )
+    @classmethod
+    def from_evaluations(cls, evaluations: Sequence[EvaluationResponse]) -> AggregatedEvaluationResponse:
+        return cls(
+            evaluations=list(evaluations),
+            average_score=sum(e.score for e in evaluations) / len(evaluations),
+        )
 
 
 SYSTEM_PROMPT_TEMPLATE = """
@@ -48,8 +50,6 @@ Evaluate if the given response from AI assistant is helpful and accurate.
 
 SYSTEM_PROMPT = SYSTEM_PROMPT_TEMPLATE.format(response_template=EvaluationResponse.to_response_template())
 
-load_dotenv()
-
 
 def get_eval_llm_function(llm: LLMBase):
     return LLMFunction(
@@ -59,13 +59,15 @@ def get_eval_llm_function(llm: LLMBase):
     )
 
 
+load_dotenv()
+
 openai_llm_function = get_eval_llm_function(OpenAILLM.from_env())
 anthropic_llm_function = get_eval_llm_function(AnthropicLLM.from_env())
 
 # using different LLMs for this example, could be a single function and n>1
 executor: ParallelExecutor[EvaluationResponse, AggregatedEvaluationResponse] = ParallelExecutor(
     [openai_llm_function.execute, anthropic_llm_function.execute],
-    reduce=aggregate_evaluations,
+    reduce=AggregatedEvaluationResponse.from_evaluations,
 )
 
 response = executor.execute_and_reduce("Thomas Jefferson was the 12th president of the United States.")
