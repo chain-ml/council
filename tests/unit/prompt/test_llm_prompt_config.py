@@ -2,10 +2,17 @@ import unittest
 
 import yaml
 
-from council.prompt import LLMPromptConfigObject, LLMPromptConfigSpec
+from council.prompt import (
+    LLMPromptConfigObject,
+    LLMPromptConfigSpec,
+    LLMStructuredPromptConfigObject,
+    LLMStructuredPromptConfigSpec,
+    XMLPromptFormatter,
+    MarkdownPromptFormatter,
+)
 
 from tests import get_data_filename
-from .. import LLMPrompts
+from .. import LLMPrompts, LLMStructuredPrompts
 
 
 class TestLLMPromptConfig(unittest.TestCase):
@@ -96,3 +103,108 @@ class TestLLMPromptConfig(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             _ = LLMPromptConfigSpec.from_dict(values["spec"])
         assert str(e.exception).startswith("model `gpt-4o` and model-family `claude` are not compliant")
+
+
+class TestLLMStructuredPrompt(unittest.TestCase):
+    @staticmethod
+    def load_sample_prompt() -> LLMStructuredPromptConfigObject:
+        filename = get_data_filename(LLMStructuredPrompts.sample)
+        return LLMStructuredPromptConfigObject.from_yaml(filename)
+
+    def test_structured_prompt_from_yaml(self):
+        actual = self.load_sample_prompt()
+
+        assert isinstance(actual, LLMStructuredPromptConfigObject)
+        assert actual.kind == "LLMStructuredPrompt"
+
+    def test_xml_structured_prompt(self):
+        prompt = self.load_sample_prompt()
+        prompt.set_formatter(XMLPromptFormatter())
+
+        assert (
+            prompt.get_system_prompt_template("default")
+            == """<role>
+  You are a helpful assistant.
+  <instructions>
+    Answer user questions.
+  </instructions>
+  <rules>
+    Here are rules to follow.
+    <rule_1>
+      Be nice.
+    </rule_1>
+    <rule_2>
+      Be specific.
+    </rule_2>
+  </rules>
+</role>
+<context>
+  The user is asking about programming concepts.
+</context>
+<response_template>
+  Provide the answer in simple terms.
+</response_template>"""
+        )
+
+        assert (
+            prompt.get_user_prompt_template("default")
+            == """<question>
+  Explain what is object-oriented programming.
+</question>"""
+        )
+
+    def test_md_structured_prompt(self):
+        prompt = self.load_sample_prompt()
+        prompt.set_formatter(MarkdownPromptFormatter())
+
+        assert (
+            prompt.get_system_prompt_template("default")
+            == """# Role
+You are a helpful assistant.
+## Instructions
+Answer user questions.
+## Rules
+Here are rules to follow.
+### Rule 1
+Be nice.
+### Rule 2
+Be specific.
+# Context
+The user is asking about programming concepts.
+# Response template
+Provide the answer in simple terms."""
+        )
+
+        assert (
+            prompt.get_user_prompt_template("default")
+            == """# Question
+Explain what is object-oriented programming."""
+        )
+
+    def test_parse_no_system(self):
+        prompt_config_spec = """
+        spec:
+          user:
+            - model: default
+              sections:
+                - name: user
+                  content: |
+                    User prompt template specific for gpt-4o
+        """
+        values = yaml.safe_load(prompt_config_spec)
+        with self.assertRaises(ValueError) as e:
+            _ = LLMStructuredPromptConfigSpec.from_dict(values["spec"])
+        assert str(e.exception) == "System prompt(s) must be defined"
+
+    def test_parse_no_user(self):
+        prompt_config_spec = """
+        spec:
+          system:
+            - model: default
+              sections:
+                - name: system
+                  content: |
+                    System prompt template
+        """
+        values = yaml.safe_load(prompt_config_spec)
+        _ = LLMStructuredPromptConfigSpec.from_dict(values["spec"])
