@@ -180,7 +180,7 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
         self.max_backtracks = max_backtracks
 
     @staticmethod
-    def should_handle(processor: Processor, exception: Optional[ProcessorException] = None) -> bool:
+    def should_handle_exception(processor: Processor, exception: Optional[ProcessorException] = None) -> bool:
         if exception is None:
             return True
 
@@ -200,7 +200,7 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
 
         while index < len(self.processors):
             try:
-                if not self.should_handle(self.processors[index], previous_exception):
+                if not self.should_handle_exception(self.processors[index], previous_exception):
                     index -= 1
                     continue
                 current_obj = self.processors[index].execute(inputs[index], previous_exception)
