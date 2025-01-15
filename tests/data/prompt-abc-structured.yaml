@@ -1,0 +1,40 @@
+kind: LLMStructuredPrompt
+version: 0.1
+metadata:
+  name: "example_structured_prompt"
+  description: "Example structured prompt"
+  labels:
+    abc: xyz
+spec:
+  system:
+    - model: default
+      sections:
+        - name: Role
+          content: |
+            You are a helpful assistant.
+          sections:
+            - name: Instructions
+              content: |
+                Answer user questions.
+            - name: Rules
+              content: |
+                Here are rules to follow.
+              sections:
+                - name: Rule 1
+                  content: |
+                    Be nice.
+                - name: Rule 2
+                  content: |
+                    Be specific.
+        - name: Context
+          content: |
+            The user is asking about programming concepts.
+        - name: Response template
+          content: |
+            Provide the answer in simple terms.
+  user:
+    - model: default
+      sections:
+        - name: Question
+          content: |
+            Explain what is object-oriented programming.
