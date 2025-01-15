@@ -79,7 +79,7 @@ class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
 
     def __init__(
         self, llm: Union[LLMBase, LLMMiddlewareChain], output_obj_type: Type[T_LLMOutput], name: Optional[str] = None
-    ):
+    ) -> None:
         self._llm_middleware = LLMMiddlewareChain(llm) if not isinstance(llm, LLMMiddlewareChain) else llm
         self._output_obj_type = output_obj_type
         self.name = name or output_obj_type.__name__
