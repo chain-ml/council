@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Dict, Final, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
 
 from council.llm.base import LLMBase, LLMMessage
@@ -196,7 +197,7 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
 
     def execute(self, obj: T_Input) -> T_Output:
         index = 0
-        inputs: List[T_Input] = [obj] * len(self.processors)
+        inputs: List[T_Input] = [deepcopy(obj) for _ in range(len(self.processors))]
         previous_exception: Optional[ProcessorException] = None
         current_obj = obj
         backtrack_count = 0
@@ -204,6 +205,11 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
         while index < len(self.processors):
             try:
                 if not self.should_handle_exception(self.processors[index], previous_exception):
+                    if index == 0:
+                        raise ProcessorException(
+                            input=str(inputs[0]),
+                            message="Cannot backtrack from first processor",
+                        )
                     index -= 1
                     continue
                 current_obj = self.processors[index].execute(inputs[index], previous_exception)
@@ -215,7 +221,7 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
                 if backtrack_count >= self.max_backtracks:
                     raise e  # out of retry
 
-                index -= 1
+                index = max(0, index - 1)
                 backtrack_count += 1
                 previous_exception = e
 
