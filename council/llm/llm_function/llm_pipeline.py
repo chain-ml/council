@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Final, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
+from typing import Dict, Final, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
 
 from council.llm.base import LLMBase, LLMMessage
 
@@ -154,7 +154,7 @@ class NaivePipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
     """
 
     def execute(self, obj: T_Input) -> T_Output:
-        current_obj: Any = obj
+        current_obj: T_Input = obj
         for processor in self.processors:
             current_obj = processor.execute(current_obj)
         return cast(T_Output, current_obj)
