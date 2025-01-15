@@ -30,7 +30,7 @@ from .llm_pipeline import (
     T_LLMInput,
     T_LLMOutput,
     LLMProcessorRecord,
-    Processor,
+    ProcessorBase,
     LLMProcessor,
     PipelineProcessorBase,
     NaivePipelineProcessor,

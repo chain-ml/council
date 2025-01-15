@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import Dict, Final, Generic, List, Optional, Protocol, Sequence, Type, TypeVar, Union, cast
 
 from council.llm.base import LLMBase, LLMMessage
@@ -60,20 +61,21 @@ class LLMProcessorRecord:
         return result
 
 
-class Processor(Generic[T_Input, T_Output]):
+class ProcessorBase(Generic[T_Input, T_Output], ABC):
     """
     Base class for a Processor, transforming an input object into an output object.
     List of processors can be then used to create a PipelineProcessor.
     """
 
+    @abstractmethod
     def execute(self, obj: T_Input, exception: Optional[ProcessorException] = None) -> T_Output:
         # implement logic that transforms obj into T_Output
-        raise NotImplementedError()
+        pass
 
 
-class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
+class LLMProcessor(ProcessorBase[T_LLMInput, T_LLMOutput]):
     """
-    Processor that uses an LLM to convert an input object into an output object.
+    ProcessorBase that uses an LLM to convert an input object into an output object.
     Keeps track of records processed by this instance.
     """
 
@@ -128,16 +130,17 @@ class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
         return llm_func_response.response
 
 
-class PipelineProcessorBase(Generic[T_Input, T_Output]):
+class PipelineProcessorBase(Generic[T_Input, T_Output], ABC):
     """
     Base class for a PipelineProcessor, executing a sequence of Processors.
     """
 
-    def __init__(self, processors: Sequence[Processor]):
+    def __init__(self, processors: Sequence[ProcessorBase]):
         self.processors = list(processors)
 
+    @abstractmethod
     def execute(self, obj: T_Input) -> T_Output:
-        raise NotImplementedError()
+        pass
 
 
 class NaivePipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
@@ -175,12 +178,12 @@ class BacktrackingPipelineProcessor(PipelineProcessorBase[T_Input, T_Output]):
             B --> A
     """
 
-    def __init__(self, processors: Sequence[Processor], max_backtracks: int = 3):
+    def __init__(self, processors: Sequence[ProcessorBase], max_backtracks: int = 3):
         super().__init__(processors)
         self.max_backtracks = max_backtracks
 
     @staticmethod
-    def should_handle_exception(processor: Processor, exception: Optional[ProcessorException] = None) -> bool:
+    def should_handle_exception(processor: ProcessorBase, exception: Optional[ProcessorException] = None) -> bool:
         if exception is None:
             return True
 

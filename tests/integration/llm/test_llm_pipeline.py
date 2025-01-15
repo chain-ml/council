@@ -8,7 +8,7 @@ from council import OpenAILLM
 from council.llm import YAMLBlockResponseParser
 from council.llm.llm_function.llm_pipeline import (
     LLMProcessor,
-    Processor,
+    ProcessorBase,
     NaivePipelineProcessor,
     BacktrackingPipelineProcessor,
     ProcessorException,
@@ -57,7 +57,7 @@ FakeTable = Dict[str, List[Any]]
 FakeTableData: FakeTable = {"id": [1, 2, 3], "name": ["John", "Jane", "Doe"], "age": [28, 34, 29]}
 
 
-class SQLQueryExecutor(Processor[SQLQuery, FakeTable]):
+class SQLQueryExecutor(ProcessorBase[SQLQuery, FakeTable]):
     def execute(self, obj: SQLQuery, exception: Optional[Exception] = None) -> FakeTable:
         if "limit" not in obj.query.lower():
             raise ProcessorException(
@@ -67,7 +67,7 @@ class SQLQueryExecutor(Processor[SQLQuery, FakeTable]):
         return FakeTableData
 
 
-class SQLQueryExecutorWithTransfer(Processor[SQLQueryExplained, FakeTable]):
+class SQLQueryExecutorWithTransfer(ProcessorBase[SQLQueryExplained, FakeTable]):
     def execute(self, obj: SQLQueryExplained, exception: Optional[Exception] = None) -> FakeTable:
         if "limit" not in obj.query.lower():
             raise ProcessorException(
@@ -91,11 +91,11 @@ def get_query_to_explained_query_proc() -> LLMProcessor[SQLQuery, SQLQueryExplai
     return LLMProcessor(llm, SQLQueryExplained)
 
 
-def get_execute_query_proc() -> Processor[SQLQuery, FakeTable]:
+def get_execute_query_proc() -> ProcessorBase[SQLQuery, FakeTable]:
     return SQLQueryExecutor()
 
 
-def get_execute_explained_query_proc() -> Processor[SQLQueryExplained, FakeTable]:
+def get_execute_explained_query_proc() -> ProcessorBase[SQLQueryExplained, FakeTable]:
     return SQLQueryExecutorWithTransfer()
 
 
