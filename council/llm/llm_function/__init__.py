@@ -36,3 +36,4 @@ from .llm_pipeline import (
     NaivePipelineProcessor,
     BacktrackingPipelineProcessor,
 )
+from .executor import ParallelExecutor
