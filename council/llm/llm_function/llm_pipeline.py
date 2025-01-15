@@ -93,7 +93,7 @@ class LLMProcessor(Processor[T_LLMInput, T_LLMOutput]):
         return self._records
 
     @property
-    def records_with_exceptions(self) -> List[LLMProcessorRecord]:
+    def records_with_exceptions(self) -> Sequence[LLMProcessorRecord]:
         """List of records processed by this instance that resulted in an exception."""
         return [record for record in self.records if record.exception is not None]
 
