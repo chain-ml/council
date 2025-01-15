@@ -6,8 +6,8 @@ from typing import Callable, Generic, List, Optional, Sequence, TypeVar, Union
 T = TypeVar("T")
 R = TypeVar("R")
 
-Execute = Callable[..., T]
-Reduce = Callable[[Sequence[T]], R]
+ExecuteFn = Callable[..., T]
+ReduceFn = Callable[[Sequence[T]], R]
 
 
 class ParallelExecutor(Generic[T, R]):
@@ -16,42 +16,44 @@ class ParallelExecutor(Generic[T, R]):
     and aggregates the results according to a reduce function.
 
     Args:
-        executes (Union[Execute, Sequence[Execute]]): Single function or sequence of functions to execute in parallel
-        reduce (Optional[Reduce]): Function to aggregate sequence of responses into a response of potentially different type.
+        execute_fns (Union[ExecuteFn, Sequence[ExecuteFn]]):
+            Single function or sequence of functions to execute in parallel.
+        reduce_fn (Optional[ReduceFn]):
+            Function to aggregate sequence of responses into a response of potentially different type.
             Defaults to returning the first result.
         n (int): Number of times to execute if single function provided. Ignored if sequence provided.
 
     Raises:
-        ValueError: If _executes sequence is empty or contains non-callable items
+        ValueError: If _execute_fns sequence is empty or contains non-callable items.
 
     .. mermaid::
 
         flowchart LR
-            E1(Execute 1) --> R(Reduce)
-            E3(Execute ...) --> R
-            E4(Execute N) --> R
+            E1(ExecuteFn 1) --> R(ReduceFn)
+            E3(ExecuteFn ...) --> R
+            E4(ExecuteFn N) --> R
     """
 
     def __init__(
-        self, executes: Union[Execute, Sequence[Execute]], reduce: Optional[Reduce] = None, n: int = 1
+        self, execute_fns: Union[ExecuteFn, Sequence[ExecuteFn]], reduce_fn: Optional[ReduceFn] = None, n: int = 1
     ) -> None:
-        self._executes: List[Execute] = self._validate_executes(executes, n)
-        self._reduce: Reduce = reduce if reduce is not None else lambda results: results[0]
+        self._execute_fns: List[ExecuteFn] = self._validate_execute_fns(execute_fns, n)
+        self._reduce_fn: ReduceFn = reduce_fn if reduce_fn is not None else lambda results: results[0]
 
     @staticmethod
-    def _validate_executes(executes: Union[Execute, Sequence[Execute]], n: int) -> List[Execute]:
-        if not isinstance(executes, Sequence):
-            if not callable(executes):
+    def _validate_execute_fns(execute_fns: Union[ExecuteFn, Sequence[ExecuteFn]], n: int) -> List[ExecuteFn]:
+        if not isinstance(execute_fns, Sequence):
+            if not callable(execute_fns):
                 raise ValueError("`executes` must be callable or sequence of callables")
-            return [executes] * n
+            return [execute_fns] * n
         else:
-            if not executes:
+            if not execute_fns:
                 raise ValueError("`executes` sequence cannot be empty")
-            if not all(callable(ex) for ex in executes):
+            if not all(callable(ex) for ex in execute_fns):
                 raise ValueError("All items in `executes` must be callable")
-            return list(executes)
+            return list(execute_fns)
 
-    def execute(self, *args, **kwargs) -> List[T]:
+    def execute(self, *args, **kwargs) -> Sequence[T]:
         """
         Execute functions in parallel and return all results.
 
@@ -60,12 +62,12 @@ class ParallelExecutor(Generic[T, R]):
             **kwargs: Keyword arguments to pass to the execute functions
 
         Returns:
-            List[T]: List of all parallel execution results
+            Sequence[T]: All execution results
         """
         results: List[T] = []
 
-        with ThreadPoolExecutor(max_workers=len(self._executes)) as executor:
-            future_to_runner = {executor.submit(execute, *args, **kwargs): execute for execute in self._executes}
+        with ThreadPoolExecutor(max_workers=len(self._execute_fns)) as executor:
+            future_to_runner = {executor.submit(execute, *args, **kwargs): execute for execute in self._execute_fns}
 
             for future in as_completed(future_to_runner):
                 try:
@@ -79,7 +81,7 @@ class ParallelExecutor(Generic[T, R]):
         return results
 
     def reduce(self, results: Sequence[T]) -> R:
-        return self._reduce(results)
+        return self._reduce_fn(results)
 
     def execute_and_reduce(self, *args, **kwargs) -> R:
         """

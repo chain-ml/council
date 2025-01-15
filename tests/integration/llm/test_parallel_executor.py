@@ -66,7 +66,7 @@ class TestParallelExecutor(unittest.TestCase):
 
         executor = ParallelExecutor(
             [openai_llm_function.execute, anthropic_llm_function.execute],
-            reduce=AggregatedEvaluationResponse.from_evaluations,
+            reduce_fn=AggregatedEvaluationResponse.from_evaluations,
         )
 
         results = executor.execute("Thomas Jefferson was the 12th president of the United States.")
@@ -81,7 +81,7 @@ class TestParallelExecutor(unittest.TestCase):
 
     def test_with_n(self):
         llm_func = self.get_eval_llm_function(self.openai_llm)
-        executor = ParallelExecutor(llm_func.execute, reduce=AggregatedEvaluationResponse.from_evaluations, n=3)
+        executor = ParallelExecutor(llm_func.execute, reduce_fn=AggregatedEvaluationResponse.from_evaluations, n=3)
         results = executor.execute("Thomas Jefferson was the 12th president of the United States.")
 
         self.assertEqual(len(results), 3)

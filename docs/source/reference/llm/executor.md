@@ -66,8 +66,8 @@ anthropic_llm_function = get_eval_llm_function(AnthropicLLM.from_env())
 
 # using different LLMs for this example, could be a single function and n>1
 executor: ParallelExecutor[EvaluationResponse, AggregatedEvaluationResponse] = ParallelExecutor(
-    [openai_llm_function.execute, anthropic_llm_function.execute],
-    reduce=AggregatedEvaluationResponse.from_evaluations,
+    execute_fns=[openai_llm_function.execute, anthropic_llm_function.execute],
+    reduce_fn=AggregatedEvaluationResponse.from_evaluations,
 )
 
 response = executor.execute_and_reduce("Thomas Jefferson was the 12th president of the United States.")
