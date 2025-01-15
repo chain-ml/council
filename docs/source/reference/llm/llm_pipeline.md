@@ -1,7 +1,7 @@
-# Processor
+# ProcessorBase
 
 ```{eval-rst}
-.. autoclass:: council.llm.llm_function.Processor
+.. autoclass:: council.llm.llm_function.ProcessorBase
 ```
 
 # LLMProcessor
