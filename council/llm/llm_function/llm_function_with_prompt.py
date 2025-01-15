@@ -4,7 +4,7 @@ import os
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from council.llm.base import LLMBase, LLMCacheControlData, LLMMessage, get_llm_from_config
-from council.prompt import LLMPromptConfigObject
+from council.prompt import LLMPromptConfigObjectBase
 
 from .llm_function import LLMFunction, LLMFunctionResponse, LLMResponseParser, T_Response
 from .llm_middleware import LLMMiddlewareChain
@@ -20,7 +20,7 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         self,
         llm: Union[LLMBase, LLMMiddlewareChain],
         response_parser: LLMResponseParser,
-        prompt_config: LLMPromptConfigObject,
+        prompt_config: LLMPromptConfigObjectBase,
         max_retries: int = 3,
         system_prompt_params: Optional[Mapping[str, str]] = None,
         system_prompt_caching: bool = False,
@@ -101,7 +101,7 @@ class LLMFunctionWithPrompt(LLMFunction[T_Response]):
         """
 
         llm = get_llm_from_config(os.path.join(path_prefix, llm_path))
-        prompt_config = LLMPromptConfigObject.from_yaml(os.path.join(path_prefix, prompt_config_path))
+        prompt_config = LLMPromptConfigObjectBase.from_yaml(os.path.join(path_prefix, prompt_config_path))
         return LLMFunctionWithPrompt(
             llm, response_parser, prompt_config, max_retries, system_prompt_params, system_prompt_caching
         )
