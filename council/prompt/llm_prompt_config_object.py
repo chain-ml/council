@@ -99,8 +99,11 @@ class PromptFormatter(ABC):
 
 
 class StringPromptFormatter(PromptFormatter):
+    def __init__(self, section_prefix: str = ""):
+        self.section_prefix = section_prefix
+
     def _format_section(self, section: PromptSection) -> str:
-        parts = [section.name]
+        parts = [f"{self.section_prefix}{section.name}"]
         if section.content:
             parts.append(section.content)
         parts.extend([self._format_section(sec) for sec in section.sections])
