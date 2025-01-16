@@ -112,9 +112,9 @@ class StringPromptFormatter(PromptFormatter):
 
 class MarkdownPromptFormatter(PromptFormatter):
     def _format_section(self, section: PromptSection, indent: int = 1) -> str:
-        parts = [f"{'#' * indent} {section.name}"]
+        parts = [f"{'#' * indent} {section.name}", ""]
         if section.content:
-            parts.append(section.content)
+            parts.extend([section.content, ""])
         parts.extend([self._format_section(sec, indent + 1) for sec in section.sections])
         return "\n".join(parts)
 

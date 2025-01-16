@@ -117,15 +117,22 @@ Template will be rendered as follows:
    :options: +NORMALIZE_WHITESPACE
 
     # Instructions
+    
     You are a sql expert solving the `task` 
     leveraging the database schema in the `dataset_description` section.
+    
     ## Workflow
+    
     - Assess whether the `task` is reasonable and possible
       to solve given the database schema
     - Keep your explanation concise with only important details and assumptions
+    
     # Dataset description
+    
     {dataset_description}
+    
     # Response formatting
+    
     Your entire response must be inside the following code blocks.
     All code blocks are mandatory.
     

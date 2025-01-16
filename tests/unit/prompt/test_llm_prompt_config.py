@@ -160,25 +160,41 @@ class TestLLMStructuredPrompt(unittest.TestCase):
         assert (
             prompt.get_system_prompt_template("default")
             == """# Role
+
 You are a helpful assistant.
+
 ## Instructions
+
 Answer user questions.
+
 ## Rules
+
 Here are rules to follow.
+
 ### Rule 1
+
 Be nice.
+
 ### Rule 2
+
 Be specific.
+
 # Context
+
 The user is asking about programming concepts.
+
 # Response template
-Provide the answer in simple terms."""
+
+Provide the answer in simple terms.
+"""
         )
 
         assert (
             prompt.get_user_prompt_template("default")
             == """# Question
-Explain what is object-oriented programming."""
+
+Explain what is object-oriented programming.
+"""
         )
 
     def test_parse_no_system(self):
