@@ -69,7 +69,7 @@ class PromptSection:
     """
 
     def __init__(
-        self, *, name: str, content: Optional[str] = None, sections: Optional[List[PromptSection]] = None
+        self, *, name: str, content: Optional[str] = None, sections: Optional[Iterable[PromptSection]] = None
     ) -> None:
         self.name = name
         self.content = content.strip() if content else None
