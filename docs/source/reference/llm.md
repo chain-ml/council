@@ -17,7 +17,7 @@ The `council.llm` module provides a unified interface for interacting with vario
 
 Create your LLM instance from YAML config file with {class}`~council.llm.LLMConfigObject` (see for different config examples).
 
-Currently supported providers include: 
+Currently supported providers include:
 
 - OpenAI's GPT and o1 - {class}`~council.llm.OpenAILLM`
 - Anthropic's Claude - {class}`~council.llm.AnthropicLLM`
@@ -71,6 +71,10 @@ for consumption in result.consumptions:
 
 For information about enabling Anthropic prompt caching, refer to {class}`~council.llm.LLMCacheControlData`.
 
+### Prompt Management
+
+Store your prompts as YAML files as unstructured text ({class}`~council.prompt.LLMPromptConfigObject`) or structured objects ({class}`~council.prompt.LLMStructuredPromptConfigObject`) with automatic selection of the prompt based on the LLM used.
+
 ### LLM Functions
 
 LLM Functions provide structured ways to interact with LLMs including built-in response parsing, error handling and retries.
@@ -88,6 +92,8 @@ Response parsers help automate the parsing of common response formats to use LLM
 - {class}`~council.llm.YAMLBlockResponseParser` and {class}`~council.llm.YAMLResponseParser` for YAML
 - {class}`~council.llm.JSONBlockResponseParser` and {class}`~council.llm.JSONResponseParser` for JSON
 
+Code block, YAML and JSON response parsers also support `to_response_template()` method to convert the structured object into a natural language response template description.
+
 ### LLM Middleware
 
 Middleware components allow you to enhance LLM interactions by modifying requests and responses introducing custom logic, such as logging, caching, configuration updates, etc.
@@ -97,7 +103,9 @@ Core middlewares:
 - Caching: {class}`~council.llm.LLMCachingMiddleware`
 - Logging: 
   - Context logger: {class}`~council.llm.LLMLoggingMiddleware`
-  - Files: {class}`~council.llm.LLMFileLoggingMiddleware` and {class}`~council.llm.LLMTimestampFileLoggingMiddleware`
+  - File logging: 
+    - {class}`~council.llm.LLMFileLoggingMiddleware`
+    - {class}`~council.llm.LLMTimestampFileLoggingMiddleware` for single file per request
 
 Middleware management:
 
