@@ -133,7 +133,7 @@ class XMLPromptFormatter(PromptFormatter):
 
 
 class LLMStructuredPromptTemplate(PromptTemplateBase):
-    def __init__(self, sections: List[PromptSection], *, model: Optional[str], model_family: Optional[str]) -> None:
+    def __init__(self, sections: Iterable[PromptSection], *, model: Optional[str], model_family: Optional[str]) -> None:
         super().__init__(model=model, model_family=model_family)
         self._sections = list(sections)
 
