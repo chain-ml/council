@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import yaml
 from council.utils import DataObject, DataObjectSpecBase
@@ -57,8 +57,8 @@ class LLMPromptTemplate(PromptTemplateBase):
         if template is None:
             raise ValueError("`template` must be defined")
 
-        model = values.get("model", None)
-        model_family = values.get("model-family", None)
+        model = values.get("model")
+        model_family = values.get("model-family")
         return cls(template=template, model=model, model_family=model_family)
 
 
@@ -103,7 +103,7 @@ class StringPromptFormatter(PromptFormatter):
         parts = [section.name]
         if section.content:
             parts.append(section.content)
-        parts.extend([self._format_section(s) for s in section.sections])
+        parts.extend([self._format_section(sec) for sec in section.sections])
         return "\n".join(parts)
 
 
@@ -112,7 +112,7 @@ class MarkdownPromptFormatter(PromptFormatter):
         parts = [f"{'#' * indent} {section.name}"]
         if section.content:
             parts.append(section.content)
-        parts.extend([self._format_section(s, indent + 1) for s in section.sections])
+        parts.extend([self._format_section(sec, indent + 1) for sec in section.sections])
         return "\n".join(parts)
 
 
@@ -127,7 +127,7 @@ class XMLPromptFormatter(PromptFormatter):
             content = "\n".join([f"{indent}{indent_diff}{line}" for line in content_lines])
             parts.append(content)
 
-        parts.extend([self._format_section(s, indent + indent_diff) for s in section.sections])
+        parts.extend([self._format_section(sec, indent + indent_diff) for sec in section.sections])
         parts.append(f"{indent}</{name_snake_case}>")
         return "\n".join(parts)
 
@@ -183,11 +183,11 @@ class LLMPromptConfigSpecBase(DataObjectSpecBase):
         if not system_prompts:
             raise ValueError("System prompt(s) must be defined")
 
-        system = [cls._prompt_template_from_dict(p) for p in system_prompts]
+        system = [cls._prompt_template_from_dict(prompt) for prompt in system_prompts]
 
         user: Optional[List[PromptTemplateBase]] = None
         if user_prompts is not None:
-            user = [cls._prompt_template_from_dict(p) for p in user_prompts]
+            user = [cls._prompt_template_from_dict(prompt) for prompt in user_prompts]
         return cls(system, user)
 
     @staticmethod
