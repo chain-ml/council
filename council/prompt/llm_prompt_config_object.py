@@ -232,7 +232,7 @@ class LLMPromptConfigObjectBase(DataObject[LLMPromptConfigSpecBase]):
         return self._get_prompt_template(self.spec.user_prompts, model)
 
     @staticmethod
-    def _get_prompt_template(prompts: List[PromptTemplateBase], model: str) -> str:
+    def _get_prompt_template(prompts: Sequence[PromptTemplateBase], model: str) -> str:
         """
         Get the first prompt compatible to the given `model` (or `default` prompt).
 
