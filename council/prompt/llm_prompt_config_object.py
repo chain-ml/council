@@ -154,8 +154,8 @@ class LLMStructuredPromptTemplate(PromptTemplateBase):
 
         sections = [PromptSection.from_dict(sec) for sec in sections]
 
-        model = values.get("model", None)
-        model_family = values.get("model-family", None)
+        model = values.get("model")
+        model_family = values.get("model-family")
         return cls(sections=sections, model=model, model_family=model_family)
 
 
