@@ -6,6 +6,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![PyPI version](https://badge.fury.io/py/council-ai.svg)](https://badge.fury.io/py/council-ai)
 [![](https://dcbadge.vercel.app/api/server/DWNCftGQZ3?compact=true&style=flat)](https://discord.gg/DWNCftGQZ3)
+[![Twitter](https://img.shields.io/twitter/follow/TheoriqAI)](https://x.com/TheoriqAI)
 [![](https://readthedocs.org/projects/council/badge/?version=stable)](https://council.dev)
 
 # Welcome
